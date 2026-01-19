@@ -1,0 +1,161 @@
+% Compile with lualatex
+\documentclass[12pt,twoside]{memoir}
+
+% ---------- Page layout ----------
+\settrimmedsize{11in}{8.5in}{*}
+\settypeblocksize{8.5in}{5.6in}{*} % height, width
+\setlrmargins{*}{*}{1}
+\setulmargins{*}{*}{1}
+\checkandfixthelayout
+
+% ---------- Typography ----------
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+
+% Pick ONE recipe by uncommenting it:
+
+% --- Option A: Charter + Source Sans 3 + JetBrains Mono ---
+
+% Body font
+\setmainfont[
+  Path = Fonts/Charter/,
+  UprightFont = *-Regular,
+  ItalicFont = *-Italic,
+  BoldFont = *-Bold,
+  BoldItalicFont = *-BoldItalic,
+  Extension=.ttf
+]{Charter}
+
+% Sans font (headings, boxes)
+\setsansfont[
+  Path = Fonts/SourceSans3/,
+  UprightFont = *-Regular,
+  ItalicFont = *-Italic,
+  BoldFont = *-Bold,
+  BoldItalicFont = *-BoldItalic,
+  Extension=.ttf
+]{SourceSans3}
+
+% Monospace (code)
+\setmonofont[
+  Path = Fonts/JetBrainsMono/,
+  UprightFont = *-Regular,
+  ItalicFont = *-Italic,
+  BoldFont = *-Bold,
+  BoldItalicFont = *-BoldItalic,
+  Extension=.ttf
+]{JetBrainsMono}
+
+% --- Option B: Libertinus Serif + Fira Sans + JetBrains Mono ---
+% \setmainfont{Libertinus Serif}
+% \setsansfont{Fira Sans}
+% \setmonofont{JetBrains Mono}
+
+% --- Option C: All-sans, humanist ---
+% \setmainfont{Source Sans 3}
+% \setsansfont{Source Sans 3}
+% \setmonofont{JetBrains Mono}
+
+% Spacing
+\usepackage{microtype}
+\usepackage{setspace}
+%  \setstretch{1.15}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+% ---------- Colors + boxes ----------
+\usepackage{xcolor}
+\definecolor{IdeaBlue}{HTML}{1F77B4}
+\definecolor{TryGreen}{HTML}{2CA02C}
+\definecolor{DeepPurple}{HTML}{9467BD}
+\definecolor{SoftGray}{HTML}{F5F5F5}
+
+\usepackage[most]{tcolorbox}
+\tcbset{enhanced, boxrule=0.8pt, arc=2mm, left=2mm,right=2mm,top=1.2mm,bottom=1.2mm}
+
+\newtcolorbox{BigIdeaBox}{
+  colback=IdeaBlue!6,colframe=IdeaBlue!55,
+  title=\sffamily\bfseries Big Idea
+}
+\newtcolorbox{TryThisBox}{
+  colback=TryGreen!6,colframe=TryGreen!55,
+  title=\sffamily\bfseries Try This
+}
+\newtcolorbox{DeepDiveBox}{
+  colback=DeepPurple!6,colframe=DeepPurple!55,
+  title=\sffamily\bfseries Optional: Going Deeper
+}
+
+% ---------- Headings style ----------
+\setsecnumdepth{subsection}
+\settocdepth{subsection}
+
+\usepackage{titlesec}
+\titleformat{\chapter}
+  {\sffamily\bfseries\Huge}
+  {\thechapter}{0.8em}{}
+\titleformat{\section}
+  {\sffamily\bfseries\Large}
+  {\thesection}{0.8em}{}
+\titleformat{\subsection}
+  {\sffamily\bfseries\large}
+  {\thesubsection}{0.8em}{}
+
+% ---------- Code (minted is nicer but needs -shell-escape) ----------
+\usepackage{listings}
+\lstdefinestyle{kidcode}{
+  backgroundcolor=\color{SoftGray},
+  basicstyle=\ttfamily\small,
+  frame=single,
+  rulecolor=\color{black!25},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  xleftmargin=0.5em,
+  xrightmargin=0.5em
+}
+\lstset{style=kidcode}
+
+% ---------- Headers ----------
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\nouppercase{\leftmark}}
+\fancyhead[R]{\sffamily\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\begin{document}
+
+\frontmatter
+{\sffamily\bfseries\Huge CS for Kids (and Curious Teens)\par}
+\vspace{0.5em}
+{\sffamily\Large A hands-on course inspired by CS 5\par}
+\vspace{2em}
+
+\tableofcontents
+
+\mainmatter
+
+\chapter{Week 1: What is Computation?}
+
+\begin{BigIdeaBox}
+A computation is a process that turns inputs into outputs by following rules.
+\end{BigIdeaBox}
+
+\begin{TryThisBox}
+Predict what \texttt{2 + 3 * 4} does \emph{before} you run it.
+\end{TryThisBox}
+
+\section{Example}
+\begin{lstlisting}[language=Python]
+2 + 3 * 4
+(2 + 3) * 4
+\end{lstlisting}
+
+\begin{DeepDiveBox}
+Multiplication happens before addition unless parentheses say otherwise.
+This is called operator precedence.
+\end{DeepDiveBox}
+
+\end{document}

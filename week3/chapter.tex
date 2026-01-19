@@ -1,0 +1,224 @@
+\week{Putting Programs Together}
+
+Last week, we explored how to use \emph{functions} to re-use pieces of rules. From now on, we'll
+adopt some new terminology. In the past, we've called everything \emph{rules}, but programmers
+actually call these things \term{expressions}. Everything we've seen so far -- numbers, words, functions, and even combinations of them --
+is an example of an expression.
+
+Some kinds of expressions have even more particular names. Expressions like \code{+}, \code{-},
+and \code{*} are called \term{operators}, to distinguish themselves from the functions we explored
+last chapter.
+
+We also learned that computers store everything as numbers -- even graphics! This week, we will start
+thinking about what sorts of things we can do with these models. Programs rarely stand alone. Real
+programs are built by connecting smaller programs together -- taking the output of one (or more)
+thing and feeding it into another. \curious{The technical term for this behavior
+is \term{composition}.} This is how simple pieces become powerful systems. In the first week, we saw
+how complex behavior could be created by a marble rolling through many machines. This week, we will
+see something similar -- this time using Python.
+
+But before we do that, we're going to have learn a bit about sound.
+
+\section{A \emph{Note} on Music}
+
+When you hear your favorite song or a symphony orchestra with dozens of instruments or a bird
+singing its song or even your little brother banging pots in the kitchen, what you're actually
+feeling is the air around your eardrums moving quickly. Sometimes the air pushes them in, sometimes
+it pulls them out. Depending on how intense that push and pull is and how often it happens, your
+body perceives it as a particular sound.
+
+Notice I said push and pull, if the air kept pushing or kept pulling, your ears would get
+hurt. Thus, the air has to be moved back \emph{and} forth.
+
+Headphones, speakers, musical instruments, and your vocal cords contain vibrating surfaces that push
+and pull air. As the air is moved in these places, it causes the air outside to move as well, and
+the sound travels towards the hearer.
+
+A speaker is made up of a thin membrane. The computer sends it a signal that specifies how much to
+push or pull the membrane. When done quickly this causes the air to move. This is done using
+a \term{sound card}, a special computer component that converts numbers in a system like Python into
+an electrical signal that can move a speaker membrane.
+
+To make a computer play a sound from Python we have to produce a lot of numbers that correspond to
+how much to move the membrane. The amount of times we have to do this per second is known as
+the \term{sampling rate}. The most common sampling rate ued today is 44100 Hz or 44.1 kHz.\didyouknow{The symbol
+Hz stands for ``Hertz'' which is a unit that means the number of times per second something
+happens. If a juggler threw two balls into the air every second, they would be throwing balls at a
+rate of 2 hertz. The prefix ``k'' stands for kilo, which is a Greek word meaning one thousand. A
+juggler juggling at the rate of 2 kilohertz would have to be going very fast!}
+
+But what numbers do we have to produce? This requires a bit of technical musical knowledge, but for
+our purposes the note corresponding to ``middle A'' is usually taken to be the sound that would be
+made by something vibrating back and forth at a rate of 440 Hz
+(see \prettyref{fig:middle-a}). \huh{You said sound waves are continuously moving air back and forth
+but the computer only moves the speaker membrane 44 thousand times each second. That's not
+continuous!}{You're right. The speaker membrane is moved in bursts 44100 times each second. A
+mathematics theorem, called the Whittaker-Nyquist-Shannon theorem after its discoverers, says you
+can reconstruct a continuous signal from a digital representation with a sampling rate twice the
+highest pitch. The highest pitch a human can hear is about 20kHz. Thus, the choice of 44.1 kHz means
+that the speaker can actually reconstruct the full signal. Amazing!}
+
+\subsection{Producing our first note}
+
+Let's begin by importing the modules for this class.
+
+\begin{replbox}
+from week3.examples as *<ENTER>
+import week3.synth as synth<ENTER>
+\end{replbox}
+
+The first thing we want to do is open up our waveform viewer. This will show us the
+actual \term{samples} (speaker membrane offsets) being sent to the speakers.
+
+\begin{replbox}
+synth.view(synth.note('A1'))
+\end{replbox}
+\hint{A4 refers to middle A. A5 refers to the A one octave above middle A, and A3 the octave below.}.
+
+If you zoom in, you can see how the wave changes back and forth to produce the note.
+
+You can look at two notes side by side as well. Let's look at two notes that sound good together.
+\begin{replbox}
+synth.view(synth.note('A4'), synth.note('E4'))
+\end{replbox}
+\curious{What do you notice about the number of times the E wave repeats versus the number of times the A one does?}
+
+Now let's look at an octave
+\begin{replbox}
+synth.view(synth.note('A4'), synth.note('A5'))
+\end{replbox}
+
+You can also supply frequencies directly:
+\begin{replbox}
+synth.view(synth.note(440), synth.note(880))
+\end{replbox}
+
+Let's try sending the note to the sound card:
+\begin{replbox}
+synth.play(synth.note('A4'))
+\end{replbox}
+
+\subsection{Timbre}
+
+But it can't be that simple right? After all, if this simple wave is the middle A, why does a piano
+sound diferent from a trombone from a violin? Surely there's more going on? If you thought this,
+you'd be correct. There is a lot more going on. The simple wave we saw above is the simplest
+possible wave,\curious{The term \emph{sine} is a word from trigonometry and has to do with angles of
+a triangle and ultimately with a circle. These three shapes may seem to have nothing to do with one
+another, but they are intimately connected, as shown in \prettyref{fig:circle-sin-triangle}.} but no
+real life sound wave looks like this. Instead, real life waves have a ``shape'' known as the
+\term{timbre}. Any shape of wave that repeats the same number of times per second will seem to produce the
+same pitch to our ears, but the shape causes us to perceive a different ``color'' or ``timbre'' of
+sound.
+
+Let's see if we can add some timbre to our notes.
+
+\section{Transforming Sound}
+
+Just like we saw at the start of class, we can start with a simple tone and make new sounds by
+adding materials that transform the original sound. Similarly, we can transform sound on the
+computer. When multiple tones sound off at the same time, that creates a different timbre. We can
+manipulate tones by changing volume or adjusting frequency.
+
+\hint{Anything appearing after a
+    \code{\#} in python is treated as a \term{comment}, which means
+    that it's just there for someone reading the code.}
+\begin{TryThisBox}
+  Try creating a new instrument in a function in
+  \texttt{week3/instruments.py}
+\begin{lstlisting}
+def myinstrument(note, t):
+  t1 = synth.tone(note, t)
+  t2 = synth.tone(note * 2, t)
+  # Multiplying t1 and t2 change the volume of the tones
+  return (8/10) * t1 + (2/10) * t2
+\end{lstlisting}
+\end{TryThisBox}
+
+Now play this, and see what happens. That tone sounds more complex already!  \curious{Try adjusting
+  the volume of the relative tones as well as the pitch of the tones.}
+
+What happened here? This is the first time we're seeing the usage of \code{=}. The equals makes a
+name, like \code{t1}, refer to the result of Python evaluating the expression to the right hand
+side. If we had just played \code{t1}, we would have gotten the simple tone we heard above. But by
+givin the tone a name, and then naming \code{t2}, we are able to manipulate the waveforms.
+
+\subsection{Vibrato, Tremolo, and More}
+
+Above, the volume and pitch were \term{static}, which means that they didn't change over time. We
+can also adjust these slightly for some cool effects.
+
+The first is vibrato, which comes from slightly adjusting the note back and forth as time
+continues. This produces a ``wobbly'' effect.
+
+\begin{TryThisBox}
+  \begin{lstlisting}
+def vibrato(note, t):
+  vibrato = synth.tone(6, t)
+  return synth.tone(note + vibrato * 0.2, t)
+  \end{lstlisting}
+\end{TryThisBox}
+
+
+Similarly, tremolo changes the \emph{volume}. Remember, volume is controlled by how \emph{big} the wave is.
+
+\begin{TryThisBox}
+  \begin{lstlisting}
+def tremolo(note, t):
+  tremolo = synth.tone(10, t)
+  return (1 - tremolo * 0.1) * synth.tone(note, t)
+  \end{lstlisting}
+\end{TryThisBox}
+
+The expression \code{1 - tremolo * 0.1} produces a wave between 0.9 and 1.1 that peaks ten times per
+second. Try listening to that and seeing what it sounds like.
+
+\subsection{Building our own instruments}
+
+There's more that we can do, but this is enough to start building our own instrument voices. Try it
+using what we learned above. There are also some more functions in the \code{week3.synth} that may
+help. These are listed in \prettyref{tab:synths}
+
+\begin{table}
+  \label{tab:synths}
+  \caption{More functions you can use to manipulate instrument voices. Pay attention to the arguments to the function}
+  \begin{tabular}{ll}
+    \toprule
+    Function Name & Description \\ \midrule
+    \code{tone(pitch, t)} & Produces a simple sine wave of the given pitch (in Hertz) \\
+    \code{fade\_in(wave, start\_volume, end\_volume, start\_time, duration, t)} & Produces a fade-in effect starting at \code{start\_time} from volude \code{start\_volume} to \code{end\_volume} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Conclusion: Building Blocks}
+
+Just like in the last chapter we saw how to use functions to eliminate having to rewrite the same
+code over and over, this week we saw how to use functions to build larger more complex things out of
+simple ideas. We did this by ca pturing functions outputs using \emph{variables} and passing these
+back into other functions (sometimes even the same function). Next week, we will see how we can use
+a similar technique as today to get \emph{infinite} complexity from simple descriptions of things.
+
+\Exercises
+
+\begin{exercises}
+\item Try creating instruments from the following descriptions, and describe how they sound:
+  \begin{enumerate}
+  \item One that combines tones with multiples 1, 2, 3.
+  \item One that combines tones with multiples 1, 3, 5, and 7 (odd numbers).
+  \item One that combines tones with different \emph{phase}. The phase is a small offset to
+    time. For example, the example below adds the second harmonic with a slight phase offset. The
+    \code{cycletime} function returns how long it takes for one wave of the note to be produced.
+    \begin{lstlisting}
+def phased(note, t):
+  # This gives how long it takes one wave form to complete
+  time = cycletime(note)
+  return 0.5 * synth.tone(note, t) + 0.5 * synth.tone(note * 2, t + time * 0.5)
+    \end{lstlisting}
+  \item One that uses slight \emph{inharmonics}, which are small changes to the harmonics, so that
+    they're not pure multiples of the fundamental frequency.
+  \end{enumerate}
+
+\item The program in \code{week3/hear.py} can record audio in real-time and display a function that
+  would approximate the tone given. Try it and see if you can replicate your favorite sounds.
+\end{exercises}
