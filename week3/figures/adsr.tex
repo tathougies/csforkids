@@ -1,0 +1,47 @@
+\begin{tikzpicture}
+  \def\gh{3}
+  \def\gw{8}
+  \def\maxt{6}
+  \def\unit{2.5}
+
+  \def\timetd{0.1}
+  \def\timets{0.4}
+  \def\timetr{1.2}
+  \def\sustainlevel{0.8}
+  \def\attackmax{1.2}
+  \def\releasetime{0.1}
+  \pgfmathsetmacro{\timefinal}{\timetr + \releasetime}
+  \def\calct#1{#1 * \maxt}
+  \def\calca#1{#1 * \unit}
+
+  \draw[black, ->, very thick] (0, -0.2) -- (0, {\gh + 2}) node[left, xshift=-0.2em, yshift=-0.5em] {$y$};
+  \draw[black, ->, very thick] (-0.2, 0) -- (\gw, 0) node[right, yshift=-0.8em, xshift=0.3em] {$t$};
+
+  \draw[black] (0,0) -- ({\calct\timetd}, {\calca\attackmax})
+    -- ({\calct\timets}, {\calca\sustainlevel})
+    -- ({\calct\timetr}, {\calca\sustainlevel})
+    -- ({\calct{(\timetr + \releasetime)}}, 0);
+
+  \def\timelined#1#2{\draw[dashed, black] ({\calct#1}, {\gh + 0.2}) -- ++(0, {-\gh - 0.2*2}) node[below] {#2};}
+
+  \timelined{\timetd}{$t_d$}
+  \timelined{\timets}{$t_s$}
+  \timelined{\timetr}{$t_r$}
+
+  \def\levelline#1#2{\draw[dashed, black] (\gw, {\calca#1}) -- ++(-\gw, 0) node[left] {#2};}
+
+  \levelline{\sustainlevel}{\ttfamily sustain\_level}
+  \levelline{\attackmax}{\ttfamily attack\_max}
+  \draw[black, <-] (-0.1,-0.1) to [bend right] (-2em, -5em) node[below] {\sffamily $t_a$ is always at $t = 0$};
+
+  \def\sectionname#1#2#3{
+    \draw[decorate, decoration={brace, mirror, amplitude=6pt, raise=1em}] ($({\calct#1},0) + (0.2em, -1.5em)$) -- ($({\calct#2},0) + (-0.2em, -1.5em)$) node[midway, yshift=-2.5em] {#3};
+  }
+
+  \sectionname{0}{\timetd}{\sffamily Attack}
+  \sectionname{\timetd}{\timets}{\sffamily Decay}
+  \sectionname{\timets}{\timetr}{\sffamily Sustain}
+  \sectionname{\timetr}{\timefinal}{\sffamily Release}
+
+  \draw[black, <-] ({\calct{(\timetr+\releasetime)} + 0.1},0.2) to [bend right] ++(-1em, 3.3) node[above]{\begin{minipage}{6em}\sffamily After release, the function falls to zero\end{minipage}};
+\end{tikzpicture}

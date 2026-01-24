@@ -24,7 +24,7 @@ def circle(r, p=None):
     return [('circle', (r, p))]
 
 def turn(d):
-    DIRS = { 'right': ('right', 90) }
+    DIRS = { 'right': ('right', 90), 'left': ('left', 90) }
     if isinstance(d, str):
         if d in DIRS:
             return [DIRS[d]]
@@ -34,7 +34,7 @@ def turn(d):
         if d < 0:
             return [('left', -d)]
         else:
-            return [('right', 90)]
+            return [('right', d)]
 
 
 def wait(seconds):

@@ -1,4 +1,4 @@
 $pdf_mode = 1;
-$pdflatex = 'xelatex -interaction=nonstopmode -halt-on-error %O %S';
+$pdflatex = 'xelatex -interaction=nonstopmode -halt-on-error -shell-escape %O %S';
 $clean_ext .= ' nav snm vrb';
 $biber = 'biber %O %B';

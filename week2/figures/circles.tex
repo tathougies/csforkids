@@ -1,0 +1,32 @@
+\begin{tikzpicture}[font={\sffamily\footnotesize}]
+    \pgfmathsetmacro{\angleone}{2 * pi/360 * -100}
+    \pgfmathsetmacro{\circleportion}{0.15}
+    \pgfmathsetmacro{\circleportiontwo}{0.6}
+    \pgfmathsetmacro{\circleportiontworad}{\circleportiontwo * 2 * pi}
+    \pgfmathsetmacro{\circleportionrad}{\circleportion * 2 * pi}
+
+    \pgfmathsetmacro{\circleonefinalangle}{\angleone+\circleportionrad}
+    \pgfmathsetmacro{\midx}{cos(\circleonefinalangle r) * 2}
+    \pgfmathsetmacro{\midy}{sin(\circleonefinalangle r) * 2}
+    \pgfmathsetmacro{\circletwox}{cos(\circleonefinalangle r) * 3}
+    \pgfmathsetmacro{\circletwoy}{sin(\circleonefinalangle r) * 3}
+    \pgfmathsetmacro{\circletwostart}{acos(\midx - \circletwox)}
+    \pgfmathsetmacro{\finalx}{\circletwox + cos((\circletwostart + \circleportiontworad) r)}
+    \pgfmathsetmacro{\finaly}{\circletwoy + sin((\circletwostart + \circleportiontworad) r)}
+
+    \draw[magenta, thick, dashed] (0,0) circle (2);
+    \draw[violet, thick, dashed] (\circletwox,\circletwoy) circle(1);
+
+    \draw[->,dashed,color=IdeaBlue] ({cos(\angleone r) * 2}, {sin(\angleone r) * 2}) -- (0, 0);
+    \draw[->,dashed,color=IdeaBlue] (\finalx, \finaly) -- (\circletwox, \circletwoy);
+
+    \draw[decorate, decoration={brace, amplitude=5pt, mirror, raise=0.2em}] (0,0) -- ({cos(\angleone r) * 1.9}, {sin(\angleone r) * 1.9}) node[midway, xshift=-2.1em] {$r = 30$};
+    \draw[decorate, decoration={brace, amplitude=5pt, raise=0.3em}] ({\finalx * 0.98}, {\finaly * 0.98}) -- (\circletwox, \circletwoy) node[midway, xshift=-1.5em, yshift=-1.5em] {$r = -15$};
+
+    \draw[black, ultra thick, {Stealth[reversed]}-{Stealth}] ({cos(\angleone r) * 2}, {sin(\angleone r) * 2}) arc ({deg(\angleone)}:{deg(\circleportionrad + \angleone)}:2) node[midway,name=arc] {};
+    \draw[black, ultra thick, {Stealth-}] (\finalx,\finaly) arc
+                                                    ({deg(\circletwostart+\circleportiontworad)}:{deg(2 * pi + \circletwostart) + 13}:1) node[midway,name=arctwo]{};
+    \draw[dashed,xshift=0.3em,yshift=-0.3em, <-] (arc) to [bend left] ++(-2em, -4em) node[below] {\texttt{draw.circle(30, \circleportion)}};
+    \draw[dashed,xshift=0.3em,yshift=0.3em, <-] (arctwo) to [bend right] ++(4em,2em) node[above] {\texttt{draw.circle(-15, \circleportiontwo)}};
+
+\end{tikzpicture}

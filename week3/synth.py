@@ -15,24 +15,6 @@ DROPOFF_TIME = 50.0 / 1000.0 # 50 ms
 DROPOFF_COEFF = math.log(DROPOFF_CUTOFF, math.e)
 
 @numba.njit(cache=True)
-def splitmix64(x):
-    x = (x + np.uint64(0x9E3779B97F4A7C15)) & np.uint64(0xFFFFFFFFFFFFFFFF)
-    z = x
-    z = (z ^ (z >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9) & np.uint64(0xFFFFFFFFFFFFFFFF)
-    z = (z ^ (z >> np.uint64(27))) * np.uint64(0x94D049BB133111EB) & np.uint64(0xFFFFFFFFFFFFFFFF)
-    return z ^ (z >> np.uint64(31))
-
-@numba.njit(cache=True)
-def u01_from_u64(x):
-    # 53-bit float in [0,1)
-    return (x >> np.uint64(11)) * (1.0 / (1 << 53))
-
-@numba.njit(cache=True)
-def uniform01(seed_u64, k):
-    # deterministic uniform in [0,1) for index k
-    return u01_from_u64(splitmix64(seed_u64 + np.uint64(k)))
-
-@numba.njit(cache=True)
 def convert_pitch_to_hz(pitch):
     base_frequencies = {
         "C": 16.35, "C#": 17.32, "D": 18.35, "D#": 19.45, "E": 20.60,
@@ -53,9 +35,21 @@ def convert_pitch_to_hz(pitch):
     else: #if isinstance(pitch, (int, float, np.ndarray)):
         return pitch
 
+def soft_clip(x):
+    return np.tanh(x)
+
+def hard_clip(x):
+    return np.minimum(np.maximum(x, -0.8), 0.8)
+
+def drive(x, factor=3):
+    return soft_clip(factor * x)
+
 @numba.njit(cache=True)
 def tone(frequency, t):
     return np.sin(2 * np.pi * frequency * t).astype(np.float32)
+
+def rectified(frequency, t):
+    return rectify(drive(tone(frequency, t)))
 
 @numba.njit(cache=True)
 def tone_with_vibrato(frequency, t, r=6.0, depth=0.5):
@@ -457,19 +451,25 @@ def trumpet(pitch, t):
 
     return signal * envelope
 
-def note_to_semitones(note):
-    note_dict = {
-        "C": -9, "C#": -8, "D": -7, "D#": -6,
-        "E": -5, "F": -4, "F#": -3, "G": -2,
-        "G#": -1, "A": 0, "A#": 1, "B": 2
-    }
-    octave = int(note[-1])
-    base_note = note[:-1]
-    if base_note not in note_dict:
-        raise ValueError("Invalid note")
+# Deterministic randomness
 
-    semitone_steps = note_dict[base_note] + (octave - 4) * 12
-    return semitone_steps
+@numba.njit(cache=True)
+def splitmix64(x):
+    x = (x + np.uint64(0x9E3779B97F4A7C15)) & np.uint64(0xFFFFFFFFFFFFFFFF)
+    z = x
+    z = (z ^ (z >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9) & np.uint64(0xFFFFFFFFFFFFFFFF)
+    z = (z ^ (z >> np.uint64(27))) * np.uint64(0x94D049BB133111EB) & np.uint64(0xFFFFFFFFFFFFFFFF)
+    return z ^ (z >> np.uint64(31))
+
+@numba.njit(cache=True)
+def u01_from_u64(x):
+    # 53-bit float in [0,1)
+    return (x >> np.uint64(11)) * (1.0 / (1 << 53))
+
+@numba.njit(cache=True)
+def uniform01(seed_u64, k):
+    # deterministic uniform in [0,1) for index k
+    return u01_from_u64(splitmix64(seed_u64 + np.uint64(k)))
 
 class Phase(Enum):
     PRESS = 'PRESS'
@@ -591,6 +591,7 @@ def play_midi(filename, instrument, samplerate=44100, volume=0.8):
         releasing_notes = [(n, treleased) for n, treleased in releasing_notes if dropoff(t_final - treleased) > DROPOFF_CUTOFF]
 
     with sounddevice.OutputStream(samplerate=samplerate, callback=sound_cb, channels=1):
+        
         done.wait()
 #        stream.stop()
 
@@ -603,10 +604,11 @@ if __name__ == "__main__":
     p.add_argument("--volume", help="Volume", type=float, default=0.8)
     o = p.parse_args()
 
-    VOICES = { 'vibrato': vibrato, 'tone': tone, 'instrument1': instrument1, 'piano': piano, 'organ': organ, 'church_organ': church_organ, 'violin': violin, 'voice': voice, 'brass': trumpet, 'test': detuned }
+    VOICES = { 'vibrato': vibrato, 'tone': tone, 'instrument1': instrument1, 'piano': piano, 'organ': organ, 'church_organ': church_organ, 'violin': violin, 'voice': voice, 'brass': trumpet, 'test': detuned, 'rectified':rectified  }
 
     f = o.midi
     play_midi(f, VOICES[o.voice], volume=o.volume)
     import time
     time.sleep(120)
 
+    

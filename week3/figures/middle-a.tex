@@ -1,0 +1,73 @@
+\begin{tikzpicture}[font={\footnotesize\sffamily}, scale=1.4]
+  \def\xsize{4}
+  \def\cyclecount{3}
+  \def\freq{440}
+  \def\thetacount{5}
+  \pgfmathsetmacro{\dtheta}{((3/4) * pi)/\thetacount}
+  \pgfmathsetmacro{\wavelengthms}{(1/\freq) * 1000}
+  \pgfmathsetmacro{\sixpioverfive}{((\cyclecount * 2)/\xsize) * pi}
+  \def\sincolor{CornflowerBlue}
+  \def\circlecolor{Peach}
+  \def\xshift{1.5cm + 1em}
+  \def\calcthetaparams#1{
+    \pgfmathsetmacro{\thetarad}{(#1 - 1) * \dtheta}
+    \pgfmathsetmacro{\cy}{sin(\thetarad r)}
+    \pgfmathsetmacro{\cx}{cos(\thetarad r)}
+    \pgfmathsetlengthmacro{\graphx}{\xshift + ((\dtheta * \thetacount)/(2 * pi) * (\xsize/\cyclecount) * ((#1 - 1) / \thetacount) * 1cm)}
+
+    \pgfmathsetmacro{\dcx}{-\cy}
+    \pgfmathsetmacro{\dcy}{\cx}
+  }
+
+  \draw[black, <->] (-1.2,0)--(1.2,0);
+  \draw[black, <->] (0,-1.2)--(0,1.2);
+  \draw[color=lightgray] (0,0) circle (1);
+
+  \foreach \theta in {2, ..., \thetacount} {
+    \calcthetaparams{\theta}
+
+  }
+
+  % blue sine wave
+  \begin{scope}[xshift=\xshift]
+    \draw[step=0.5, lightgray] (0, -1) grid ({\xsize+0.5},1);
+    \draw[black, ->] (0,0) -- (\xsize+0.5,0) node[right] {$t$};
+    \draw[black, <->] (0,-1) -- (0, 1);
+  \end{scope}
+
+  \foreach \theta in {2, ..., \thetacount} {
+    \calcthetaparams{\theta}
+    \draw[fill=DeepPurple] (\cx, \cy) circle (0.1em);
+  }
+
+  \begin{scope}[xshift=\xshift]
+    \draw[domain=0:{\xsize+0.5},samples={\cyclecount*30},color=\sincolor, very thick] plot (\x, {sin((\x * \sixpioverfive) r)}) node[right, yshift=-1.1em] {$\sin x$};
+
+    \draw[decorate,decoration={brace, amplitude=5pt, mirror, raise=0.8em}]
+       ({\xsize/\cyclecount*1},-1) -- ({\xsize/\cyclecount*2},-1) node[midway,yshift=-2.3em]{\sffamily \footnotesize\begin{tabular}{c}one cycle\\440 cycles per second\end{tabular}};
+    \foreach \cycle in {1, ..., \cyclecount} {
+      \draw[dashed, very thick, black] ({\xsize/\cyclecount*\cycle}, -1.1) -- ({\xsize/\cyclecount*\cycle}, 1.1) node[above] {\sffamily \footnotesize \pgfmathparse{\wavelengthms * \cycle}\pgfmathprintnumber[fixed,precision=2]{\pgfmathresult}\ ms};
+    }
+  \end{scope}
+
+  \foreach \theta in {2, ..., \thetacount} {
+    \calcthetaparams{\theta}
+    \draw[dashed, gray] (\cx, \cy) -- ({\graphx - 0.1em}, \cy);
+    \draw[color=DeepPurple, fill=DeepPurple] (\graphx, \cy) circle (0.1em); % --[dashed, color=lightgray]
+  }
+
+  \calcthetaparams{2}
+  \draw[black] (\cx, \cy) node[above, right, yshift=0.5em] {$A$};
+  \draw[black,->] ({\cx * 1cm + (0.11em * \dcx)}, {\cy * 1cm + (0.11 * \dcy)}) -- ({\cx * 1cm + (1em * \dcx)}, {\cy * 1cm + (1em * \dcy)});
+
+  \draw[black] (0, 0) node[xshift=-0.6em,yshift=-0.6em] {$O$};
+  \calcthetaparams{3}
+  \draw[dashed,black] (0,0) -- (\cx, \cy) node[midway, yshift=0.5em, xshift=-0.5em, black] {$h$} -- (\cx, 0) node[midway, right, xshift=-0.2em, yshift=-0.7em] {$o$};
+
+  \draw[black] (1em,0) arc[start angle=0, end angle={deg(\thetarad)}, radius=1em] node[right, midway, yshift=0.3em, xshift=-0.3em] {$\theta$};
+
+  \foreach \y in {-1, ..., 1} {
+    \node[black, left] at ({\xshift -0.5em}, \y) {\sffamily \y};
+  }
+
+\end{tikzpicture}

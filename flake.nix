@@ -19,6 +19,7 @@
             latexmk
             fontspec
             polyglossia
+            qrcode
             xecjk         # nicer Chinese handling on XeTeX
             amsfonts amsmath # amssymb
             enumitem
@@ -42,6 +43,7 @@
             biber
             biblatex
             prettyref
+            subfigure
             hyperref;
         };
 
@@ -61,7 +63,7 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          packages = [ tex pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
+          packages = [ tex pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
           # Make fonts visible to XeTeX in the shell
           FONTCONFIG_FILE = fontsConf;
         };

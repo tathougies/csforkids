@@ -5,11 +5,17 @@
   style=authoryear
 ]{biblatex}
 \addbibresource{book.bib}
+\usepackage{subcaption}
 \usepackage{prettyref}
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{qrcode}
+\usepackage{etoolbox}
 
+\def\giturl{https://github.com/tathougies/csforkids}
+
+\newrefformat{subfig}{Figure~\ref{#1}\subref{#1}}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \makeatletter
@@ -19,10 +25,14 @@
 \usepackage{turingtumble}
 
 \usepackage{tikz}
-\usetikzlibrary{calc}
+\usetikzlibrary{calc,external,decorations.pathreplacing,arrows.meta,positioning,fit}
+% \tikzexternalize[prefix=figure-cache/]
 \usepackage{caption}
+
 \usepackage{graphicx} % for \rotatebox
 \usepackage{atbegshi}
+
+\newcommand{\attribution}[1]{{\textcolor{lightgray}{\tiny #1}}}
 
 % -- upside-down footnotes --
 
@@ -51,38 +61,7 @@
 % fonts/SourceSans3/SourceSans3-Regular.ttf, etc.
 % fonts/JetBrainsMono/JetBrainsMono-Regular.ttf, etc.
 
-\newfontfamily\EmojiFont[
-  Path = Fonts/NotoColorEmoji/,
-  UprightFont = NotoColorEmoji-Regular.ttf
-]{Noto Color Emoji}
-\newcommand{\emoji}[1]{{\EmojiFont #1}}
-\setmainfont[
-  Path = Fonts/Charter/,
-  UprightFont = *-Regular,
-  ItalicFont = *-Italic,
-  BoldFont = *-Bold,
-  BoldItalicFont = *-BoldItalic,
-  Extension=.ttf
-]{Charter}
-
-\setsansfont[
-  Path = Fonts/SourceSans3/,
-  UprightFont = *-Regular,
-  ItalicFont = *-Italic,
-  BoldFont = *-Bold,
-  BoldItalicFont = *-BoldItalic,
-  Extension=.ttf
-]{SourceSans3}
-
-\setmonofont[
-  Path = Fonts/JetBrainsMono/,
-  UprightFont = *-Regular,
-  ItalicFont = *-Italic,
-  BoldFont = *-Bold,
-  BoldItalicFont = *-BoldItalic,
-  Extension=.ttf
-]{JetBrainsMono}
-
+\input{fonts.tex}
 % ---------- Microtype (works fine with XeTeX) ----------
 \usepackage{microtype}
 
@@ -109,15 +88,15 @@
 \newcommand{\headercol}[1]{\textbf{\textsf{\textcolor{ColumnHeaderBlue}{#1}}}}
 
 \captionsetup{
-  font={sf},
-  textfont={sf},
+  font={sf,footnotesize},
+  textfont={sf,footnotesize},
   labelformat=boldcolored,
   labelsep=space
 }
 
 \captionsetup[table]{
-  font={sf},
-  textfont={sf},
+  font={sf,footnotesize},
+  textfont={sf,footnotesize},
   labelformat=boldcolored,
   labelsep=space
 }
@@ -194,7 +173,10 @@
 
 
 % Optional: Track margin callout
-\definecolor{TrackOrange}{HTML}{FF7F0E} % if not already defined
+  \definecolor{TrackOrange}{HTML}{FF7F0E} % if not already defined
+  \newcommand{\fixfigure}{\checkoddpage \ifoddpage \forcerectofloat \else \forceversofloat \fi}
+  \AtBeginEnvironment{figure}{\fixfigure}
+  \AtBeginEnvironment{table}{\fixfigure}
 \newcommand{\mTrackBox}[2]{\marginbox{Track: #1}{TrackOrange}{#2}}
 \newcommand{\marginbox}[3]{\marginnote{\textsf{\textbf{\textcolor{#2}{#1}}}\\{\sffamily #3}}}
 
@@ -331,11 +313,11 @@
 % tufte-book already provides \marginnote and \marginfigure.
 % These wrappers keep your usage consistent.
 
-\newcommand{\aside}[1]{\marginnote{\raggedright\sffamily\footnotesize #1}}
-\newcommand{\curious}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{DeepPurple}{Curious? }}#1}}
-\newcommand{\didyouknow}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{IdeaBlue}{Did You Know? }}#1}}
-\newcommand{\hint}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{TryGreen}{Hint} }#1}}
-\newcommand{\huh}[2]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{HuhRed}{Confused?}}\\\textbf{#1}\\#2}}
+\newcommand{\aside}[1]{\marginnote{\raggedright\sffamily\footnotesize\color{black}#1}}
+\newcommand{\curious}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{DeepPurple}{Curious? }}\color{black}#1}}
+\newcommand{\didyouknow}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{IdeaBlue}{Did You Know? }}\color{black}#1}}
+\newcommand{\hint}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{TryGreen}{Hint} }\color{black}#1}}
+\newcommand{\huh}[2]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{HuhRed}{Confused?}}\\\textbf{#1}\\\color{black}#2}}
 
 % A margin image helper (use with an image file in images/)
 \newcommand{\asideimg}[2][]{%
@@ -396,6 +378,7 @@
 \input{../Week1/chapter.tex}
 \input{../week2/chapter.tex}
 \input{../week3/chapter.tex}
+\input{../week4/chapter.tex}
 
 \appendix
 

@@ -43,7 +43,7 @@ be made the same way.\didyouknow{Many of the products we use today are
     Numerical Control} (or \term{CNC} module).
 
   \includegraphics[width=0.8\marginparwidth]{../week2/figures/cnc-machine.jpg}
-  % CCBYSA https://upload.wikimedia.org/wikipedia/commons/e/e4/Wheel_Machining.jpg
+  \attribution{Cameronm125, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons}
   }
 
 \begin{TryThisBox}
@@ -98,8 +98,10 @@ point your mouse at the editor
 (\prettyref{fig:thonny-interface}). Rules that we type here can be
 saved on the computer. Type the following into the editor and then
 save it into a file called \texttt{model.py}.
- % TODO add link
-\hint{You can also access all these files on the internet}
+\hint{You can also access all these files on the internet at \url{\giturl}.
+
+\qrcode{\giturl}
+}
 
 \begin{TryThisBox}
   Type the following into the editor and then save it in a file named
@@ -221,8 +223,6 @@ systems.  \didyouknow{Just like the modeling clay we used at the
   \term{functional programming}. It's the programmer equivalent of
   playing with Play-doh, but maybe not as messy!}
 
-% TODO introduce calling functions
-
 \section{Drawing with Turtle}
 
 Let's try to apply what we've learned so far by learning how to draw
@@ -293,6 +293,7 @@ and the \emph{row} number last. This system is called the
 
 
 \begin{figure}[t]
+  \fixfigure
   \label{fig:cartesian-grid}
   \caption{Just like we can refer to any point on a line by a number,
     we can refer to any point on a rectangle or grid using two
@@ -338,12 +339,22 @@ and the \emph{row} number last. This system is called the
   \caption{These are all the Turtle rules you can use and combine
     together using functions!}
   \label{tab:turtle}
-  \begin{tabularx}{0.9\linewidth}{ll}
+  \begin{tabular}{p{0.35\linewidth}p{0.6\linewidth}}
     \toprule
     Rule & What it does\\\midrule
-    \code{draw.line} & \\
+    \code{draw.goto(x, y)} & Move the pen to the particular \code{x} and \code{y} coordinate.\\
+    \code{draw.forward(x)} & Move forward \code{x} units in the current direction of the pen.\\
+    \code{draw.circle(r)} & Draw a complete circle with the given radius \code{r}. \\
+    \code{draw.circle(r, p)} & Draw a portion of a circle with radius \code{r}. The \code{p} argument specifies what percent of the circle to draw. For example, \code{p} of 0.5 draws a half-circle. \\
+    \code{draw.penup()} & Lift the pen \emph{up}. Future movement commands will not draw anything.\\
+    \code{draw.pendown()} & Place the pen back \emph{down}. Future movement commands will draw.\\
+    \code{draw.color(c)} & Change the color of the pen.\\
+    \code{draw.fill(c, pic)} & Draw \code{pic} and fill in all enclosed areas with color \code{c}.\\
+    \code{draw.turn(angle)} & Turn by the given angle, which can be an angle (in degrees), or \code{``left''} or \code{``right''}. \\
+    \code{draw.wait(s)} & Wait \code{s} seconds before proceeding. Let's you see how the drawing progresses. \\
+    \code{draw.pause(prompt)} & Pause the drawing and display the word \code{prompt} until the user hits \enterkey \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
 Turtle works by following -- you guessed it -- rules! Turtle works
@@ -376,11 +387,11 @@ We can even draw a square!
   \label{fig:pixels}
   \centering
   \includegraphics[width=0.9\marginparwidth]{../week2/figures/CatPixels.pdf}
-  % CCBYSA4: https://upload.wikimedia.org/wikipedia/commons/7/71/Pixel_Art_Cat_with_Zoom-in_Detail.svg
   \caption{Every image you see on a computer screen is made up of tiny
     lights called \term{pixels} arranged in a grid. By turning the
     lights on and off and adjusting the color, the computer can
-    display any image, such as this one of a cat.}
+    display any image, such as this one of a cat.
+    \attribution{Original:  ReffPixels?Vector:  OmegaFallon, CC BY-SA 4.0 <\url{https://creativecommons.org/licenses/by-sa/4.0}>, via Wikimedia Commons}}
 \end{marginfigure}
 
 
@@ -472,6 +483,7 @@ before it continues drawing.  \hint{You can always get back to the
 You should get something like \prettyref{fig:twosquares-debug}.
 
 \begin{figure}
+  \fixfigure
   \label{fig:twosquares-debug}
   \centering
   \begin{minipage}{0.48\linewidth}
@@ -572,15 +584,20 @@ Now, try drawing this figure.
 Having trouble? Think back to the examples we tried above. Which way
 did the arrow move when drawing the circle?
 
-Turtle assumes that when we want a circle, we always want to draw it
-in this direction (counter-clockwise). To make it draw in a clockwise
-direction, we supply it a \emph{negative} radius. This arrangement
-where a computer system always does things one way and requires the
-programmer to explicitly choose another way is called a
-\term{default}.
+Turtle assumes that when we want a circle, we always want to draw it in this direction
+(counter-clockwise). To make it draw in a clockwise direction, we supply it a \emph{negative} radius
+(see \prettyref{fig:turtle-circles}). This arrangement where a computer system always does things
+one way and requires the programmer to explicitly choose another way is called a \term{default}.
+
+\begin{figure}[b]
+  \label{fig:turtle-circles}
+  \caption{The \code{draw.circle} rule produces some portion of a circle with a particular radius,
+    as illustrated above. A positive radius corresponds to a point to the ``left'' of the cursors
+    direction. A negative radius means to go to the right.}
+  \input{../week2/figures/circles.tex}
+\end{figure}
 
 To draw the diagram, use this code:
-
 \curious{Try using \code{draw.pause} to visualize exactly which
   portion is drawn by which command!}
 \begin{replbox}
