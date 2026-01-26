@@ -73,38 +73,57 @@ the way.
 Each piece follows a simple rule. Some pieces always send marbles the
 same direction. Other pieces can change what they do depending on what
 happened before. When a marble reaches the bottom, it can hit a lever
-that releases a new marble.\didyouknow{It may seem crazy, but this is
-  \emph{exactly} how real computers are built. Instead of marbles,
-  engineers use even smaller balls called electrons.}
+that releases a new marble of a certain color.\didyouknow{It may seem
+  crazy, but this is \emph{exactly} how real computers are
+  built. Instead of marbles, engineers use even smaller balls called
+  electrons.}
 
-By changing how the pieces are laid out, you can make interesting
-computers.
+The marbles accumulate at the very end, and this shows us the order in
+which the marbles were released. For example, consider the computer in
+\prettyref{fig:bluemarble}. What happens when a blue marble is released?
+
+Let's walk through it. You start by releasing a blue marble from the left marble bank. The marble
+makes its way down until it hits the blue lever. Upon hitting the blue lever, \emph{another} blue
+marble is released. No red marble is ever released. Thus, the board accumulates blue marbles in its
+bottom bank. We call this bank its \term{output}.
+
+By changing how the pieces are laid out, you can make interesting computers that arrange marbles in
+a different way.
 
 \begin{figure}[ht]
+  \label{fig:bluemarble}
 \centering
 
 \begin{tikzpicture}
-  \TTBoard[cols=8,rows=10,unit=7mm,pegs=true,label={A board that follows rules}]
+  \begin{ttboard}[label={Turing Tumble}]
 
   % Place a Bit at (col=3,row=6) with state 0
-%  \TTBit[state=0]{3}{6};
+    %    \TTBit[state=0, /tt/piece/name=topbit]{3}{0}
+    \TTRamp[left, /tt/piece/name=topbit]{3}{0}
+    \TTRampRun{2}{1}{\TTRows - 2}
+%    \TTRamp[right]{4}{1}
+%    \TTRamp[right]{5}{2}
+%    \TTRamp[right]{6}{3}
+%    \TTRampRun{6}{4}{\TTRows - 2}
 
-  % Marbles
-  \TTMarble{1}{10}
-  \TTMarble{1}{9}
-
-  % A simple incoming path and the two possible outputs
-  \TTArrow{1}{10}{2}{9}
-  \TTArrow{2}{9}{3}{8}
-  \TTArrow{3}{8}{3}{7}
-%
-%  % Rule arrows for the Bit: solid=0 path, dashed=1 path
-  \TTArrow[style={thick},label={if 0}]{3}{6}{2}{5}
-  \TTArrow[style={thick},label={if 1}]{3}{6}{4}{5}
+    \draw[<-, color=IdeaBlue, opacity=0.8, line width=0.2cm] ($(leftentrance) + ({-0.1*\TTXUnit},{-0.5*\TTYUnit})$) to [bend left] (-0.5, 6) node [text width=2.5cm, anchor=east, color=black] {\footnotesize \sffamily As each blue marble is released,
+      this piece forces it towards the right. The next piece forces it left, all the way down until it hits the blue lever.};
+    \draw[<-,color=IdeaBlue, opacity=0.8, line width=0.2cm] ($(leftleverweight) + ({-0.1*\TTXUnit},{0.5*\TTYUnit})$) to[bend right] (-0.5, 2) node[text width=2.5cm, anchor=east, color=black] {\footnotesize \sffamily When the lever here is hit, another \emph{blue} marble is released};
+    \draw[<-,color=IdeaBlue, opacity=0.8, line width=0.2cm] ($(\TTBoardRight, \TTBoardBottom) + ({-0.5 * \TTXUnit}, {0.2*\TTYUnit})$) to [bend left] (-0.5, -1) node[text width=2.5cm, anchor=east, color=black] {\footnotesize \sffamily The marbles collect here};
+  \end{ttboard}
 \end{tikzpicture}
 
-\caption{What happens to this machine when a blue marble drops down? Can you identify the rule? See the bottom of the page for the answer.\upfootnote{The switch flips back and forth}}
+\caption{What happens to this machine when a blue marble drops down? Can you identify the rule?}
 \end{figure}
+
+% Demonstrate with Turing Tumble
+% A computer that always outputs blue
+% A comutper that always outputs red
+% A computer that outputs blue red blue red
+% A computer that outputs 4 blue dots
+% A computer that outputs N blue dots
+% A computer that calculates in bits
+% Introduction to binary numbers
 
 There are several different elements that you can place on the Turing
 Tumble board.
@@ -156,6 +175,88 @@ part.\curious{When one part of a system changes another part, we call
   Each piece follows a very simple rule, but combining them together,
   we can build many different kinds of computers.
 \end{BigIdeaBox}
+
+\subsection{Counting with Turing Tumble}
+
+Above we saw how to make a board that just output blue marbles.\hint{Try thinking about making a
+  board that outputs only \textcolor{marblered}{\emph{red}} marbles.}
+
+Boards that output just one color repeatedly are simple to create. But often times, we want our
+program to \emph{stop}. We can use the interceptor piece for this.
+
+% TODO make figures?
+{\centering
+\begin{tikzpicture}
+  \begin{ttboard}[small]
+    \TTInterceptor{3}{0}
+  \end{ttboard}
+\end{tikzpicture}
+}
+
+But now, when a blue marble comes out, it gets stuck in the interceptor and nothing happens! That's
+not what we wanted. We want \emph{something} to come out!
+
+Can you think of a way to make a board to get exactly one marble out?\hint{It will involve using the
+  \emph{bit} piece.} The solution is in \prettyref{fig:just-one}.
+
+\begin{figure}
+  \label{fig:just-one}
+  \centering
+  \begin{tikzpicture}
+    \begin{ttboard}{small}
+      \TTBit{3}{0}
+      \TTRampRun{3}{1}{\TTRows - 2}
+      \TTInterceptor{2}{1}
+    \end{ttboard}
+  \end{tikzpicture}
+  \caption{A board that produces \emph{exactly one} blue marble and then stops. Why is the bit
+    element necessary here? What would happen if the bit were facing right when the first marble was
+    released? Would the program do what whas expected?}
+\end{figure}
+
+In this solution, the bit starts off to the left. The first blue marble flips the bit and sends the
+marble down the right path, which will hit the \textcolor{marbleblue}{\emph{blue}} lever. This will
+release a new blue marble. But at this point, the bit is pointing \emph{right}, so the marble goes
+left, into the interceptor. No more marbles are released.
+
+But what happens if we start the bit already in the right direction? If we do this and release a
+marble, the marble falls straight into the interceptor, and no marble reaches the end.
+
+What if we want to make a machine that produces only two marbles? Three? Four or more? Can you think
+of a way to make that work? \hint{Think of how we can replace the interceptor with another machine
+  that does what we want!}
+
+But can we make a board that
+outputs an alternating color of marbles? If we want the board to do this, it would have to remember
+what the last color was. This is where the bit element comes in.
+
+In \prettyref{fig:alternate}, we can start by a marble of any color. If the bit starts out pointing
+left, as in the figure, then, when a marble hits, it will flip to the right and send the marble
+right. This will cause a \textcolor{marblered}{\emph{red}} marble to be released. The red marble
+will again hit the bit, which will be pointing right. It will then flip left, and the marble sent to
+the left, where it will eventually hit the blue lever to release a
+\textcolor{marbleblue}{\emph{blue}} marble, and the cycle repeats.
+
+No matter the color of the first marble, the second marble will \emph{always} be red if the bit
+starts towards the left and always blue if the bit starts towards the right. That's a \emph{bit}
+more interesting now, isn't it?
+
+\begin{figure}
+  \label{fig:alternate}
+  \centering
+  \begin{tikzpicture}
+    \begin{ttboard}[label={Alternating Marbles}]
+      \TTRamp[right]{3}{0}
+      \TTRamp[right]{4}{1}
+      \TTRamp[left]{7}{0}
+      \TTRamp[left]{6}{1}
+      \TTBit{5}{2}
+      \TTRampRun{3}{3}{\TTRows - 2}
+      \TTRampRun{6}{3}{\TTRows - 2}
+    \end{ttboard}
+  \end{tikzpicture}
+  \caption{A board that outputs alternating red and blue marbles. A bit is used to remember what the last marble released was.}
+\end{figure}
 
 \section{From Marbles to Code}
 

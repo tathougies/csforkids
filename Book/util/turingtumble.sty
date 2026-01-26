@@ -13,24 +13,51 @@
 \ProvidesPackage{turingtumble}[2026/01/11 Stylized Turing Tumble Tikz helpers]
 
 \RequirePackage{tikz}
-\usetikzlibrary{arrows.meta,calc,positioning}
+\RequirePackage{xcolor}
+\usetikzlibrary{arrows.meta,calc,positioning,intersections}
+
+\definecolor{marblered}{RGB}{170,40,40}
+\definecolor{marbleblue}{RGB}{40,70,160}
+
+\def\TTGfxBit#1#2{
+  \pgfmathsetmacro{\TTBitScale}{-2 * #2 + 1}
+  \node[anchor=north east] at ($#1 + ({0.681926*\TTXUnit}, {0.65*\TTYUnit})$) {\scalebox{\TTBitScale}[1]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-bit.pdf}} }
+}
+%\def\TTGfxInterceptor#1{
+%  \node[anchor=north east] at ($#1 + ({0.8*\TTXUnit}, {0.68*\TTYUnit})$) {\scalebox{1.1}[0.7]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-interceptor.pdf}} }
+%}
+\def\TTGfxInterceptor#1{
+  \node[anchor=north east] at ($#1 + ({0.8*\TTXUnit}, {0.68*\TTYUnit})$) {\includegraphics[width=1.1\TTXUnit, height=0.7\TTYUnit]{util/piece-interceptor.pdf}}
+}
+
+\def\TTGfxCrossover#1{\node[anchor=north west] at ($#1 + (0.0, -186.1412)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-crossover.pdf}} }
+\def\TTGfxRamp#1#2{\node[anchor=north east] at ($#1 + ({0.68*\TTXUnit}, {0.65*\TTYUnit})$) {\scalebox{#2}[1]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-ramp.pdf}} }}
+\def\TTGfxGearbit#1{\node[anchor=north west] at ($#1 + (-22.896900000000002, -436.1992)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-gearbit.pdf}} }
+\def\TTGfxGear#1{\node[anchor=north west] at ($#1 + (22.001900000000006, 22.11099999999999)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-gear.pdf}} }
+
 
 % ----------------------------
 % Key-value configuration
 % ----------------------------
 \pgfkeys{
   /tt/.is family, /tt,
-  cols/.initial=8,
-  rows/.initial=10,
-  unit/.initial=8mm,        % grid spacing
+  /tt/small/.style={x unit=5mm,y unit=5.5mm},
+  cols/.initial=11,
+  rows/.initial=11,
+  x unit/.initial=7mm,        % grid spacing
+  y unit/.initial=8mm,
   pegs/.initial=true,
   peg radius/.initial=1.2pt,
-  board pad/.initial=0.7,   % padding in "grid units"
+  pin radius/.initial=0.7pt,
   board round/.initial=4pt,
   board thick/.initial=0.9pt,
-  peg color/.initial=black,
-  board color/.initial=black,
+  peg color/.initial=gray,
+  board color/.initial=gray,
+  start offset/.initial=3,
+  start around/.initial=1,
+  end around/.initial=0,
   label/.initial=,
+  wiggle color/.initial=gray,
 }
 
 % Piece keys
@@ -69,7 +96,7 @@
 % Even rows have pegs at integer x; odd rows shifted by +0.5.
 %
 % \TTCoord{x}{y} expands to a coordinate
-\newcommand{\TTCoord}[2]{($ (#1,#2) + ({0.5*mod(#2,2)},0) $)}
+\newcommand{\TTCoord}[2]{({#1 * \TTXUnit},{(\TTRows - #2 - 1) * \TTYUnit})}
 
 % Named coordinate for later use: \TTMark{name}{x}{y}
 \newcommand{\TTMark}[3]{%
@@ -80,8 +107,8 @@
 % TikZ styles
 % ----------------------------
 \tikzset{
-  tt/peg/.style={circle, fill=\pgfkeysvalueof{/tt/peg color}, inner sep=\pgfkeysvalueof{/tt/peg radius}},
-  tt/board/.style={rounded corners=\pgfkeysvalueof{/tt/board round}, draw=\pgfkeysvalueof{/tt/board color}, line width=\pgfkeysvalueof{/tt/board thick}},
+  tt/peg/.style={circle, draw=\pgfkeysvalueof{/tt/peg color}, fill=none, inner sep=\pgfkeysvalueof{/tt/peg radius}},
+  tt/board/.style={rounded corners=\pgfkeysvalueof{/tt/board round}, draw=\pgfkeysvalueof{/tt/board color}, line width=\pgfkeysvalueof{/tt/board thick}, color=\pgfkeysvalueof{/tt/board color}},
   tt/piecebox/.style={rounded corners=2pt, draw, line width=\pgfkeysvalueof{/tt/piece/line}, fill=\pgfkeysvalueof{/tt/piece/fill}},
   tt/marble/.style={circle, draw=\pgfkeysvalueof{/tt/marble/draw}, fill=\pgfkeysvalueof{/tt/marble/fill}, inner sep=\pgfkeysvalueof{/tt/marble/r}},
 }
@@ -90,45 +117,146 @@
 % Board macro
 % ----------------------------
 % \TTBoard[cols=...,rows=...,unit=...,pegs=true,label=...]
-\newcommand{\TTBoard}[1][]{%
+\newenvironment{ttboard}[1][]{ %\newcommand{\TTBoard}[1][]{%
   \pgfkeys{/tt, #1}%
   \def\TTCols{\pgfkeysvalueof{/tt/cols}}%
   \def\TTRows{\pgfkeysvalueof{/tt/rows}}%
-  \def\TTUnit{\pgfkeysvalueof{/tt/unit}}%
-  \def\TTPad{\pgfkeysvalueof{/tt/board pad}}%
+  \def\TTPegStart{\pgfkeysvalueof{/tt/start offset}}
+  \def\TTPegAround{\pgfkeysvalueof{/tt/start around}}
+  \def\TTEndAround{\pgfkeysvalueof{/tt/end around}}
+  \def\TTBoardColor{\pgfkeysvalueof{/tt/board color}}
+  \pgfmathsetlengthmacro\TTPinRadius{\pgfkeysvalueof{/tt/pin radius}}
+  \pgfmathsetlengthmacro\TTXUnit{\pgfkeysvalueof{/tt/x unit}}%
+  \pgfmathsetlengthmacro\TTYUnit{\pgfkeysvalueof{/tt/y unit}}
+  \pgfmathsetlengthmacro\TTPad{\TTXUnit * 0.6}
+  \pgfmathsetlengthmacro\TTPegRadius{\pgfkeysvalueof{/tt/peg radius}}
   \def\TTLabel{\pgfkeysvalueof{/tt/label}}%
+  \pgfmathsetlengthmacro{\TTMidBoard}{((\TTCols - 1) * \TTXUnit) / 2}
+  \pgfmathsetlengthmacro{\TTTopOfBoard}{\TTRows*\TTYUnit+\TTPad*1.5} %+ \TTBoardHeader}
 
-  % Scale the entire picture by unit
-  \begin{scope}[x=\TTUnit, y=\TTUnit]
+  \pgfmathsetmacro{\TTMiddleCoord}{floor(\TTCols/2)}
+  \pgfmathsetlengthmacro{\TTFooter}{\TTYUnit * 3}
+  \pgfmathsetlengthmacro{\TTWiggleOffset}{\TTYUnit * 0.2 + \TTPinRadius}
 
-    % Outer board rectangle
+  % Given a row number calculate the 'left cone' and the 'right cone'
+  \def\TTCalcOffsets{
+    \pgfmathsetmacro{\TTLeftConeStart}{\TTPegStart - \TTPegAround - \yy}
+    \pgfmathsetmacro{\TTLeftConeEnd}{\TTPegStart + \TTPegAround + \yy}
+    \pgfmathsetmacro{\TTRightConeStart}{\TTCols - \TTPegStart - \TTPegAround - \yy - 1}
+    \pgfmathsetmacro{\TTRightConeEnd}{\TTCols - \TTPegStart + \TTPegAround + \yy - 1}
+  }
+
+  % Outer board rectangle
+  \pgfmathsetmacro{\TTReleaseDrop}{\TTPad * 1.3}
+  \pgfmathsetmacro{\releaseguardangle}{(45/360) * 2 * pi}
+  \pgfmathsetlengthmacro\releaseguardoffsetx{cos(\releaseguardangle r) * \TTPad}
+  \pgfmathsetlengthmacro\releaseguardoffsety{sin(\releaseguardangle r) * \TTPad}
+  \pgfmathsetlengthmacro{\TTBoardRight}{(\TTCols - 1)*\TTXUnit+\TTPad}
+  \pgfmathsetlengthmacro{\TTBoardBottom}{-\TTPad-\TTFooter}
+
     \draw[tt/board]
-      (-\TTPad,-\TTPad) rectangle (\TTCols+\TTPad,\TTRows+\TTPad);
+    (-\TTPad,{-\TTPad-\TTFooter}) rectangle (\TTBoardRight,\TTTopOfBoard);
+  \draw[color=\TTBoardColor] (\TTMidBoard, \TTTopOfBoard) -- ++(0,-\TTPad) coordinate (midboardbar) -- ++({-\TTMidBoard + 1 * \TTXUnit}, {-0.2 * \TTYUnit});
+  \draw[color=\TTBoardColor] (midboardbar) -- ++({\TTMidBoard - 1 * \TTXUnit}, {-0.2 * \TTYUnit});
 
-    % Optional label/title
-    \ifx\TTLabel\empty\else
-      \node[font=\small] at (\TTCols/2,\TTRows+\TTPad+0.35) {\TTLabel};
-    \fi
+  \draw[name=leftrelease, fill=\TTBoardColor, color=\TTBoardColor] (0, {\TTTopOfBoard - \TTReleaseDrop}) circle (\TTPad);
+  \draw[name=rightrelease, fill=\TTBoardColor, color=\TTBoardColor] ({(\TTCols-1)*\TTXUnit}, {\TTTopOfBoard - \TTReleaseDrop}) circle (\TTPad);
+  \node[tt/peg, fill=white] (leftreleasepeg) at (0, {\TTTopOfBoard - \TTReleaseDrop}) {};
+  \node[tt/peg, fill=white] (rightreleasepeg) at ({(\TTCols - 1) * \TTXUnit}, {\TTTopOfBoard - \TTReleaseDrop}) {};
 
-    % Peg grid
-    \edef\TTPegs{\pgfkeysvalueof{/tt/pegs}}%
-    \def\TTtrue{true}%
-    \ifx\TTPegs\TTtrue
-      \foreach \y in {0,...,\TTRows} {
-        \foreach \x in {0,...,\TTCols} {
-          % compute staggered x position
-          \pgfmathsetmacro{\xs}{\x + (mod(\y,2)==0 ? 0 : 0.5)}
-          % Only draw if inside board
-          \ifdim \xs pt < -0.01pt \else
-            \ifdim \xs pt > \TTCols pt \else
-              \node[tt/peg] at (\xs,\y) {};
-            \fi
-          \fi
-        }
-      }
-    \fi
+  \draw[color=\TTBoardColor] ({1.5 * \TTXUnit}, \TTTopOfBoard) to [bend left] ++({-\TTXUnit/4},{-\TTXUnit/4}) -- ($(leftreleasepeg.center) + (\releaseguardoffsetx,\releaseguardoffsety)$);
+  \draw[color=\TTBoardColor] ({((\TTCols - 1) - 1.5) * \TTXUnit}, \TTTopOfBoard) to [bend right] ++({\TTXUnit/4},{-\TTXUnit/4}) -- ($(rightreleasepeg.center) + (-\releaseguardoffsetx, \releaseguardoffsety)$);
+  \draw[color=\TTBoardColor] ($(leftreleasepeg.center) + (0, -\TTPad)$) -- ++({2.5 * \TTXUnit}, {-0.1 * \TTYUnit}) coordinate (leftentrance);
+  \draw[color=\TTBoardColor] ($(rightreleasepeg.center) + (0, -\TTPad)$) -- ++({-2.5 * \TTXUnit}, {-0.1 * \TTYUnit}) coordinate (rightentrance);
+
+  % footer
+  \draw[color=\TTBoardColor] (-\TTPad,0) coordinate (leftportalstart) -- ({(\TTMiddleCoord - 1) * \TTXUnit}, {-\TTYUnit/2}) coordinate (leftportal);
+  \draw[color=\TTBoardColor] (\TTBoardRight, 0) coordinate (rightportalstart) -- ({(\TTMiddleCoord + 1) * \TTXUnit}, {-\TTYUnit/2}) coordinate (rightportal);
+
+  \coordinate (leftleverpeg) at ({(\TTMiddleCoord - 3.5) * \TTXUnit}, {-\TTYUnit});
+  \coordinate (rightleverpeg) at ({(\TTMiddleCoord + 3.5) * \TTXUnit}, {-\TTYUnit});
+  \coordinate (leftportalaim) at ($(leftportal)!-0.5*\TTXUnit!(leftportalstart)$);
+  \coordinate (rightportalaim) at ($(rightportal)!-0.5*\TTXUnit!(rightportalstart)$);
+
+  \draw[line width={6 * \TTPegRadius}, color=\TTBoardColor, name path=leftlever] (leftportalaim) -- ($(leftleverpeg)!-\TTXUnit!(leftportal)$) coordinate (leftleverweight);
+  \draw[line width={6 * \TTPegRadius}, color=\TTBoardColor, name path=rightlever] (rightportalaim) -- ($(rightleverpeg)!-\TTXUnit!(rightportal)$) coordinate (rightleverweight);
+  \draw[fill=white] (rightleverpeg) circle (\TTPegRadius);
+  \draw[fill=white] (leftleverpeg) circle (\TTPegRadius);
+
+  \draw[fill=\TTBoardColor,color=\TTBoardColor] (leftleverweight) circle (0.8 * \TTPad);
+  \draw[fill=\TTBoardColor,color=\TTBoardColor] (rightleverweight)  circle (0.8 * \TTPad);
+  \draw[fill=marbleblue, color=marbleblue] (leftleverweight) circle ({2 * \pgfkeysvalueof{/tt/peg radius}});
+  \draw[fill=marblered, color=marblered] (rightleverweight) circle ({2 * \pgfkeysvalueof{/tt/peg radius}});
+
+  % footer landings
+  \path let \p{peg} = (leftleverpeg),
+            \p{aim} = (leftportalaim)
+        in (\x{aim}, 2 * \y{peg} - \y{aim}) coordinate (leftlanding);
+  \draw[color=\TTBoardColor] ([shift={(-135:6*\TTPegRadius)}]leftlanding) arc (-135:-45:6*\TTPegRadius);
+
+  \path let \p{peg} = (rightleverpeg),
+            \p{aim} = (rightportalaim)
+        in (\x{aim}, 2 * \y{peg} - \y{aim}) coordinate (rightlanding);
+  \draw[color=\TTBoardColor] ([shift={(-100:6*\TTPegRadius)}]rightlanding) coordinate (rightdrop) arc (-100:-45:6*\TTPegRadius);
+
+  \draw[color=\TTBoardColor] (rightdrop) to [bend left] ++({-6*\TTPegRadius},{-6*\TTPegRadius}) -- ++({-(\TTCols*0.4)*\TTXUnit}, {-0.4*\TTYUnit}) coordinate (rightdropend);
+  \begin{scope}[overlay]
+    \path[name path=dropLine]
+    ($(rightdrop)!-10!(rightdropend)$) -- ($(rightdrop)!10!(rightdropend)$);
+    \path[name path=yaxis]
+    (-\TTPad,-10) -- (-\TTPad,10);
+    \path[name intersections={of=dropLine and yaxis, by=finalDrop}];
   \end{scope}
-}
+  \draw[color=\TTBoardColor] (finalDrop) to [bend right] ++({6 * \TTPegRadius}, {-6 * \TTPegRadius}) -- ({(\TTCols -2)*\TTXUnit}, {-\TTPad-\TTFooter});
+
+  % Optional label/title
+  \ifx\TTLabel\empty\else
+    \node[font=\small] at (\TTMidBoard, \TTTopOfBoard+1.2em) {\sffamily\bfseries \TTLabel};
+  \fi
+
+  \def\drawpeg{
+    \begin{scope}
+      \pgfmathsetmacro{\TTHasWiggle}{mod(\yy + mod(\xx,2), 2) == 1}
+      \node[tt/peg] (peg) at \TTCoord{\xx}{\yy} {};
+      \ifnum\TTHasWiggle=1\relax
+        \draw[color=\pgfkeysvalueof{/tt/wiggle color},line width={2*(\TTPinRadius + 0.3pt)}, line cap=round] ([shift={(-135:\TTWiggleOffset)}]peg) arc (-135:-45:\TTWiggleOffset);
+        \draw[white,line width={2*\TTPinRadius}, line cap=round] ([shift={(-135:\TTWiggleOffset)}]peg) arc (-135:-45:\TTWiggleOffset);
+      \fi
+    \end{scope}
+  }
+
+  % Peg grid
+  \edef\TTPegs{\pgfkeysvalueof{/tt/pegs}}%
+  \def\TTtrue{true}%
+  \ifx\TTPegs\TTtrue
+    \foreach \y in {1,...,\TTRows} {
+      \pgfmathsetmacro{\yy}{\y - 1}
+      \TTCalcOffsets
+      \foreach \x in {1,...,\TTCols} {
+        \pgfmathsetmacro{\xx}{\x - 1}
+        \pgfmathparse{
+          ((\xx >= \TTLeftConeStart) && (\xx <= \TTLeftConeEnd)) ||
+          ((\xx >= \TTRightConeStart) && (\xx <= \TTRightConeEnd))}
+        \ifnum\pgfmathresult=1\relax
+        % compute staggered x position
+%        \pgfmathsetmacro{\xs}{\x + (mod(\y,2)==0 ? 0 : 0.5)}
+        % Only draw if inside board
+        \pgfmathparse{\y == \TTRows}
+        \ifnum\pgfmathresult=1\relax
+          \pgfmathsetmacro{\TTEndConeStart}{\TTMiddleCoord - \TTEndAround}
+          \pgfmathsetmacro{\TTEndConeEnd}{\TTMiddleCoord + \TTEndAround}
+          \pgfmathparse{(\xx >= \TTEndConeStart) && (\xx <= \TTEndConeEnd)}
+          \ifnum\pgfmathresult=1\relax
+            \drawpeg
+          \fi
+        \else
+          \drawpeg
+        \fi
+        \fi
+      }
+    }
+  \fi
+}{}
 
 % ----------------------------
 % Marble and arrows
@@ -136,9 +264,7 @@
 % \TTMarble{x}{y}[fill=...,draw=...,r=...]
 \newcommand{\TTMarble}[3][]{%
   \pgfkeys{/tt/marble, #1}%
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
-    \node[tt/marble] at \TTCoord{#2}{#3} {};
-  \end{scope}
+  \node[tt/marble] at \TTCoord{#2}{#3} {};
 }
 
 % \TTArrow{x1}{y1}{x2}{y2}[style=...,label=...]
@@ -150,7 +276,6 @@
   \pgfkeysgetvalue{/tt/arrow/label pos}{\TTArrowLabelPos}%
   \pgfkeysgetvalue{/tt/arrow/label opts}{\TTArrowLabelOpts}%
 
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
     % 1) Always draw the arrow line
     \draw[\expandafter\@firstofone\TTArrowStyle]
       \TTCoord{#2}{#3} -- \TTCoord{#4}{#5};
@@ -164,7 +289,6 @@
         \TTCoord{#2}{#3} -- \TTCoord{#4}{#5}
         node[pos=\TTArrowLabelPos] {\TTArrowLabel};
     \fi
-  \end{scope}%
 }
 
 % ----------------------------
@@ -177,56 +301,52 @@
   \pgfkeys{/tt/piece, /tt/bit, #1}%
   \def\TTBitState{\pgfkeysvalueof{/tt/bit/state}}%
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
-    \coordinate (tt@bit@pos) at  \TTCoord{#2}{#3}; %($ (#2,#3) + ({0.5*mod(#3,2)},0) $);%
-
-    % box
-    \node[tt/piecebox, minimum width=1.7, minimum height=0.75] (tt@bit@box) at (tt@bit@pos) {};
-
-    % state indicator: small filled circle on left (0) or right (1)
-    \pgfmathsetmacro{\dx}{(\TTBitState==0 ? -0.5 : 0.5)}
-    \filldraw[draw=\pgfkeysvalueof{/tt/piece/draw}, fill=\pgfkeysvalueof{/tt/piece/draw}, line width=0.4pt]
-      ($(tt@bit@box.center)+(\dx,0)$) circle (0.08);
-
-    % label
-    \node[font=\scriptsize] at (tt@bit@box.center) {Bit};
-
-    % optionally name the coordinate
-    \ifx\TTName\empty\else
-      \coordinate (\TTName) at (tt@bit@pos);
-    \fi
-  \end{scope}
+  \node (tt@bit@pos) at \TTCoord{#2}{#3} {};
+  \TTGfxBit{(tt@bit@pos)}{\TTBitState};
+  \node[tt/peg, fill=white] at (tt@bit@pos) {};
+  % optionally name the coordinate
+  \ifx\TTName\empty\else
+  \coordinate (\TTName) at (tt@bit@pos);
+  \fi
 }
 
 % 2) Ramp (deflector). direction = L or R
 % \TTRampL{x}{y}[name=...]
 % \TTRampR{x}{y}[name=...]
-\newcommand{\TTRampL}[3][]{\TT@Ramp[dir=L,#1]{#2}{#3}}
-\newcommand{\TTRampR}[3][]{\TT@Ramp[dir=R,#1]{#2}{#3}}
 
 \pgfkeys{/tt/ramp/.is family, /tt/ramp,
-  dir/.initial=L,
+  left/.style={dir=-1},
+  right/.style={dir=1},
+  dir/.initial=1,
 }
 
-\newcommand{\TT@Ramp}[3][]{%
+\newcommand{\TTRamp}[3][]{%
   \pgfkeys{/tt/piece, /tt/ramp, #1}%
-  \def\TTDir{\pgfkeysvalueof{/tt/ramp/dir}}%
+  \edef\TTDir{\pgfkeysvalueof{/tt/ramp/dir}}%
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
-    \coordinate (tt@ramp@pos) at \TTCoord{#2}{#3};
-    % Draw a little slanted bar inside an invisible box
-    \node[tt/piecebox, minimum width=1.25, minimum height=0.55] (tt@ramp@box) at (tt@ramp@pos) {};
-    \ifx\TTDir L
-      \draw[line width=1.2pt] ($(tt@ramp@box.center)+(-0.35,0.18)$) -- ($(tt@ramp@box.center)+(0.35,-0.18)$);
-      \node[font=\scriptsize] at ($(tt@ramp@box.center)+(0,0.25)$) {Ramp};
+  \node (tt@ramp@pos) at \TTCoord{#2}{#3} {};
+
+  \TTGfxRamp{(tt@ramp@pos)}{\TTDir};
+  \node[tt/peg, fill=white] at (tt@ramp@pos) {};
+  \ifx\TTName\empty\else
+  \coordinate (\TTName) at (tt@ramp@pos);
+  \fi
+}
+
+\newcommand\TTRampRun[3]{
+  \edef\TTHole{#1}
+  \edef\TTRowStart{#2}
+  \pgfmathsetmacro{\TTRowEnd}{#3}
+
+  \foreach \y in {\TTRowStart, ..., \TTRowEnd} {
+    \pgfmathsetmacro{\TTWiggleOff}{mod(\y + mod(\TTHole, 2),2) == 0}
+    \pgfmathsetmacro{\TTWiggleCol}{\TTHole + \TTWiggleOff}
+    \ifnum\TTWiggleOff=1\relax
+    \TTRamp[left]{\TTWiggleCol}{\y}
     \else
-      \draw[line width=1.2pt] ($(tt@ramp@box.center)+(-0.35,-0.18)$) -- ($(tt@ramp@box.center)+(0.35,0.18)$);
-      \node[font=\scriptsize] at ($(tt@ramp@box.center)+(0,0.25)$) {Ramp};
+    \TTRamp[right]{\TTWiggleCol}{\y}
     \fi
-    \ifx\TTName\empty\else
-      \coordinate (\TTName) at (tt@ramp@pos);
-    \fi
-  \end{scope}
+  }
 }
 
 % 3) Crossover (two paths cross without interacting, schematic X)
@@ -249,29 +369,16 @@
 % 4) Interceptor-ish "Gate" (simple: blocks one side, passes other)
 % This is NOT product-accurate—it's a diagram symbol.
 % \TTGate{x}{y}[open=L|R,name=...]
-\pgfkeys{/tt/gate/.is family, /tt/gate,
-  open/.initial=L,
-}
-\newcommand{\TTGate}[3][]{%
-  \pgfkeys{/tt/piece, /tt/gate, #1}%
-  \def\TTOpen{\pgfkeysvalueof{/tt/gate/open}}%
+\newcommand{\TTInterceptor}[3][]{%
+  \pgfkeys{/tt/piece, #1}
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
-    \coordinate (tt@g@pos) at \TTCoord{#2}{#3};
-    \node[tt/piecebox, minimum width=1.7, minimum height=0.75] (tt@g@box) at (tt@g@pos) {};
-    % Draw a "door" that swings, schematic
-    \draw[line width=1pt] ($(tt@g@box.center)+(0,-0.15)$) -- ($(tt@g@box.center)+(0,0.25)$);
-    \ifx\TTOpen L
-      \draw[line width=1pt] ($(tt@g@box.center)+(0,0.10)$) -- ($(tt@g@box.center)+(-0.45,-0.10)$);
-      \node[font=\scriptsize] at ($(tt@g@box.center)+(0,0.30)$) {Gate L};
-    \else
-      \draw[line width=1pt] ($(tt@g@box.center)+(0,0.10)$) -- ($(tt@g@box.center)+(0.45,-0.10)$);
-      \node[font=\scriptsize] at ($(tt@g@box.center)+(0,0.30)$) {Gate R};
-    \fi
-    \ifx\TTName\empty\else
-      \coordinate (\TTName) at (tt@g@pos);
-    \fi
-  \end{scope}
+
+  \node (tt@interceptor@pos) at \TTCoord{#2}{#3} {};
+  \TTGfxInterceptor{(tt@interceptor@pos)};
+  \node[tt/peg, fill=white] at (tt@interceptor@pos) {};
+  \ifx\TTName\empty\else
+  \coordinate (\TTName) at (tt@interceptor@pos);
+  \fi
 }
 
 % ----------------------------
