@@ -77,23 +77,5 @@
           # Make fonts visible to XeTeX in the shell
           FONTCONFIG_FILE = fontsConf;
         };
-
-        packages.book = pkgs.stdenv.mkDerivation {
-          name = "csforkids-book";
-          buildDepends = dependencies;
-
-          FONTCONFIG_FILE = fontsConf;
-
-          src = ./.;
-
-          build = ''
-          latexmk $src/Book/tufte.tex
-          '';
-
-          install = ''
-          ghostscript -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=$out/book.pdf
-          '';
-        };
-
       });
 }
