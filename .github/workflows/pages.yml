@@ -1,0 +1,61 @@
+name: Build LaTeX (nix develop) and publish to Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v12
+
+      - name: Enable Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v7
+
+      - name: Build PDF with latexmk
+        run: |
+          mkdir -p build
+          nix develop -L --command -bash -lc '
+             set -euo pipefail
+             cd build
+             latekmx -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex
+             ghostscript -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=build/book.pdf build/tufte.pdf
+          '
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf
+          build/*.pdf
+
+      - name: Prepare Pages
+        run: |
+          mkdir -p site
+          cp build/book.pdf www/book.pdf
+
+
+    deploy:
+      needs: build
+      runs-on: ubuntu-latest
+      environment:
+        name: github-pages
+        url: ${{steps.deployment.outputs.page_url }}
+      steps:
+        - name: Deploy to GitHub pages
+          id: deployment
+          uses: actions/deploy-pages@v4
