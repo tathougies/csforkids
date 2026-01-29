@@ -54,13 +54,13 @@ jobs:
           path: |
             build/***
 
-    deploy:
-      needs: build
-      runs-on: ubuntu-latest
-      environment:
-        name: github-pages
-        url: ${{steps.deployment.outputs.page_url }}
-      steps:
-        - name: Deploy to GitHub pages
-          id: deployment
-          uses: actions/deploy-pages@v4
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub pages
+        id: deployment
+        uses: actions/deploy-pages@v4
