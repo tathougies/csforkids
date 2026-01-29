@@ -43,7 +43,7 @@ jobs:
           nix develop .#texOnly -L --command bash -lc '
              set -euo pipefail
              cd build
-             latekmx -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex
+             latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex
              ghostscript -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf build/tufte.pdf
           '
 
