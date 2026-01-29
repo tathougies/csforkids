@@ -44,7 +44,8 @@ jobs:
              set -euo pipefail
              cd Book
              latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex
-             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf build/tufte.pdf
+             cd ..
+             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf Book/build/tufte.pdf
           '
 
       - name: Upload PDF artifact
@@ -52,7 +53,7 @@ jobs:
         with:
           name: artifacts
           path: |
-            build/***
+            site/book.pdf
 
   deploy:
     needs: build
