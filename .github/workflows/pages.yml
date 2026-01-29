@@ -40,7 +40,7 @@ jobs:
       - name: Build PDF with latexmk
         run: |
           mkdir -p build
-          nix develop -L --command -bash -lc '
+          nix develop .#texOnly -L --command -bash -lc '
              set -euo pipefail
              cd build
              latekmx -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex

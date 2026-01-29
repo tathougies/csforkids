@@ -77,5 +77,10 @@
           # Make fonts visible to XeTeX in the shell
           FONTCONFIG_FILE = fontsConf;
         };
+        devShells.texOnly = pkgs.mkShell {
+          packages = [ tex pkgs.ghostscript ];
+          # Make fonts visible to XeTeX in the shell
+          FONTCONFIG_FILE = fontsConf;
+        };
       });
 }
