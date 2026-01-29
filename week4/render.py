@@ -1,3 +1,4 @@
+import random
 import glfw
 import glm
 import time
@@ -6,6 +7,12 @@ import functools
 import OpenGL.GLES2 as gl # gl* functions
 from OpenGL.EGL import * # egl* functions
 import numpy as np
+from pathlib import Path
+
+DATA_PATH = Path(__file__).resolve().parent / "my_data_file.dat"
+
+with open(Path(__file__).resolve().parent / "branch_shader.glsl", "rt") as f:
+    BRANCH_FRAGMENT_SHADER = f.read()
 
 _GL_INITIALIZED = False
 def init_gl():
@@ -281,32 +288,141 @@ def unitary_normal_basis(normal):
         b = glm.vec3(b2, 1.0 - n.y * n.y * a, -n.y)
     return t, n, b
 
+SIMPLE_TREE = [{ 'length': 10.0, 'bottom': 2.0, 'top': 0.9, 'point': glm.vec3(0, 1, 0)},
+        [{ 'length': 3, 'bottom': 0.9, 'top': 0.4, 'point': glm.vec3(0.5, 3, 0.5)},
+         {'length':1, 'bottom': 0.4, 'top': 0, 'point': glm.vec3(0.5, 4, 2)},
+         {'length':3, 'bottom': 0.4, 'top': 0, 'point': glm.vec3(0.5, 3, 10)}],
+        { 'length': 3, 'bottom': 0.9, 'top': 0, 'point': glm.vec3(0.3, 2, -0.8)}]
+# Large oak tree description
+OAK= [
+    # Trunk
+    { 'length': 10.0, 'bottom': 3.5, 'top': 2.2, 'point': glm.vec3(0, 1, 0) },
+
+    # Major left limb
+    [
+        { 'length': 6.0, 'bottom': 2.2, 'top': 1.2, 'point': glm.vec3(-2.5, 2.5, 0) },
+        # Sub-branches
+        [
+            { 'length': 3.5, 'bottom': 1.2, 'top': 0.6, 'point': glm.vec3(-3.5, 3.5, 1.0) },
+            { 'length': 2.0, 'bottom': 0.6, 'top': 0.0, 'point': glm.vec3(-4.0, 4.0, 2.5) },
+            { 'length': 1.8, 'bottom': 0.5, 'top': 0.0, 'point': glm.vec3(-4.5, 3.8, -1.0) }
+        ],
+        [
+            { 'length': 3.0, 'bottom': 1.1, 'top': 0.5, 'point': glm.vec3(-2.0, 4.0, -1.5) },
+            { 'length': 1.5, 'bottom': 0.5, 'top': 0.0, 'point': glm.vec3(-2.5, 5.0, -3.0) }
+        ]
+    ],
+    # Major right limb
+    [
+        { 'length': 6.5, 'bottom': 2.1, 'top': 1.1, 'point': glm.vec3(2.8, 2.8, 0.2) },
+        [
+            { 'length': 3.2, 'bottom': 1.1, 'top': 0.5, 'point': glm.vec3(3.8, 4.0, 1.5) },
+            { 'length': 1.7, 'bottom': 0.5, 'top': 0.0, 'point': glm.vec3(4.5, 5.0, 3.0) },
+            { 'length': 1.5, 'bottom': 0.4, 'top': 0.0, 'point': glm.vec3(4.2, 4.5, 0.0) }
+        ],
+        [
+            { 'length': 2.8, 'bottom': 1.0, 'top': 0.4, 'point': glm.vec3(2.0, 4.2, -1.8) },
+            { 'length': 1.4, 'bottom': 0.4, 'top': 0.0, 'point': glm.vec3(2.5, 5.0, -3.5) }
+        ]
+    ],
+    # Rear limb
+    [
+        { 'length': 5.5, 'bottom': 2.0, 'top': 1.0, 'point': glm.vec3(0.0, 2.3, -2.5) },
+        [
+            { 'length': 3.0, 'bottom': 1.0, 'top': 0.4, 'point': glm.vec3(0.5, 3.8, -4.0) },
+            { 'length': 1.6, 'bottom': 0.4, 'top': 0.0, 'point': glm.vec3(1.2, 4.8, -6.0) }
+        ],
+        [
+            { 'length': 2.5, 'bottom': 0.9, 'top': 0.3, 'point': glm.vec3(-1.0, 3.6, -3.8) },
+            { 'length': 1.3, 'bottom': 0.3, 'top': 0.0, 'point': glm.vec3(-2.0, 4.5, -5.5) }
+        ]
+    ],
+    # Upper canopy limb
+    [
+        { 'length': 4.5, 'bottom': 1.8, 'top': 0.8, 'point': glm.vec3(0.2, 4.5, 1.2) },
+        [
+            { 'length': 2.5, 'bottom': 0.8, 'top': 0.3, 'point': glm.vec3(1.2, 6.0, 2.5) },
+            { 'length': 1.2, 'bottom': 0.3, 'top': 0.0, 'point': glm.vec3(2.0, 7.0, 4.0) }
+        ],
+        [
+            { 'length': 2.2, 'bottom': 0.7, 'top': 0.3, 'point': glm.vec3(-1.0, 6.2, 1.8) },
+            { 'length': 1.1, 'bottom': 0.3, 'top': 0.0, 'point': glm.vec3(-2.2, 7.0, 3.5) }
+        ]
+    ]
+]
+
+def generate_tree(r, level, size):
+    length = (r.random() * 3 + 5) * ( 1 -  level / 15.0)
+    top_size = r.random() * size
+
+    theta = math.radians(45)
+    z = math.cos(theta) * (1 - math.cos(theta)) * r.random()
+    phi = 2 * math.pi * r.random()
+    rad = math.sqrt(1 - z * z)
+
+    if level == 0:
+        point = glm.vec3(0,1,0)
+    else:
+        point = glm.vec3(rad * math.cos(phi), z, rad * math.sin(phi))
+
+    print(point)
+    info = {'length': length,
+            'bottom': size, 'top': top_size,
+            'point': point }
+
+    if level > 8:
+        return info
+    else:
+      if r.random() < top_size * 5.0 and top_size > (1/12.0):
+          branch_count = int(r.random() * 4)
+          return [info] + [generate_tree(r, level + 1, top_size) for b in range(branch_count)]
+      else:
+          return info
+
 class DemoScene(object):
     def __init__(self, width, height):
-        self.shader = GLESProgram('''
+        self.branch_vertex_shader = GLESShader('''
         attribute vec3 a_position;
         attribute vec3 a_normal;
 
-        uniform mat4 u_mvp; // model view projection matrix
+        uniform mat4 u_projview; // model view projection matrix
+        uniform mat4 u_model;
+        uniform mat3 u_normalmat;
         uniform vec3 u_color;
 
         varying vec3 v_normal;
+        varying vec3 v_worldPos;
+        varying float v_radius01;
+        varying vec2 v_uv;
 
         uniform vec4 u_params;
+
+        const float PI = 3.14159265359;
 
         void main() {
           float u_bottomsize = u_params.x;
           float u_topsize = u_params.y;
-          float u_taper = u_params.z;
-          float u_branchlength = u_params.w;
+          float u_trunkwidth = u_params.z;
+          float h = u_params.w;
 
           float t = clamp(a_position.y, 0.0, 1.0);
-          float r = mix(1.0, mix(u_bottomsize, u_topsize, t), u_taper);
-          float h = mix(1.0, u_branchlength, u_taper);
-          gl_Position = u_mvp * vec4(a_position.x * r, a_position.y * h, a_position.z * r, 1.0);
-          v_normal = a_normal;
+          float r =  mix(u_bottomsize, u_topsize, t);
+
+          vec4 pos = vec4(a_position.x * r, a_position.y * h, a_position.z * r, 1.0);
+
+          vec4 worldPos = u_model * pos;
+          v_worldPos = worldPos.xyz;
+          v_normal = normalize(u_normalmat * a_normal);
+          v_radius01 = mix(u_bottomsize / u_trunkwidth, u_topsize / u_trunkwidth, a_position.y);
+
+          float ang = atan(a_position.z, a_position.x);
+          float u = ang / (2.0 * PI) + 0.5;
+          v_uv = vec2(u, a_position.y);
+          gl_Position = u_projview * worldPos;
         }
-        ''', fprog='''
+        ''', gl.GL_VERTEX_SHADER)
+        self.branch_fragment_shader = GLESShader(BRANCH_FRAGMENT_SHADER, gl.GL_FRAGMENT_SHADER)
+        self.global_illumination_shader = GLESShader('''
           precision mediump float;
           varying vec3 v_normal;
           uniform vec3 u_color;
@@ -321,15 +437,31 @@ class DemoScene(object):
             float brightness = u_ambient + (1.0 - u_ambient) * diff;
             gl_FragColor = vec4(u_color * brightness, 1.0);
           }
-        ''')
+        ''', gl.GL_FRAGMENT_SHADER)
+        self.sunlight_shader = GLESProgram('''
+          attribute vec3 a_position;
+          attribute vec3 a_normal;
+          uniform mat4 u_projview;
+          uniform mat4 u_model;
+          uniform mat3 u_normalmat;
+          varying vec3 v_normal;
+          void main() {
+            vec4 worldPos = u_model * vec4(a_position, 1.0);
+            v_normal = normalize(u_normalmat * a_normal);
+            gl_Position = u_projview * worldPos;
+          }
+        ''', fprog=self.global_illumination_shader)
+        self.branch_shader = GLESProgram(self.branch_vertex_shader, fprog=self.branch_fragment_shader)
         self.meshes = BranchMeshes()
-        self.position = glm.vec2(0, 0)
+        self.position = glm.vec2(0, -10)
 
         self.proj = glm.perspective(
             glm.radians(60),
             width / float(height),
             0.1,
             100.0)
+
+        self.tree = generate_tree(random.Random(random.random() * 10203141204), 0, 1)
 
         self.camera_angle_x = 0.0
         self.camera_angle_y = 0.0
@@ -339,9 +471,16 @@ class DemoScene(object):
         self._last_time = None
         self._mouse_start = None
 
-        self._bind_parameters(self.shader)
+        self._bind_parameters(self.sunlight_shader)
+        self._bind_parameters(self.branch_shader)
         self.reset_projview()
-        self.reset_camera()
+        self.reset_model_matrix()
+
+        with self.branch_shader:
+            gl.glUniform1f(self.branch_shader.uniforms.u_barkScale.loc, 0.25)
+            gl.glUniform1f(self.branch_shader.uniforms.u_detailScale.loc, 2.0)
+            gl.glUniform1f(self.branch_shader.uniforms.u_crackStrength.loc, 0.7)
+            gl.glUniform1f(self.branch_shader.uniforms.u_normalStrength.loc, 0.35)
 
     def _bind_parameters(self, shader):
         vertex_stride = 6 * 4
@@ -367,8 +506,8 @@ class DemoScene(object):
         d_camera_angle_y = self.v_camera_angle_y * elapsed
         self.camera_angle_y = max(-np.pi, min(np.pi, self.camera_angle_y + d_camera_angle_y))
 
-        d_x = self.vx * elapsed
-        d_y = self.vy * elapsed
+        d_x = self.vx * elapsed * 3
+        d_y = self.vy * elapsed * 3
 
         self.position += glm.vec2(d_x * math.sin(self.camera_angle_x) +
                                   d_y * math.cos(self.camera_angle_x),
@@ -386,8 +525,7 @@ class DemoScene(object):
 
         self._last_time = t
 
-        with self.shader:
-            self._draw()
+        self._draw()
 
     def key_callback(self, win, glwin, key, scancode, action, mods):
         if key == glfw.KEY_Q:
@@ -399,17 +537,17 @@ class DemoScene(object):
                 elif key == glfw.KEY_DOWN:
                     self.vx, self.vy = -1, 0
                 elif key == glfw.KEY_LEFT:
-                    self.vx, self.vy = 0, -1
-                elif key == glfw.KEY_RIGHT:
                     self.vx, self.vy = 0, 1
+                elif key == glfw.KEY_RIGHT:
+                    self.vx, self.vy = 0, -1
             elif action == glfw.RELEASE:
                 self.vx = self.vy = 0
 
     def mouse_pos_callback(self, win, glwin, xpos, ypos):
         if self._mouse_start is not None:
             sx, sy = self._mouse_start
-            self.v_camera_angle_x = (min((xpos - sx) / 100.0, 30) / 360) * 2 * np.pi
-            self.v_camera_angle_y = (min((ypos - sy) / 100.0, 60) / 360) * 2 * np.pi
+            self.v_camera_angle_x = (min((xpos - sx) / 20.0, 30) / 360) * 2 * np.pi
+            self.v_camera_angle_y = (min((ypos - sy) / 20.0, 60) / 360) * 2 * np.pi
 
     def mouse_button_callback(self, win, glwin, button, action, mods):
         if button == glfw.MOUSE_BUTTON_LEFT:
@@ -421,32 +559,46 @@ class DemoScene(object):
                 self._mouse_start = None
 
     def reset_projview(self, model=None):
-        viewer = glm.vec3(self.position.x, 6, self.position.y - 10)
+        viewer = glm.vec3(self.position.x, 6, self.position.y)
         look_at = glm.vec3(self.position.x + 10 * math.sin(self.camera_angle_x),
                            6 - 6 * math.sin(self.camera_angle_y),
-                           self.position.y - 10 + 10 * math.cos(self.camera_angle_x) + 6 * math.cos(self.camera_angle_y))
+                           self.position.y + 10 * math.cos(self.camera_angle_x) + 6 * math.cos(self.camera_angle_y))
+
+
         # Set a new view matrix based on the transformed camera position
         view = glm.lookAt(viewer, look_at, glm.vec3(0, 1, 0))
 
         # self.position is a glm.vec2 with x, y coords that ought to map to x, y coordinates that rerpesen camera position. View is set to wher 0,0 is now and we just need to apply a transform to it so that the right part of the 
         self.projview = self.proj * view
 
-    def reset_camera(self, model=None):
+        self._reset_pvmat(self.sunlight_shader, self.projview)
+        self._reset_pvmat(self.branch_shader, self.projview)
+
+    def _reset_pvmat(self, shader, m):
+        with shader:
+            gl.glUniformMatrix4fv(shader.uniforms.u_projview.loc, 1, gl.GL_FALSE, glm.value_ptr(m))
+
+    def reset_model_matrix(self, model=None):
         if model is None:
             model = glm.mat4(1.0)
-        m = self.projview * model
+        minv = glm.transpose(glm.inverse(glm.mat3(model)))
+        self._reset_model_matrix(self.sunlight_shader, model, minv)
+        self._reset_model_matrix(self.branch_shader, model, minv)
 
-        with self.shader:
-            gl.glUniformMatrix4fv(self.shader.uniforms.u_mvp.loc, 1, gl.GL_FALSE, glm.value_ptr(m))
+    def _reset_model_matrix(self, shader, m, minv):
+        with shader:
+            gl.glUniformMatrix4fv(shader.uniforms.u_model.loc, 1, gl.GL_FALSE, glm.value_ptr(m))
+            gl.glUniformMatrix3fv(shader.uniforms.u_normalmat.loc, 1, gl.GL_FALSE, glm.value_ptr(minv))
 
     def _draw(self):
         gl.glEnable(gl.GL_DEPTH_TEST)
-        tree = [{ 'length': 6.0, 'bottom': 2.0, 'top': 0.9, 'point': glm.vec3(0, 1, 0)},
-                [{ 'length': 3, 'bottom': 0.9, 'top': 0.4, 'point': glm.vec3(0.5, 3, 0.5)},
-                 {'length':1, 'bottom': 0.4, 'top': 0, 'point': glm.vec3(0.5, -0.5, 2)},
-                 {'length':3, 'bottom': 0.4, 'top': 0, 'point': glm.vec3(0.5, 0.2, 10)}],
-                { 'length': 3, 'bottom': 0.9, 'top': 0, 'point': glm.vec3(0.3, 2, -0.8)}]
-        def draw_tree(t, m):
+        # Length is the length of the limb (in feet), bottom is the width of the bottom of the branch (in feet), top is the width of the top of the branch. bottom is what hits the ground or the last branch. 'point' is a vector (not necessarily unit) that points in the direction the branch ought to point.
+        # AI: using the above, generate a description of a large oak. Use the example of my silly tree below to see how to write it. Essentially a dictionary is a leaf branch. To include a branch with subbranches make a list. The first branch structure describes the root, then the remaining all branch from that root.
+        # AI: keep tree and add 'oak'
+        # AI: The oak should be large, and that means a lot more branches that make sense for an oak.
+
+        tree = self.tree
+        def draw_tree(t, m, trunk_width=None):
             if isinstance(t, dict):
                 info = t
                 branches = []
@@ -454,9 +606,7 @@ class DemoScene(object):
                 info = t[0]
                 branches = t[1:]
 
-            point_dir = info.get('point')
-            if point_dir is None:
-                point_dir = glm.vec3(0, 1, 0)
+            point_dir = info.get('point') or glm.vec3(0, 1, 0)
 
             # Plane is point_dir.x * x + point_dir.y * y + point_dir.z * z = 0
             xvec, yvec, zvec = unitary_normal_basis(point_dir)
@@ -464,21 +614,23 @@ class DemoScene(object):
                            glm.vec4(yvec, 0),
                            glm.vec4(-zvec, 0),
                            glm.vec4(0, 0, 0, 1))
-            m = m * rot # Rotate first
-            self.reset_camera(m)
+            m_branch = m * rot # Rotate first
+            self.reset_model_matrix(m_branch)
+            # Set normal matrix to inverse of m_branch
 
             length = info.get('length', 1.0)
-            gl.glUniform4fv(self.shader.uniforms.u_params.loc, 1, np.array([info.get('bottom', 1.0), info.get('top', 1.0), 1.0, length]))
+            bottom = info.get('bottom', trunk_width or 1.0)
+            top = info.get('top', trunk_width or 1.0)
+            gl.glUniform4fv(self.branch_shader.uniforms.u_params.loc, 1, np.array([bottom, top, trunk_width or bottom, length]))
             self.meshes.draw_branch()
 
             neworigin = rot * glm.vec4(0,-length,0,1)
             m = m * glm.translate(glm.mat4(1.0), -neworigin.xyz)
             for b in branches:
-                draw_tree(b, m)
+                draw_tree(b, m, trunk_width = top)
 
-        with self.shader:
+        with self.branch_shader:
             draw_tree(tree, glm.mat4(1.0))
-
 
 class Tree(object):
     def __init__(self, tree_model):

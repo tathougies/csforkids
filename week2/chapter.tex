@@ -1,152 +1,417 @@
-\week{Models v Reality}
+\week{Data}
 
-Ask an adult and get some modeling clay or Play-doh! and use it to
-make a duck.
+Get out a piece of paper and draw a duck. It can be any kind of duck you want, in whatever pose.
+
+Once you're done, have your friend take out a new sheet of paper. Without showing them your drawing,
+describe exactly what you drew and have them attempt to replicate it.
+
+How did they do? If you're like most people, you probably gave directions that were vague enough to
+be interpreted in many ways. Your friend's drawing probably doesn't look a whole lot like yours.
 
 \begin{marginfigure}
   \centering
   \includegraphics[width=0.8\marginparwidth]{../week2/figures/duck.jpg}
-  \caption{Can you make a duck out of Play-doh?}
+  \caption{Can you describe exactly how to draw this duck? Your computer can!}
 \end{marginfigure}
 
-Now look at what you made. Is it a duck?
-
-If you're good with your hands and modeling, maybe your creation
-really looks like a duck. For others, it might look a bit odd -- maybe
-lumpy, maybe missing a wing, or maybe more like a blob than a
-bird. But the question is the same for everyone: Is the thing you made
-a duck or something else?
-
-In a way, all our models are right. Each model highlights different
-parts of what \emph{you} think makes a duck a duck. Maybe you focused
-carefully on the beak, or maybe you carefully sculpted feathers for
-the wings. There are many details you \emph{could} have included, and the ``right'' choice depends on what you think matters.
-
-This is what it means to make a \emph{model}. A model is not the thing
-itself -- it is a simplified version that leaves some things out and
-emphasizes others.
-
-Now, imagine being asked to make \emph{one million} ducks. If you
-tried making each one by hand the same way you made your first duck,
-it would take you a \emph{very} long time. Worse, each duck would
-probably come out a little differently. Your hands might get
-tired. Your ducks may slowly change.
-
-Instead, you might decide to do something different. You could write
-down the \emph{exact instructions} for how to make your duck -- step
-by step. Then you could give those instructions to a machine and ask
-it to follow them exactly, over and over again. Each duck would then
-be made the same way.\didyouknow{Many of the products we use today are
+In casual conversation, we often mix up our own ideas of how things ought to be with the way things
+are. None of the instructions you gave about how to draw your duck were wrong, and the drawing your
+friend made from them is also not wrong. They just highlight different parts of how \emph{you}
+interpreted your own drawing and how \emph{they} interpreted your description of it.\didyouknow{Many of the products we use today are
   made by computers that manipulate real life materials, like wood,
   metals, and plastic. Precise instructions are provided to these
   machines using a special computer unit called a \term{Computer
-    Numerical Control} (or \term{CNC} module).
+    Numerical Control} (or \term{CNC} module) that produce highly-detailed pieces like the one shown here.
 
   \includegraphics[width=0.8\marginparwidth]{../week2/figures/cnc-machine.jpg}
   \attribution{Cameronm125, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons}
   }
 
-\begin{TryThisBox}
-  Try writing out the \emph{exact} instructions you would give to a
-  robot to make a duck, or another simple object. How would you
-  describe the object to your robot?
-\end{TryThisBox}
+When it comes to computers, we have to describe things exactly, because computers simply follow
+rules. If the instructions you gave your friend were not clear, your friend probably figured out a
+meaning that made sense to them. Computers don't do that. They simply do exactly as they are told.
 
-This same approach to making things often happens at home. For
-example, when you want to make a cake, you first have to look up a
-recipe. The recipe is not the cake. You can read the recipe, copy it
-or share it, but you can't eat it. Only when you follow the recipe
-does a cake appear.  \curious{Here is an interesting question:
-  \emph{before anyone bakes the cake, does the cake already exist?} Or
-  does it exist only as a description -- a list of instructions --
-  waiting to be followed? Philosophers have argued about this for
-  thousands of years. Some thought that things like circles, numbers,
-  or recipes are real in their own way, even before we use
-  them. Others thought that these things only exist because we give
-  them names and descriptions. What do you think?}
+\section{Week 1 Review}
 
-When writing programs for a computer, we have to consider focusing on
-the things that are important for our purposes.
+Last week, we discussed how certain machines obey rules. Once the rules are set up, the machine
+always obeys those rules. We constructed machines last week that counted marbles. We counted out the
+right number of marbles by manipulating switches on a board. The orientation of these switches
+determined how many marbles would fall.
+
+Computers also use switches to store numbers. Each switch in a computer can be on or off, or a ``1''
+or ``0''. Any combination of 1s and 0s can be used to write a number in binary form.
+
+All of these principles are based on fixed rules.
+
+We saw that Python also follows rules. Python can manipulate numbers and words. Although numbers are
+stored internally in a binary form, Python interprets them for us, so that we can talk to it using
+the numbers we're familiar with. Python has rules for converting numbers back into binary form and
+also for manipulating words.
+
+We also saw that Python has rules regarding what kind of things it can
+talk about. When we mistyped something in Python, we get something
+called an error. See \prettyref{tab:python-errors} for a list of
+errors we may see this week.
+
+\begin{table}
+  \fixfigure
+
+\begin{tabularx}{\linewidth}{lp{0.5\linewidth}}
+\toprule
+\code{NameError} & A name of a rule was mistyped (i.e., you typed \code{length} instead of \code{len}). \\
+\code{TypeError} & You used a number where a word was expected or vice versa (i.e., \code{'hello'/2}). \\
+\code{ZeroDivisionError} & You tried to divide a number by zero. Uh-oh! \\
+\code{SyntaxError} & Python couldn't make sense of what you typed because it didn't follow Python's rules (i.e., you typed \code{2 + 5 *} and python doesn't know what to multiply 5 by). \\
+\code{OverflowError} & Some kinds of calculations on numbers can result in very large numbers that don't fit into the computer. \\\bottomrule
+\end{tabularx}
+
+\caption{As we continue in our learning, we will most likely encounter more errors. Errors are a
+  \emph{normal} part of programming. They do not mean anything is broken! It just means there's been
+  a misunderstanding between what you thought was going to happen and what actually happened when
+  the computer followed through exactly with the rules you set out for it. Instead of being
+  discouraged, think of every error as an opportunity learn \emph{more}!}
+\label{tab:python-errors}
+\end{table}
+
+\section{Numbers All the Way Down}
+
+Last week, we discussed how computers store numbers using switches that are either on or
+off. \hint{See \prettyref{sec:binary-numbers} for a review.}
+
+Everything on a computer is stored as numbers. Even the words we saw last class are stored using
+numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
+call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as \code{str}.}
+
+Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
+\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
+international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
+  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
+computer systems would often use their own custom standard or a standard particular to individual
+countries and languages. Reading files created using one standard on a computer designed to work
+with another standard could result in garbage data. Another common way to write strings as numbers
+is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
+Interchange}. ASCII covers most characters used in English and other languages that use the Latin
+alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
+character.
+
+It may seem crazy that each letter has a number that goes along with it, but I can prove it to you. Try this in Python:
+
+\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
+\code{ord('hello')}!}
+\begin{replbox}
+>>> ord('5')<ENTER>
+53
+>>> ord('Z')<ENTER>
+90
+>>> ord('>')<ENTER>
+62
+>>> ord('\'')<ENTER>(*@ \tikzmarknode{python escapes node}{} @*)
+39
+>>> ord('h')<ENTER>
+104
+\end{replbox}
+\makemargmark{python escapes node}{\notestyle\hintnote Python words are delimited by single quotation marks (\code{'}). But what if you want to talk about the word consisting of just the single quote character itself or a word containing a single quote character (like an Irish name with \enquote{O'})? In order to tell Python that you want a \code{'} treated as just the letter and not part of the Python rules, you use the \code{\textbackslash} character in front of it. This word \code{'\textbackslash''} is just the word consisting of a single single-quote letter.}
+%}
+
+
+You can also go from a number \emph{to} a word.
+
+\hint{Try all kinds of numbers here, and see what you get!}
+\begin{replbox}
+>>> chr(76)<ENTER>
+'L'
+>>> chr(53)<ENTER>
+'5'
+>>> chr(54)<ENTER>
+'6'
+>>> chr(233)<ENTER>
+'é'
+>>> chr(1103)<ENTER>
+'я'
+>>> chr(26159)<ENTER>
+'是'
+>>> chr(22398)<ENTER>
+'学'(*@\tikzmarknode{chinese xie}{}@*)
+>>> chr(128512)<ENTER>
+'(*@{\EmojiFont 😀}@*)'
+\end{replbox}
+\makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
+
+Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
+learned about last week to see the binary representation of these numbers.
+
+\begin{replbox}
+>>> bin(ord('5'))<ENTER>
+'0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
+>>> bin(ord('Z'))<ENTER>
+'0b1011010'
+>>> bin(ord('\''))<ENTER>
+'0b100111'
+\end{replbox}
+\makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
+Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
+
+See it's just numbers all the way down!
+
+\begin{BigIdeaBox}
+  All information inside a modern computer is stored as numbers, even words!
+\end{BigIdeaBox}
+
+\section{Drawing a Very Precise Duck}
 
 \begin{marginfigure}
   \centering
-  \includegraphics[width=0.8\marginparwidth]{../week2/figures/plato.jpg}
-  \caption{The Greek philosopher \textbf{Plato} believed that things
-    existed before being described.}
+  \begin{tikzpicture}
+    \draw (0,0) pic[duck/water=blue] {duck};
+  \end{tikzpicture}
+  \caption{This is a very precise duck!}
+  \label{fig:precise-duck}
 \end{marginfigure}
 
-\begin{TrackBox}{Gaming}
-  Some computer scientists try to match the descriptions and names on
-  the computer match those they observe in the real world. When we do
-  this, we can use the computer to predict what would happen. This is
-  called a \term{simulation}.
+Think back to the duck exercise we did at the beginning of class. We
+found it was hard to describe a duck perfectly to our friend. But that's because we didn't know
+\emph{how} to describe a duck properly. We weren't \emph{precise} enough.
+
+\begin{BigIdeaBox}
+English is a great language for everyday communication, but it is not great at being exact about
+visual information. To talk about drawings, we need a language that allows us to be precise about something.
+\end{BigIdeaBox}
+
+Whenever we want to describe something in detail, we have to understand how to be precise about
+it. Switches are precise -- they are either on or off. Numbers are precise too, because they can be
+represented by a bunch of switches. We need a way of turning an image into numbers.
+
+%\begin{marginfigure}
+%  \centering
+%  \includegraphics[width=0.8\marginparwidth]{../week2/figures/plato.jpg}
+%  \caption{The Greek philosopher \textbf{Plato} believed that things
+%    existed before being described.}
+%\end{marginfigure}
+
+% \begin{TrackBox}{Gaming}
+%   Some computer scientists try to match the descriptions and names on
+%   the computer match those they observe in the real world. When we do
+%   this, we can use the computer to predict what would happen. This is
+%   called a \term{simulation}.
+% \end{TrackBox}
+
+
+\begin{TrackBox}{Graphics}
+  \boxtitle{How Computers Draw}
+
+Computers draw using -- you guessed it -- numbers! You've probably seen the \term{number line} in
+your math courses. All numbers can be placed on a simple line, and we can name any point on the line
+by writing down a number to name it.
+
+%\makemargmark{number line
+%  comment}{\notestyle \huhnote{This coordinate system looks different than my math courses! What's
+%    going on?}{If you've done geometry you've probably seen the cartesian plane drawn with the $y$
+%    coordinate increasing as you go up. On many computers, the $y$ coordinate increases as you go
+%    \emph{down}. Computers often use this different coordinate system so that the coordinates match
+%    how things are physically drawn. It doesn't matter which system you choose, as long as everyone
+%    does it the same way. In both systems, each grid is named by a unique number.}}
+
+But to make graphics, we need to be able to talk about \tikzmarknode{points on a screen}{points} on
+a rectangular screen, not a line. How do we name a point on a rectangle? The first person to think
+about this systematically was a scientist, mathematician, and philosopher named \textbf{Ren\'e
+  Descartes} who invented \emph{Cartesian plane}. Here's how it works. Instead of a line, we draw a
+grid. We number all the columns and all the rows (see \prettyref{fig:cartesian-grid}). Now, any
+square on the grid can be named by giving two numbers. These two numbers together are called the
+\term{coordinate}. We usually write the \emph{column} number first, and the \emph{row} number
+last. This system is called the \emph{cartesian coordinate} system.
+
+\makemargmark{points on a screen}{
+  \par\medskip
+  \input{../week2/figures/cartesian-grid.tex}
+  \par
+  \captionof{figure}{Just like we can refer to any
+    point on a line by a number, we can refer to any point on a rectangle or grid using two
+    numbers. In this image of a flower, we can use cartesian coordinates to reference any square and
+    change its color or turn it on or off.}
+  \label{fig:cartesian-grid}
+}
+\emph{Everything} you see on your screen is the result of your
+computer following rules that turn lights on or off (see
+\prettyref{fig:pixels}). Even the text you read is created by following
+rules (known as \term{fonts}) that specify how to turn on a pattern of
+lights to create the letter shapes.
+
+The drawing library we are using in class translates the functions
+you use into rules that turn on the right lights. Can you think of
+how you might write some rules to draw some of the shapes below?
+
+\tryitsection
+
+Here are some problems to think about.
+
+\begin{enumerate}
+\item Which pixels would you turn on to draw a line between
+  coordinate $(5, 2)$ and $(8, 5)$?
+\item What about $(5,2)$ and $(9,0)$?
+\item If someone gave you two coordinates $(x_1, y_1)$ and $(x_2,
+  y_2)$ could you come up with a rule that determined which lights
+  to turn on to draw a line? Try listing out the instructions
+  \emph{exactly}.
+\item Can you use the rule above to draw a triangle?
+\item How would you draw a \emph{circle} around the point $(3, 8)$?
+\end{enumerate}
 \end{TrackBox}
+
+
+\subsection{Drawing Our First Image}
+
+
+\begin{table*}[t]
+  \fixfigure
+  \begin{tabular}{p{0.35\linewidth}p{0.6\linewidth}}
+    \toprule
+    Rule & What it does\\\midrule
+    \code{draw.goto(x, y)} & Move the pen to the particular \code{x} and \code{y} coordinate.\\
+    \code{draw.forward(x)} & Move forward \code{x} units in the current direction of the pen.\\
+    \code{draw.circle(r)} & Draw a complete circle with the given radius \code{r}. \\
+    \code{draw.circle(r, p)} & Draw a portion of a circle with radius \code{r}. The \code{p} argument specifies what percent of the circle to draw. For example, \code{p} of 0.5 draws a half-circle. \\
+    \code{draw.penup()} & Lift the pen \emph{up}. Future movement commands will not draw anything.\\
+    \code{draw.pendown()} & Place the pen back \emph{down}. Future movement commands will draw.\\
+    \code{draw.color(c)} & Change the color of the pen.\\
+    \code{draw.fill(c, pic)} & Draw \code{pic} and fill in all enclosed areas with color \code{c}.\\
+    \code{draw.turn(angle)} & Turn by the given angle, which can be an angle (in degrees), or \code{``left''} or \code{``right''}. \\
+    \code{draw.wait(s)} & Wait \code{s} seconds before proceeding. Let's you see how the drawing progresses. \\
+    \code{draw.pause(prompt)} & Pause the drawing and display the word \code{prompt} until the user hits \enterkey \\
+    \bottomrule
+  \end{tabular}
+  \caption[][1ex]{These are all the Turtle rules you can use and combine
+    together using functions!}
+  \label{tab:turtle}
+\end{table*}
+
+Turtle works by following -- you guessed it -- rules! Turtle works like an Etch-a-sketch. You supply
+instructions that move a pen around a page. Turtle draws a line as the pen moves.
+
+Let's try it.
+
+\hint{The \kw{import} keyword lets us use \term{libraries} of rules that are not considered core to
+  Python. The set of rules we're importing here is in the \texttt{week2/draw.py} file that comes
+  from the course materials. These rules let us draw pictures!}
+\begin{replbox}
+>>> (*@\tikzmarknode{import keyword}{\kw{import}}@*) week2.draw as draw<ENTER>
+>>> draw.draw(draw.forward(100))<ENTER>
+\end{replbox}
+
+What happened here? The pen started in the middle of the page, and then went \emph{forward} by 100
+units.\curious{The units used by Turtle are called \term{pixels}. See \prettyref{fig:pixels} for
+  more information} In this case, the pen always starts pointed to the right. So when we go forward,
+turtle draws a line to the right.
+
+Let's try changing the pen color using the \code{draw.color} rule
+
+\begin{replbox}
+draw.draw(draw.color('blue')+draw.forward(100))<ENTER>
+\end{replbox}
+
+Did it do what you thought it would?
+
+We can even draw a square!
+
+\begin{replbox}
+draw.draw(draw.color('blue') +
+  draw.forward(100) +
+  draw.turn('right') +
+  draw.forward(100) +
+  draw.turn('right') +
+  draw.forward(100) +
+  draw.turn('right') +
+  draw.forward(100))<ENTER>
+\end{replbox}
+
+Phew! That was a lot of typing! If we had to do that everytime we wanted to draw a square, we would
+have to write \emph{a lot} of code.
 
 \section{Re-using models}
 
-The purpose of providing instructions is so that we can do the same
-thing over again. Similarly, on a computer, when we write a program
-once, we can re-use it many times. Last week, we used the prompt to
-immediately process Python rules. This week, we are going to learn how
-to set up rules that can be re-used.
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week2/figures/CatPixels.pdf}
+  \caption{Every image you see on a computer screen is made up of tiny lights called \term{pixels}
+    arranged in a grid. If you carefully look at your computer screen, you may be able to see the
+    individual pixels. By turning the lights on and off and adjusting the color, the computer can
+    display any image, such as this one of a cat.  \attribution{Original: ReffPixels?Vector:
+      OmegaFallon, CC BY-SA 4.0 <\url{https://creativecommons.org/licenses/by-sa/4.0}>, via
+      Wikimedia Commons}}
+  \label{fig:pixels}
+\end{marginfigure}
 
-The first way to re-use rules is to save them into a \term{file}. We
-call rules that we save on a computer \term{source code}.
+The purpose of providing instructions is so that we can do the same thing over again. Above, we
+created a precise description of a square. Now we need to figure out a way to re-use it again and
+again so we never have to write it out again!
 
-Let's try saving a rule. Open up Thonny and, instead of the prompt,
-point your mouse at the editor
-(\prettyref{fig:thonny-interface}). Rules that we type here can be
-saved on the computer. Type the following into the editor and then
-save it into a file called \texttt{model.py}.
-\hint{You can also access all these files on the internet at \url{\giturl}.
+The first way to re-use rules is to save them into a \term{file}. We call rules that we save on a
+computer \term{source code}.
 
+Let's try saving a rule. Open up Thonny and, instead of the prompt, point your mouse at the editor
+(\prettyref{fig:thonny-interface}). Rules that we type here can be saved on the computer.
+\hint{You can also access all these files on the internet at \url{\giturl}.\\
+\begin{center}
 \qrcode{\giturl}
+\end{center}
 }
 
+\aside{\textcolor{red}{TODO DESCRIBE HOW TO LOAD THE FILE}}
 \begin{TryThisBox}
   Type the following into the editor and then save it in a file named
   \texttt{model.py}.
   \begin{lstlisting}
-def three():
-<SPACE><SPACE>return 3
-def double(x):
-<SPACE><SPACE>return x + x
-  \end{lstlisting}
+draw.draw(<ENTER>
+  draw.color('blue') +<ENTER>
+  draw.forward(n) + draw.turn('right') +<ENTER>
+  draw.forward(n) + draw.turn('right') +<ENTER>
+  draw.forward(n) + draw.turn('right') +<ENTER>
+  draw.forward(n)
+)<ENTER>
+\end{lstlisting}
 \end{TryThisBox}
 \hint{From now on, all the rules we see will be
     \emph{colored}. You don't need to enter the colors in. The colors
     only serve to make the rules easier to read. This is called
     \term{syntax highlighting}.}
 
+Let's try using it:
+
 % TODO describe how to load the file
 
-Now, go to the prompt, and try these rules.
+You should get something like this:
 
-\begin{replbox}
-three()<ENTER>
-double(3)<ENTER>
-double(three())<ENTER>
-double(10)<ENTER>
-\end{replbox}
+\includegraphics[width=0.8\linewidth]{../week2/figures/onesquare.eps}\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
+  lights going on and off, but how do they represent \emph{sound}?
 
-What do you see? Did you predict what was going to happen correctly?
-Why or why not?
+  When our ears hear sound, they are responding to \emph{changes} in
+  air pressure.
+
+  Computers represent this -- you guessed it -- using numbers!
+
+  With graphics, we had to break up the rectangular screen into small
+  chunks called pixels. For sound, we instead break up \emph{time}
+  into really small sections (tens of thousands per second!) called
+  samples. Within each sample, we store a number which represents the
+  pressure the computer ought to output at that time. When the samples
+  are sequenced together rapidly using a componenty called a DAC or
+  \term{digital-to-analog converter}. }
 
 \subsection{Introducing \kw{def} and \kw{return}}
 
-Just like a cake recipe, we can make our own re-usable rules in Python
-using the \kw{def} and \kw{return} rules. Here's how it works.
+That's good, but computers can draw squares without loading files. This is where the \kw{def}
+and \kw{return} rules come in. Here's how it works.
 
-We use \kw{def} to give a \emph{name} to our rules. Then, underneath
-\kw{def}, we write the rules that make up the new rule we are
-making. The rules underneath have to be \term{indented}, which means
-that we have to type two {\spacekey}s before typing the rule.
+When we have a bunch of rules we want to re-use, we can use \kw{def} to give a \emph{name} to our
+rules. Then, underneath
+\kw{def}, we write the rules that make up the new rule. The rules underneath have to be \term{indented}, which means that we have to type two
+{\spacekey}s before typing the rule.\curious{Python is known as an \emph{indentation-aware}
+language. Some languages do not care about spaces and have other ways to figure out which rules
+belong as sub-rules of other rules. But for now, we'll stick with how Python does things!}
 
-When Python follows the rules we make, it does \emph{exactly} the
-rules we included as part of our named rule, but it doesn't show us
-the result of these rules, like what happened when we typed the rules
-into the prompt directly. In order to get the final answer from our
-named rules, we have to use \kw{return}.
+When Python follows the rules we make, it does \emph{exactly} the rules we included as part of our
+named rule, but it doesn't show us the result of these rules, like what happened when we typed the
+rules into the prompt directly. In order to get the final answer from our named rules, we have to
+use \kw{return}.
 
 \begin{TryThisBox}
   Type the following into \texttt{model.py}
@@ -259,199 +524,20 @@ can talk about a computer screen.
 
 \subsection{Introduction to Computer Graphics}
 
-Last week we saw how to use Python to refer to numbers. You've
-probably seen the \term{number line} in your math courses. All numbers
-can be placed on a simple line, and we can name any point on the line
-by writing down a number to name it.
-\huh{This coordinate system looks different than
-  my math courses! What's going on?}{If you've done geometry you've
-  probably seen the cartesian plane drawn with the $y$ coordinate
-  increasing as you go up. On many computers, the $y$ coordinate
-  increases as you go \emph{down}. Computers often use this different
-  coordinate system so that the coordinates match how things are
-  physically drawn. It doesn't matter which system you choose, as long
-  as everyone does it the same way. In both systems, each grid is
-  named by a unique number.}
-
 %\curious{Some mathematicians think
 %  there are numbers we cannot quite name. The first person to think of
 %  this was a mathematician named \textbf{George Cantor}. If such a
 %  number cannot be written, can you think of it? What about write a
 %  description of it?}
 
-We cannot draw on a line. We need a rectangle to do that. How do we
-name a point on a rectangle? The first person to think about this
-systematically was a scientist, mathematician, and philosopher named
-\textbf{Ren\'e Descartes} who invented something called the Cartesian
-plane. Here's how it works. Instead of a line, we draw a grid. We
-number all the columns and all the rows (see
-\prettyref{fig:cartesian-grid}). Now, any square on the grid can be
-named by giving two numbers. These two numbers together are called the
-\term{coordinate}. We usually write the \emph{column} number first,
-and the \emph{row} number last. This system is called the
-\emph{cartesian coordinate} system.
-
-
-\begin{figure}[t]
-  \fixfigure
-  \label{fig:cartesian-grid}
-  \caption{Just like we can refer to any point on a line by a number,
-    we can refer to any point on a rectangle or grid using two
-    numbers. This is called the cartesian coordinate system. For
-    example, in this image of a flower,}
-  \centering
-  \input{../week2/figures/cartesian-grid.tex}
-\end{figure}
-
-\begin{figure}[p]
-\begin{TrackBox}{Graphics}
-  \emph{Everything} you see on your screen is the result of your
-  computer following rules that turn lights on or off (see
-  \prettyref{fig:pixels}. Even the text you read is created by
-  following rules (known as \term{fonts}) that specify how to turn on
-  a pattern of lights to create the letter shapes.
-
-  The drawing library we are using in class translates the functions
-  you use into rules that turn on the right lights. Can you think of
-  how you might write some rules to draw some of the shapes below?
-
-  \tryitsection
-
-  Here are some problems to think about.
-
-  \begin{enumerate}
-  \item Which pixels would you turn on to draw a line between
-    coordinate $(5, 2)$ and $(8, 5)$?
-  \item What about $(5,2)$ and $(9,0)$?
-  \item If someone gave you two coordinates $(x_1, y_1)$ and $(x_2,
-    y_2)$ could you come up with a rule that determined which lights
-    to turn on to draw a line? Try listing out the instructions
-    \emph{exactly}.
-  \item Can you use the rule above to draw a triangle?
-  \item How would you draw a \emph{circle} around the point $(3, 8)$?
-  \end{enumerate}
-\end{TrackBox}
-\end{figure}
-
 \subsection{Drawing Our First Image}
-
-\begin{table}[t]
-  \caption{These are all the Turtle rules you can use and combine
-    together using functions!}
-  \label{tab:turtle}
-  \begin{tabular}{p{0.35\linewidth}p{0.6\linewidth}}
-    \toprule
-    Rule & What it does\\\midrule
-    \code{draw.goto(x, y)} & Move the pen to the particular \code{x} and \code{y} coordinate.\\
-    \code{draw.forward(x)} & Move forward \code{x} units in the current direction of the pen.\\
-    \code{draw.circle(r)} & Draw a complete circle with the given radius \code{r}. \\
-    \code{draw.circle(r, p)} & Draw a portion of a circle with radius \code{r}. The \code{p} argument specifies what percent of the circle to draw. For example, \code{p} of 0.5 draws a half-circle. \\
-    \code{draw.penup()} & Lift the pen \emph{up}. Future movement commands will not draw anything.\\
-    \code{draw.pendown()} & Place the pen back \emph{down}. Future movement commands will draw.\\
-    \code{draw.color(c)} & Change the color of the pen.\\
-    \code{draw.fill(c, pic)} & Draw \code{pic} and fill in all enclosed areas with color \code{c}.\\
-    \code{draw.turn(angle)} & Turn by the given angle, which can be an angle (in degrees), or \code{``left''} or \code{``right''}. \\
-    \code{draw.wait(s)} & Wait \code{s} seconds before proceeding. Let's you see how the drawing progresses. \\
-    \code{draw.pause(prompt)} & Pause the drawing and display the word \code{prompt} until the user hits \enterkey \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Turtle works by following -- you guessed it -- rules! Turtle works
-like an Etch-a-sketch. You supply instructions that move a pen around
-a page. Turtle draws a line as the pen moves. You can also move the
-pen without drawing by lifting the pen up, and then restart drawing by
-putting the pen down.
-
-Let's try it.
-
-\begin{replbox}
-draw.draw(draw.forward(100))<ENTER>
-\end{replbox}
-
-What happened here? The pen started in the middle of the page, and
-then went \emph{forward} by 100 pixels. In this case, the pen always
-starts pointed to the right, so going forward, draws a line to the
-right.
-
-Let's try changing the pen color using the \code{draw.color} function.
-
-\begin{replbox}
-draw.draw(draw.color('blue')+draw.forward(100))<ENTER>
-\end{replbox}
-
-Did it do what you thought it would?
-
-We can even draw a square!
-\begin{marginfigure}
-  \label{fig:pixels}
-  \centering
-  \includegraphics[width=0.9\marginparwidth]{../week2/figures/CatPixels.pdf}
-  \caption{Every image you see on a computer screen is made up of tiny
-    lights called \term{pixels} arranged in a grid. By turning the
-    lights on and off and adjusting the color, the computer can
-    display any image, such as this one of a cat.
-    \attribution{Original:  ReffPixels?Vector:  OmegaFallon, CC BY-SA 4.0 <\url{https://creativecommons.org/licenses/by-sa/4.0}>, via Wikimedia Commons}}
-\end{marginfigure}
-
-
-\begin{replbox}
-draw.draw(draw.color('blue') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100))<ENTER>
-\end{replbox}
-
-Phew! That was a lot of typing! If we had to do that everytime we
-wanted to draw a square, we would have to write \emph{a lot} of code.
 
 Let's try writing a function to draw a square. Go to your Thonny
 editor and try writing a function to draw a square. It would probably
 look like the one below:
 
 \begin{TryThisBox}
-  \begin{lstlisting}
-def square(n):
-  return \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n)
-\end{lstlisting}
 \end{TryThisBox}
-
-Let's try using it:
-\hint{The \code{\textbackslash} at the end of each line tells Python to treat the
-  next line as part of the first. This helps keep our lines shorter
-  and easier to read.}
-
-\begin{replbox}
-draw.draw(square(100))<ENTER>
-\end{replbox}
-
-\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
-  lights going on and off, but how do they represent \emph{sound}?
-
-  When our ears hear sound, they are responding to \emph{changes} in
-  air pressure.
-
-  Computers represent this -- you guessed it -- using numbers!
-
-  With graphics, we had to break up the rectangular screen into small
-  chunks called pixels. For sound, we instead break up \emph{time}
-  into really small sections (tens of thousands per second!) called
-  samples. Within each sample, we store a number which represents the
-  pressure the computer ought to output at that time. When the samples
-  are sequenced together rapidly using a componenty called a DAC or
-  \term{digital-to-analog converter}. }
-
-You should get something like this:
-
-\includegraphics[width=0.8\linewidth]{../week2/figures/onesquare.eps}
 
 Nice! Now, let's see if we can draw more than one square. We'll also
 give our squares some color so that we can tell them apart.
@@ -590,6 +676,7 @@ Turtle assumes that when we want a circle, we always want to draw it in this dir
 one way and requires the programmer to explicitly choose another way is called a \term{default}.
 
 \begin{figure}[b]
+  \fixfigure
   \label{fig:turtle-circles}
   \caption{The \code{draw.circle} rule produces some portion of a circle with a particular radius,
     as illustrated above. A positive radius corresponds to a point to the ``left'' of the cursors

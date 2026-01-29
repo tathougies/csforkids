@@ -23,18 +23,51 @@
   \pgfmathsetmacro{\TTBitScale}{-2 * #2 + 1}
   \node[anchor=north east] at ($#1 + ({0.681926*\TTXUnit}, {0.65*\TTYUnit})$) {\scalebox{\TTBitScale}[1]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-bit.pdf}} }
 }
+\def\TTGfxGearBit#1#2{
+  \pgfmathsetlengthmacro{\TTGearbitW}{1.1 * \TTXUnit}
+  \pgfmathsetlengthmacro{\TTGearbitH}{0.7 * \TTYUnit}
+  \pgfmathsetmacro{\TTBitScale}{-2 * #2 + 1}
+  \node[anchor=north east] at ($#1 + ({0.681926*\TTXUnit}, {0.65*\TTYUnit})$) {\scalebox{\TTBitScale}[1]{\includegraphics[width=\TTGearbitW, height=\TTGearbitH]{util/piece-gearbit.pdf}} }
+}
 %\def\TTGfxInterceptor#1{
 %  \node[anchor=north east] at ($#1 + ({0.8*\TTXUnit}, {0.68*\TTYUnit})$) {\scalebox{1.1}[0.7]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-interceptor.pdf}} }
 %}
 \def\TTGfxInterceptor#1{
-  \node[anchor=north east] at ($#1 + ({0.8*\TTXUnit}, {0.68*\TTYUnit})$) {\includegraphics[width=1.1\TTXUnit, height=0.7\TTYUnit]{util/piece-interceptor.pdf}}
+  \pgfmathsetlengthmacro{\TTInterceptorW}{1.1 * \TTXUnit}
+  \pgfmathsetlengthmacro{\TTInterceptorH}{0.7 * \TTYUnit}
+  \node[anchor=north east, inner sep=0, transform shape] at ($#1 + ({0.55 * \TTXUnit}, {0.44 * \TTYUnit})$) {\includegraphics[width=\TTInterceptorW, height=\TTInterceptorH]{util/piece-interceptor.pdf}};
 }
 
-\def\TTGfxCrossover#1{\node[anchor=north west] at ($#1 + (0.0, -186.1412)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-crossover.pdf}} }
+\def\TTGfxCrossover#1{\node[anchor=north east] at ($#1 + ({0.68*\TTXUnit}, {0.65*\TTYUnit})$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-crossover.pdf}} }
 \def\TTGfxRamp#1#2{\node[anchor=north east] at ($#1 + ({0.68*\TTXUnit}, {0.65*\TTYUnit})$) {\scalebox{#2}[1]{\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-ramp.pdf}} }}
-\def\TTGfxGearbit#1{\node[anchor=north west] at ($#1 + (-22.896900000000002, -436.1992)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-gearbit.pdf}} }
-\def\TTGfxGear#1{\node[anchor=north west] at ($#1 + (22.001900000000006, 22.11099999999999)$) {\includegraphics[width=\TTXUnit, height=\TTYUnit]{util/piece-gear.pdf}} }
+\def\TTGfxGear#1{\node[anchor=north east] at ($#1 + ({0.68*\TTXUnit}, {0.65*\TTYUnit})$) {\includegraphics[width=\TTXUnit, height=\TTYUnit, angle=15]{util/piece-gear.pdf}} }
 
+\def\ttbitcharleft{\includegraphics[width=1em]{util/piece-bit.pdf}\;}
+\def\ttbitcharright{\scalebox{-1}[1]{\includegraphics[width=1em]{util/piece-bit.pdf}}\;}
+\def\ttmarbleredchar{\textcolor{marblered}{\Large $\bullet$}}
+\def\ttmarblebluechar{\textcolor{marbleblue}{\Large $\bullet$}}
+
+\ExplSyntaxOn
+\cs_new_protected:Npn \tt_pieces:n #1
+   {
+     \tl_map_inline:nn {#1}
+           {
+             \str_case:nnF{##1}
+                 {
+                   {0}{\ttbitcharleft}
+                   {1}{\ttbitcharright}
+                   {r}{\ttmarbleredchar}
+                   {b}{\ttmarblebluechar}
+                 }
+                 {
+                   \msg_error:nnn{tt}{bad-char}{##1}
+                 }
+           }
+   }
+\NewDocumentCommand{\ttpieces}{m}{\tt_pieces:n {#1}}
+\ExplSyntaxOff
+
+\newcommand{\ttbits}
 
 % ----------------------------
 % Key-value configuration
@@ -42,10 +75,16 @@
 \pgfkeys{
   /tt/.is family, /tt,
   /tt/small/.style={x unit=5mm,y unit=5.5mm},
+  /tt/margin/.style={x unit=4mm, y unit=5mm},
+  output/.initial=,
   cols/.initial=11,
   rows/.initial=11,
   x unit/.initial=7mm,        % grid spacing
   y unit/.initial=8mm,
+  blue marbles/.initial=0,
+  red marbles/.initial=0,
+  blue marbles released/.initial=0,
+  red marbles released/.initial=0,
   pegs/.initial=true,
   peg radius/.initial=1.2pt,
   pin radius/.initial=0.7pt,
@@ -71,7 +110,11 @@
 
 \pgfkeys{
   /tt/bit/.is family, /tt/bit,
+  gear/.style={isgear=1},
   state/.initial=0, % 0 or 1
+  isgear/.initial=0,
+  on/.style={state=1},
+  off/.style={state=0}
 }
 
 \pgfkeys{
@@ -153,21 +196,51 @@
   \pgfmathsetlengthmacro\releaseguardoffsety{sin(\releaseguardangle r) * \TTPad}
   \pgfmathsetlengthmacro{\TTBoardRight}{(\TTCols - 1)*\TTXUnit+\TTPad}
   \pgfmathsetlengthmacro{\TTBoardBottom}{-\TTPad-\TTFooter}
+  \pgfmathsetlengthmacro{\TTBoardLeft}{-\TTPad}
+  \pgfmathsetlengthmacro{\TTBoardTop}{\TTTopOfBoard}
 
     \draw[tt/board]
-    (-\TTPad,{-\TTPad-\TTFooter}) rectangle (\TTBoardRight,\TTTopOfBoard);
-  \draw[color=\TTBoardColor] (\TTMidBoard, \TTTopOfBoard) -- ++(0,-\TTPad) coordinate (midboardbar) -- ++({-\TTMidBoard + 1 * \TTXUnit}, {-0.2 * \TTYUnit});
-  \draw[color=\TTBoardColor] (midboardbar) -- ++({\TTMidBoard - 1 * \TTXUnit}, {-0.2 * \TTYUnit});
+    (\TTBoardLeft,\TTBoardBottom) rectangle (\TTBoardRight,\TTTopOfBoard) coordinate (ttboardtop);
 
+  % Releases atop the board (circles that release blue and red marbles
   \draw[name=leftrelease, fill=\TTBoardColor, color=\TTBoardColor] (0, {\TTTopOfBoard - \TTReleaseDrop}) circle (\TTPad);
   \draw[name=rightrelease, fill=\TTBoardColor, color=\TTBoardColor] ({(\TTCols-1)*\TTXUnit}, {\TTTopOfBoard - \TTReleaseDrop}) circle (\TTPad);
-  \node[tt/peg, fill=white] (leftreleasepeg) at (0, {\TTTopOfBoard - \TTReleaseDrop}) {};
-  \node[tt/peg, fill=white] (rightreleasepeg) at ({(\TTCols - 1) * \TTXUnit}, {\TTTopOfBoard - \TTReleaseDrop}) {};
+  \node[tt/peg, fill=marbleblue] (leftreleasepeg) at (0, {\TTTopOfBoard - \TTReleaseDrop}) {};
+  \node[tt/peg, fill=marblered] (rightreleasepeg) at ({(\TTCols - 1) * \TTXUnit}, {\TTTopOfBoard - \TTReleaseDrop}) {};
 
   \draw[color=\TTBoardColor] ({1.5 * \TTXUnit}, \TTTopOfBoard) to [bend left] ++({-\TTXUnit/4},{-\TTXUnit/4}) -- ($(leftreleasepeg.center) + (\releaseguardoffsetx,\releaseguardoffsety)$);
   \draw[color=\TTBoardColor] ({((\TTCols - 1) - 1.5) * \TTXUnit}, \TTTopOfBoard) to [bend right] ++({\TTXUnit/4},{-\TTXUnit/4}) -- ($(rightreleasepeg.center) + (-\releaseguardoffsetx, \releaseguardoffsety)$);
-  \draw[color=\TTBoardColor] ($(leftreleasepeg.center) + (0, -\TTPad)$) -- ++({2.5 * \TTXUnit}, {-0.1 * \TTYUnit}) coordinate (leftentrance);
-  \draw[color=\TTBoardColor] ($(rightreleasepeg.center) + (0, -\TTPad)$) -- ++({-2.5 * \TTXUnit}, {-0.1 * \TTYUnit}) coordinate (rightentrance);
+
+  % Slopes of ramp
+  \pgfmathsetmacro{\TTBlueMarbles}{\pgfkeysvalueof{/tt/blue marbles}}
+  \pgfmathsetmacro{\TTBlueMarblesReleased}{\pgfkeysvalueof{/tt/blue marbles released}}
+  \pgfmathsetmacro{\TTBlueMarblesShow}{\TTBlueMarbles > 0}
+  \pgfmathsetmacro{\TTBlueMarblesReleasedShow}{\TTBlueMarblesReleased > 0}
+  \def\TTBlueSlopeMarbles{\ifnum\TTBlueMarblesReleasedShow=1\relax
+    \foreach \i in {1,...,\TTBlueMarblesReleased} {\ttmarblebluechar}
+  \fi}
+  \def\TTBlueUpperMarbles{\ifnum\TTBlueMarblesShow=1\relax
+    \foreach \i in {1,...,\TTBlueMarbles} {\ttmarblebluechar}
+    \fi}
+  \pgfmathsetmacro{\TTRedMarbles}{\pgfkeysvalueof{/tt/red marbles}}
+  \pgfmathsetmacro{\TTRedMarblesReleased}{\pgfkeysvalueof{/tt/red marbles released}}
+  \pgfmathsetmacro{\TTRedMarblesShow}{\TTRedMarbles > 0}
+  \pgfmathsetmacro{\TTRedMarblesReleasedShow}{\TTRedMarblesReleased > 0}
+  \def\TTRedSlopeMarbles{\ifnum\TTRedMarblesReleasedShow=1\relax
+    \foreach \i in {1,...,\TTRedMarblesReleased} {\ttmarbleredchar}
+    \fi}
+  \def\TTRedUpperMarbles{\ifnum\TTRedMarblesShow=1\relax
+    \foreach \i in {1,...,\TTRedMarbles} {\ttmarbleredchar}\fi}
+
+  \draw[color=\TTBoardColor] (\TTMidBoard, \TTTopOfBoard) -- ++(0,-\TTPad) coordinate (midboardbar) -- ++({-\TTMidBoard + 1 * \TTXUnit}, {-0.2 * \TTYUnit}) node[pos=1.15,sloped,above=-0.08,anchor=south west] {\TTBlueUpperMarbles};
+  \draw[color=\TTBoardColor] (midboardbar) -- ++({\TTMidBoard - 1 * \TTXUnit}, {-0.2 * \TTYUnit}) node[pos=1.15,sloped,above=-0.08,anchor=south east] {\TTRedUpperMarbles};
+
+  \coordinate (leftreleaseslopestart) at ($(leftreleasepeg.center) + (0, -\TTPad)$);
+  \coordinate (leftentrance) at ($(leftreleaseslopestart) + ({2.5 * \TTXUnit}, {-0.1 * \TTYUnit})$);
+  \coordinate (rightreleaseslopestart) at ($(rightreleasepeg.center) + (0, -\TTPad)$);
+  \coordinate (rightentrance) at ($(rightreleaseslopestart) + ({-2.5 * \TTXUnit}, {-0.1 * \TTYUnit})$);
+  \draw[color=\TTBoardColor] (leftreleaseslopestart) -- (leftentrance) node [pos=1.15,sloped,above=-0.08,anchor=south east] {\TTBlueSlopeMarbles};
+  \draw[color=\TTBoardColor] (rightreleaseslopestart) -- (rightentrance) node[pos=1.15,sloped,above=-0.08,anchor=south west] {\TTRedSlopeMarbles};
 
   % footer
   \draw[color=\TTBoardColor] (-\TTPad,0) coordinate (leftportalstart) -- ({(\TTMiddleCoord - 1) * \TTXUnit}, {-\TTYUnit/2}) coordinate (leftportal);
@@ -207,7 +280,7 @@
     (-\TTPad,-10) -- (-\TTPad,10);
     \path[name intersections={of=dropLine and yaxis, by=finalDrop}];
   \end{scope}
-  \draw[color=\TTBoardColor] (finalDrop) to [bend right] ++({6 * \TTPegRadius}, {-6 * \TTPegRadius}) -- ({(\TTCols -2)*\TTXUnit}, {-\TTPad-\TTFooter});
+  \draw[color=\TTBoardColor] ($(finalDrop)+(0,{0.1*\TTYUnit})$) to [bend right] ++({6 * \TTPegRadius}, {-6 * \TTPegRadius}) -- ({(\TTCols -2)*\TTXUnit}, {-\TTPad-\TTFooter}) node[pos=1, sloped, above, anchor=south east]{\pgfkeysvalueof{/tt/output}};
 
   % Optional label/title
   \ifx\TTLabel\empty\else
@@ -300,9 +373,14 @@
 \newcommand{\TTBit}[3][]{%
   \pgfkeys{/tt/piece, /tt/bit, #1}%
   \def\TTBitState{\pgfkeysvalueof{/tt/bit/state}}%
+  \def\TTBitIsGear{\pgfkeysvalueof{/tt/bit/isgear}}
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
   \node (tt@bit@pos) at \TTCoord{#2}{#3} {};
+  \ifnum\TTBitIsGear=0
   \TTGfxBit{(tt@bit@pos)}{\TTBitState};
+  \else
+  \TTGfxGearBit{(tt@bit@pos)}{\TTBitState};
+  \fi
   \node[tt/peg, fill=white] at (tt@bit@pos) {};
   % optionally name the coordinate
   \ifx\TTName\empty\else
@@ -354,16 +432,13 @@
 \newcommand{\TTCrossover}[3][]{%
   \pgfkeys{/tt/piece, #1}%
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
-  \begin{scope}[x=\pgfkeysvalueof{/tt/unit}, y=\pgfkeysvalueof{/tt/unit}]
-    \coordinate (tt@x@pos) at \TTCoord{#2}{#3};
-    \node[tt/piecebox, minimum width=1.25, minimum height=0.55] (tt@x@box) at (tt@x@pos) {};
-    \draw[line width=1pt] ($(tt@x@box.center)+(-0.35,-0.18)$) -- ($(tt@x@box.center)+(0.35,0.18)$);
-    \draw[line width=1pt] ($(tt@x@box.center)+(-0.35,0.18)$) -- ($(tt@x@box.center)+(0.35,-0.18)$);
-    \node[font=\scriptsize] at ($(tt@x@box.center)+(0,0.27)$) {X};
-    \ifx\TTName\empty\else
-      \coordinate (\TTName) at (tt@x@pos);
-    \fi
-  \end{scope}
+
+  \node (tt@crossover@pos) at \TTCoord{#2}{#3} {};
+  \TTGfxCrossover{(tt@crossover@pos)};
+  \node[tt/peg, fill=white] at (tt@crossover@pos) {};
+  \ifx\TTName\empty\else
+  \coordinate (\TTName) at (tt@crossover@pos);
+  \fi
 }
 
 % 4) Interceptor-ish "Gate" (simple: blocks one side, passes other)
@@ -374,10 +449,22 @@
   \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
 
   \node (tt@interceptor@pos) at \TTCoord{#2}{#3} {};
-  \TTGfxInterceptor{(tt@interceptor@pos)};
+  \TTGfxInterceptor{(tt@interceptor@pos)}
   \node[tt/peg, fill=white] at (tt@interceptor@pos) {};
   \ifx\TTName\empty\else
   \coordinate (\TTName) at (tt@interceptor@pos);
+  \fi
+}
+
+\newcommand{\TTGear}[3][]{%
+  \pgfkeys{/tt/piece, #1}
+  \def\TTName{\pgfkeysvalueof{/tt/piece/name}}%
+
+  \node (tt@gear@pos) at \TTCoord{#2}{#3} {};
+  \TTGfxGear{(tt@gear@pos)};
+  \node[tt/peg, fill=white] at (tt@gear@pos) {};
+  \ifx\TTName\empty\else
+  \coordinate (\TTName) at (tt@gear@pos);
   \fi
 }
 

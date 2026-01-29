@@ -5,17 +5,27 @@
   style=authoryear
 ]{biblatex}
 \addbibresource{book.bib}
+\usepackage{xeCJK}
+\usepackage{csquotes}
+\usepackage{nameref}
+\usepackage{tasks}
+\usepackage{forest}
+\usepackage{amsmath}
 \usepackage{subcaption}
+\usepackage{xparse}
 \usepackage{prettyref}
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{qrcode}
 \usepackage{etoolbox}
+\usepackage{fmtcount}
 
 \def\giturl{https://github.com/tathougies/csforkids}
 
 \newrefformat{subfig}{Figure~\ref{#1}\subref{#1}}
+\newrefformat{fig}{Figure~\ref{#1}\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
+\newrefformat{sec}{{\bfseries \nameref{#1}}\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \makeatletter
@@ -25,13 +35,26 @@
 \usepackage{turingtumble}
 
 \usepackage{tikz}
-\usetikzlibrary{calc,external,decorations.pathreplacing,arrows.meta,positioning,fit}
+\usepackage {tikzpagenodes}
+\usetikzlibrary{calc,external,decorations.pathreplacing,arrows.meta,positioning,fit,tikzmark,ducks}
 % \tikzexternalize[prefix=figure-cache/]
 \usepackage{caption}
 
 \usepackage{graphicx} % for \rotatebox
 \usepackage{atbegshi}
 
+\makeatletter
+\newcommand{\CheckTikzPictureSide}{
+  \checkoddpage
+  \ifoddpage
+  \def\tikztufteouter{east}
+  \def\tikztufteinner{west}
+  \else
+  \def\tikztufteouter{west}
+  \def\tikztufteinner{east}
+  \fi
+}
+\makeatother
 \newcommand{\attribution}[1]{{\textcolor{lightgray}{\tiny #1}}}
 
 % -- upside-down footnotes --
@@ -105,6 +128,16 @@
   font={sf,footnotesize},
   textfont={sf,footnotesize,color=black!85}
 }
+\captionsetup[table*]{skip=8pt}
+
+\newcommand{\tikzbackground}[1]{
+  \AddToHookNext{shipout/background}{
+    \begin{tikzpicture}[remember picture, overlay]
+      \CheckTikzPictureSide
+      #1
+    \end{tikzpicture}
+  }
+}
 
 \usepackage[most]{tcolorbox}
 \tcbuselibrary{listings,skins,breakable}
@@ -138,27 +171,70 @@
   listing options={style=replstyle,#1}
 }
 
+\newcommand{\currboxcolor}{black}
+\newif\ifintcb
 \newtcolorbox{BigIdeaBox}{
   colback=IdeaBlue!6,colframe=IdeaBlue!55,
-  title=\sffamily\bfseries Big Idea,
-  before upper={\setlength{\parskip}{0.75em}}
+  title={\sffamily\bfseries Big Idea},
+  check odd page=true,
+  before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{IdeaBlue}\intcbtrue},
+  after upper={\intcbfalse}
 }
 \newtcolorbox{TryThisBox}{
   colback=TryGreen!6,colframe=TryGreen!55,
-  title=\sffamily\bfseries Try This!,
-  before upper={\setlength{\parskip}{0.75em}}
+  title={\sffamily\bfseries Try This!},
+  check odd page=true,
+  before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{TryGreen}\intcbtrue},
+  after upper={\intcbfalse}
 }
 \newtcolorbox{DeepDiveBox}{
   colback=DeepPurple!6,colframe=DeepPurple!55,
-  title=\sffamily\bfseries Optional: Going Deeper,
-  before upper={\setlength{\parskip}{0.75em}}
+  title={\sffamily\bfseries Optional: Going Deeper},
+  check odd page=true,
+  before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{DeepPurple}\intcbtrue},
+  after upper={\intcbfalse}
 }
 \newtcolorbox{TrackBox}[1]{
   colback=TrackOrange!6,colframe=TrackOrange!55,
-  title=\sffamily\bfseries Track: #1,
-  before upper={\setlength{\parskip}{0.75em}}
+  title={\sffamily\bfseries Track: #1},
+  check odd page=true,
+  before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{TrackOrange}\intcbtrue},
+  after upper={\intcbfalse}
 }
-\newcommand{\tryitsection}{\textbf{\large \textcolor{IdeaBlue}{Try This!}}}
+\newcommand{\tryitsection}{\textbf{\large \textcolor{IdeaBlue}{\sffamily Try This!}}}
+\newcommand{\boxtitle}[1]{\def\currentboxtitle{#1}\textbf{\sffamily \large \textcolor{\currboxcolor}{#1}}}
+
+\newcommand{\margmark}[2]{
+  \tikzmarknode{#1}{\strut}
+  \makemargmark{#1}{#2}
+}
+
+\makeatletter
+\newcommand{\makemargmark@odd}[2]{
+  \tikz[remember picture,overlay]{
+    \coordinate (x) at ([xshift=\marginparsep]current page text area.east |- #1.east);
+    \node[anchor=west, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
+  }
+}
+\newcommand{\makemargmark@even}[2]{
+  \tikz[remember picture,overlay]{
+    \coordinate (x) at ([xshift=-\marginparsep]current page text area.west |- #1.east);
+    \node[anchor=east, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
+  }
+}
+
+\newcommand{\makemargmark}[2]{
+  \ifintcb
+  \tcbifoddpage{\makemargmark@odd{#1}{#2}}{\makemargmark@even{#1}{#2}}
+  \else
+  \checkoddpage
+  \ifoddpage
+  \makemargmark@odd{#1}{#2}
+  \else
+  \makemargmark@even{#1}{#2}
+  \fi
+  \fi
+}
 
 \usepackage{titlesec}
 \titleformat{\chapter}
@@ -216,6 +292,10 @@
 \setlist[exercises,1]{%
   label=\textcolor{IdeaBlue}{\sffamily\bfseries W\theweek-\arabic*},
   ref=W\theweek-\arabic*,
+}
+
+\settasks{
+  label=\arabic*
 }
 
 % ---------- Answer collection to an appendix ----------
@@ -313,11 +393,23 @@
 % tufte-book already provides \marginnote and \marginfigure.
 % These wrappers keep your usage consistent.
 
-\newcommand{\aside}[1]{\marginnote{\raggedright\sffamily\footnotesize\color{black}#1}}
-\newcommand{\curious}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{DeepPurple}{Curious? }}\color{black}#1}}
-\newcommand{\didyouknow}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{IdeaBlue}{Did You Know? }}\color{black}#1}}
-\newcommand{\hint}[1]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{TryGreen}{Hint} }\color{black}#1}}
-\newcommand{\huh}[2]{\marginnote{\raggedright\sffamily\footnotesize\textbf{\textcolor{HuhRed}{Confused?}}\\\textbf{#1}\\\color{black}#2}}
+\def\notestyle{\raggedright\sffamily\footnotesize\color{black}}
+\newcommand{\aside}[1]{\marginnote{\notestyle\color{black}#1}}
+\newcommand{\curious}[1]{\marginnote{\notestyle\curiousboxtext\color{black}#1}}
+\newcommand{\didyouknow}[1]{\marginnote{\notestyle\textbf{\textcolor{IdeaBlue}{Did You Know? }}\color{black}#1}}
+\newcommand{\hint}[1]{\marginnote{\notestyle\hintnote\color{black}#1}}
+\newcommand{\huh}[2]{\marginnote{\notestyle\huhnote{#1}\\\color{black}#2}}
+
+\def\huhnote#1{\textbf{\textcolor{HuhRed}{Confused?}}\\\textbf{#1}}
+\def\hintnote{\textbf{\textcolor{TryGreen}{Hint}} }
+\def\curiousboxtext{\textbf{\textcolor{DeepPurple}{\sffamily Curious? }}}
+
+\NewDocumentCommand{\pseudofigure}{o m m}{
+  \par\medskip
+  #3\par
+  \captionof{figure}{#2}
+  \IfValueT{#1}{\label{#1}}
+}
 
 % A margin image helper (use with an image file in images/)
 \newcommand{\asideimg}[2][]{%
@@ -377,8 +469,8 @@
 \mainmatter
 \input{../Week1/chapter.tex}
 \input{../week2/chapter.tex}
-\input{../week3/chapter.tex}
-\input{../week4/chapter.tex}
+%\input{../week3/chapter.tex}
+%\input{../week4/chapter.tex}
 
 \appendix
 

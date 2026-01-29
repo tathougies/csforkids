@@ -33,6 +33,9 @@
             tcolorbox
             environ
             tikzfill
+            tikzmark
+            tikzpagenodes
+            ifoddpage
             pdfcol
             titlesec
             listings
@@ -44,6 +47,12 @@
             biblatex
             prettyref
             subfigure
+            forest
+            tasks
+            fmtcount
+            csquotes
+            tikzlings
+            tikzducks
             hyperref;
         };
 
@@ -60,12 +69,30 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
+        dependencies = [ tex pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
       in
       {
         devShells.default = pkgs.mkShell {
-          packages = [ tex pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
+          packages = dependencies;
           # Make fonts visible to XeTeX in the shell
           FONTCONFIG_FILE = fontsConf;
+        };
+
+        packages.book = pkgs.stdenv.mkDerivation {
+          name = "csforkids-book";
+          buildDepends = dependencies;
+
+          FONTCONFIG_FILE = fontsConf;
+
+          src = ./.;
+
+          build = ''
+          latexmk $src/Book/tufte.tex
+          '';
+
+          install = ''
+          ghostscript -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=$out/book.pdf
+          '';
         };
 
       });
