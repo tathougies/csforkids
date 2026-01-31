@@ -43,9 +43,9 @@ jobs:
           nix develop .#texOnly -L --command bash -lc '
              set -euo pipefail
              cd Book
-             latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build tufte.tex
+             latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build book.tex
              cd ..
-             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf Book/build/tufte.pdf
+             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf Book/build/book.pdf
           '
 
       - name: Upload PDF artifact

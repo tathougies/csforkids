@@ -47,10 +47,10 @@ A \term{computer} is just a system that follows rules!
 When we build a computer, we have to think about the sorts of things
 we want to compute. An extremely simple example of a computer is a lamp. This follows two very simple rules:
 
-\begin{itemize}
-\item \textcolor{IdeaBlue}{\textbf{Rule 1}} - When you flip the switch on, the light goes on.
-\item \textcolor{IdeaBlue}{\textbf{Rule 2}} - When you flip the switch off, the light goes off.
-\end{itemize}
+\begin{enumerate}[label={\textcolor{IdeaBlue}{\sffamily \textbf{Rule \arabic*}}}, leftmargin=4em]
+\item When you flip the switch on, the light goes on.
+\item When you flip the switch off, the light goes off.
+\end{enumerate}
 
 The lamp follows rules, but its rules are pretty simple.
 
@@ -82,11 +82,11 @@ which the marbles were released. For example, consider the computer in
 
 Let's walk through it. You start by releasing a blue marble from the left marble bank. The marble
 makes its way down until it hits the blue lever. Upon hitting the blue lever, \emph{another} blue
-marble is released. No red marble is ever released. Thus, the board accumulates blue marbles in its
+marble is released. No red marble is ever released. As the game progresses, the board accumulates blue marbles in its
 bottom bank. We call this bank its \term{output}.
 
 By changing how the pieces are laid out, you can make interesting computers that arrange marbles in
-a different way.
+different ways.
 \didyouknow{
   You can play Turing Tumble on a computer at the website \href{https://jessecrossen.github.io/ttsim}{https://jessecrossen.github.io/ttsim}\\
   \begin{center}
@@ -135,9 +135,9 @@ Tumble board.
 \termheading{The Bit}
 
 The \emph{bit} piece can point either left or right. If the bit is
-pointed to the left, the next marble that hits it goes left and the
+pointed to the left, the next marble that hits it goes right and the
 bit flips right. If the bit is pointed right, then the next marble
-that hits it goes right and the bit flips left.  \curious{A single bit
+that hits it goes left and the bit flips left.  \curious{A single bit
   stores the answer to one yes/no question. Real computers are built
   from quadrillions of bits working together.}
 
@@ -167,13 +167,13 @@ is caught and no further marbles will be released.
 
 \termheading{Gears}
 
-Some pieces, like interceptors, can be in multiple positions. Gears
-let us move these pieces. The \emph{gear bit} acts like a bit, but
-also moves a gear that can move other pieces, such interceptors. This
-lets one part of the machine \emph{change the behavior} of another
-part.\curious{When one part of a system changes another part, we call
-  this \term{feedback}. Feedback is how machines can control
-  themselves. }
+Some bit pieces have gears attached. These pieces are purple. The can
+be placed next to red gears. All gear bit pieces that are connected
+together will move at the same time. This can be used to cause one
+part of the board to change behavior based on how a bit is set
+elsewhere.\curious{When one part of a system changes another part, we
+call this \term{feedback}. Feedback is how machines can control
+themselves. }
 
 \begin{BigIdeaBox}
   Each piece follows a very simple rule, but combining them together,
@@ -285,7 +285,7 @@ But if we start this board off with a blue marble, then we don't just get two ma
 \end{marginfigure}
 
 Let's make a table of how many marbles we get corresponding to the number of bits we have.
-
+\vspace{1em}
 {
   \par
   \makebox[\linewidth][c] {
@@ -301,7 +301,7 @@ Let's make a table of how many marbles we get corresponding to the number of bit
 }
 
 Can you spot the pattern? Maybe it would help if we added one to each number of marbles released.
-
+\vspace{1em}
 {
   \par
   \makebox[\linewidth][c] {
@@ -331,36 +331,20 @@ initial bit. Are there ways to set up the initial positions of our bits in the t
 machines such that we get numbers in between? Try it and explore. To get you started consider the
 machine in \prettyref{fig:just-two}.
 
-\begin{figure}[p]
-  \label{fig:just-two}
-  \centering
-  \begin{tikzpicture}
-    \begin{ttboard}[blue marbles=8]
-      \TTBit[on]{3}{0}
-      \TTBit[off]{3}{2}
-
-      \TTRamp[right]{4}{1}
-      \TTRampRun{4}{1}{\TTRows-2}
-
-      \TTRamp[right]{2}{1}
-      \TTInterceptor{2}{3}
-    \end{ttboard}
-  \end{tikzpicture}
-  \caption{Here we have a two-bit machine, but we flipped the top bit so that it starts off pointing right. How many marbles are produced?}
-\end{figure}
 
 \section{Introduction to Binary Numbers}
 
 It may not seem like it, but in doing the above exercises, we constructed a physical example of the
-\term{binary} number system.
+\term{binary} number system. You may have figured it out already -- by changing how our switches are pointed before we start the machine, we can count out any number of marbles. Let's see how.
 
-Let's make a table of how our bits start and the total number of marbles released.
+We start by making a table of how our bits start and the total number
+of marbles released.
 
 \begin{center}
   \begin{tabular}{cccc}
     \toprule
     Bit Setup & Marbles & Bit Setup & Marbles\\
-    (top-to-bottom) & & (top-to-bottom) & \\\midrule
+    {\footnotesize (top-to-bottom)} & & {\footnotesize (top-to-bottom)} & \\\midrule
     \ttpieces{1} & 0 & \ttpieces{110} & 4 \\
     \ttpieces{0} & 1 & \ttpieces{010} & 5 \\
     \ttpieces{10} & 2 & \ttpieces{100} & 6 \\
@@ -398,11 +382,33 @@ Now, let's make a table of all our numbers:
   \end{tabular}
 \end{center}
 
+\didyouknow{The ancient Babylonians lived over 4,000 years ago and used a number system based on the number sixty, which is known as \emph{sexagesimal}. We still see remnants of this system today. It is the reason why a minute has sixty seconds, and an hour has sixty minutes. Today, we count with ten digits because we have ten fingers. This makes it easy to do math with our hands. One way to think about binary is to think about how you'd count if you only had two fingers!}
 What do you notice in the table above? Every single combination of bits corresponds to exactly one
 number. This is the binary number system in action. What we were actually doing with the bits when
 we arranged them on our board was that we were creating a \emph{representation} of a number. Then
 the machine simply counted out the number of marbles we had set by moving the bits. Each combination
 of bits let us count out a different number of marbles.
+
+\begin{marginfigure}
+\centering
+\includegraphics[width=0.8\marginparwidth]{../week1/figures/babylonian.eps}
+\caption{The Ancient Babylonians counted using a number system based on the number sixty. They had sixty ``digits'' made using particular marks on cuneiform tablets. Can you imagine having to count with sixty numbers? That makes binary seem positively easy!\attribution{By Josell7, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=9862983}}
+\label{fig:babylonians}
+\end{marginfigure}
+
+\begin{figure}[p]
+  \label{fig:just-two} \centering \begin{tikzpicture} \begin{ttboard}[blue
+  marbles=8] \TTBit[on]{3}{0} \TTBit[off]{3}{2}
+
+      \TTRamp[right]{4}{1}
+      \TTRampRun{4}{1}{\TTRows-2}
+
+      \TTRamp[right]{2}{1}
+      \TTInterceptor{2}{3}
+    \end{ttboard}
+  \end{tikzpicture}
+  \caption{Here we have a two-bit machine, but we flipped the top bit so that it starts off pointing right. How many marbles are produced?}
+\end{figure}
 
 \subsection{Exploring the Binary Numbers}
 \label{sec:binary-numbers}
@@ -580,7 +586,7 @@ So the binary number $1101001_2$ corresponds to decimal $105_{10}$.
 \section{From Marbles to Code}
 
 \begin{marginfigure}
-  \includegraphics[width=0.8\linewidth]{../Week1/figures/alan-turing.jpg}
+  \includegraphics[width=0.8\linewidth]{../week1/figures/alan-turing.jpg}
   \caption{\textbf{Alan Turing} (1912-1954) asked ``What can machines do if they follow
     rules''?. The name \emph{Turing Tumble} comes from Alan Turing. }
 \end{marginfigure}
@@ -623,7 +629,7 @@ In this class, we will use the \textbf{Thonny} Python environment.
 \begin{figure}
   \fixfigure
   \centering
-  \includegraphics[width=0.9\linewidth]{../Week1/figures/thonny-interface.pdf}
+  \includegraphics[width=0.9\linewidth]{../week1/figures/thonny-interface.pdf}
   \caption{The Thonny interface. The interface is split into two
     parts: (1) the editor and (2) the prompt.}
   \label{fig:thonny-interface}
@@ -662,7 +668,7 @@ The rule for numbers is that when you enter them in, you get the same
 number out!
 
 \begin{BigIdeaBox}
-  Just like the balloon thrown up in the air, and just like the
+  Just like the ball thrown up in the air, and just like the
   machines we built, every time you run these rules, the answer is the
   same!
 \end{BigIdeaBox}
@@ -679,6 +685,10 @@ the number. Python will respond back in decimal.
 
 We can also ask Python to write a decimal number in binary using \code{bin()}.
 
+\hint{From now on, all the rules we see will be
+    \emph{colored}. You don't need to enter the colors in. The colors
+    only serve to make the rules easier to read. This is called
+    \term{syntax highlighting}.}
 \begin{replbox}
 bin(10)<ENTER>
 bin(1)<ENTER>
@@ -870,8 +880,8 @@ about it, before we find out the answer in the next section.
 
 \begin{marginfigure}
   \centering
-  \includegraphics[width=0.9\marginparwidth]{../Week1/figures/game-of-life.png}
-  \caption{The Game of Life by John Conway is a system that follows simple rules that can create complex behavior. Above is an example of expressing a rule in the Game of Life. See the Deep Dive Box for more information.\attribution{Hyperdeath, CC BY-SA 3.0 <https://creativecommons.org/licenses/by-sa/3.0>, via Wikimedia Commons}}
+  \includegraphics[width=0.9\marginparwidth]{../week1/figures/game-of-life.png}
+  \caption{The Game of Life by John Conway is a system that follows simple rules that can create complex behavior. Above is an example of expressing a rule in the Game of Life. See the Deep Dive Box on page \pageref{box:gameoflife} for more information.\attribution{Hyperdeath, CC BY-SA 3.0 <https://creativecommons.org/licenses/by-sa/3.0>, via Wikimedia Commons}}
 \end{marginfigure}
 
 \subsection{Some Rules Don't Make Sense}
@@ -915,8 +925,34 @@ tries to give us information that can help us correct the error.
 Although Python will provide some information that can be useful to
 fix our program, Python is itself a collection of rules, and its rules
 may not fully understand what we are trying to do based on what we
-input. This is where the job a programmer becomes important.
+input. This is where the job of a programmer becomes important.
 
+See \prettyref{tab:python-errors} for examples of some errors we
+might encounter as we continue with our learning. You don't need to
+memorize these, but it may be useful to refer back.
+
+\begin{table}
+  \fixfigure
+
+\begin{tabularx}{\linewidth}{lp{0.6\linewidth}}
+\toprule
+\code{NameError} & A name of a rule was mistyped (i.e., you typed \code{length} instead of \code{len}). \\
+\code{TypeError} & You used a number where a word was expected or vice versa (i.e., \code{'hello'/2}). \\
+\code{ZeroDivisionError} & You tried to divide a number by zero. Uh-oh! \\
+\code{SyntaxError} & Python couldn't make sense of what you typed because it didn't follow Python's rules (i.e., you typed \code{2 + 5 *} and python doesn't know what to multiply 5 by). \\
+\code{OverflowError} & Some kinds of calculations on numbers can result in very large numbers that don't fit into the computer. \\\bottomrule
+\end{tabularx}
+
+\caption{As we continue in our learning, we will most likely encounter more errors. Errors are a
+  \emph{normal} part of programming. They do not mean anything is broken! It just means there's been
+  a misunderstanding between what you thought was going to happen and what actually happened when
+  the computer followed through exactly with the rules you set out for it. Instead of being
+  discouraged, think of every error as an opportunity learn \emph{more}!}
+\label{tab:python-errors}
+\end{table}
+
+\begin{bookbox}[p]
+\fixfigure
 \begin{DeepDiveBox}
   \boxtitle{Simple Rules, Surprising Worlds: The Game of Life}
 
@@ -926,11 +962,7 @@ input. This is where the job a programmer becomes important.
   Despite the name it isn't really a game -- it's a world that follows rules.
 
   Imagine a giant sheet of graph paper. Each square can either be \emph{alive} or
-  \emph{dead}. That's it. No colors, no thinking, nothing. Just alive or dead.
-  \margmark{play-life}{\curiousboxtext You can play the game of life by going to \href{https://playgameoflife.com}{https://playgameoflife.com}.\\
-  \begin{center}
-  \qrcode{https://playgameoflife.com}
-  \end{center}}
+  \emph{dead}. That's it. No colors, no thinking, nothing. Just alive or \tikzmarknode{play game of life}{dead}.
 
   The game proceeds in turns. At each turn, each square looks at its eight neighbors and follows
   these simple rules (all squares update at the same time):
@@ -940,25 +972,7 @@ input. This is where the job a programmer becomes important.
   \item If a square is \emph{alive} and has more than three live neighbors, it suffocates and dies.
   \item If a square is \emph{dead} and has exactly three live neighbors, it comes to life.
   \end{enumerate}
-  \margmark{gameofliferules}{
-    Each turn, a cell looks at its neighbors and decides to either come to life, stay alive, or die. \\
-    \begin{tikzpicture}
-      \foreach \x in {0,1,2} {
-        \foreach \y in {0,1,2} {
-          \draw (\x,\y) rectangle ++(1,1);
-        }
-      }
-      \fill[red] (1,1) rectangle ++(1,1);
-      \node [anchor=south west] at (0, 2) {1}; % top-left
-      \node [anchor=south west] at (1, 2) {2}; % top-middle
-      \node [anchor=south west] at (2, 2) {3}; % top-right
-      \node [anchor=south west] at (0, 1) {4}; % middle-left
-      \node [anchor=south west] at (2, 1) {5}; % middle-right
-      \node [anchor=south west] at (0, 0){6}; % bottom-left
-      \node [anchor=south west] at (1, 0) {7}; % bottom-middle
-      \node [anchor=south west] at (2, 0) {8}; % bottom-right
-    \end{tikzpicture}
-  }
+  \tikzmarknode{game of life rules}{}
 
   \textbf{\sffamily \large What Happens?}
 
@@ -972,6 +986,37 @@ input. This is where the job a programmer becomes important.
     looks alive, planned, or intelligent -- even when nothing is thinking}. This is the same idea
   behind the electronic computers that we use every day.
 \end{DeepDiveBox}
+\label{box:gameoflife}
+\end{bookbox}
+\onfloatpage{box:gameoflife}{
+  \makemargmark{play game of life}{
+    \margmark{play-life}{\curiousboxtext You can play the game of life by going to \href{https://playgameoflife.com}{https://playgameoflife.com}.\\
+      \begin{center}
+        \qrcode{https://playgameoflife.com}
+    \end{center}}
+  }
+  \makemargmark{game of life rules}{
+    \margmark{gameofliferules}{
+      Each turn, a cell looks at its neighbors and decides to either come to life, stay alive, or die. \\
+      \begin{tikzpicture}
+        \foreach \x in {0,1,2} {
+          \foreach \y in {0,1,2} {
+            \draw (\x,\y) rectangle ++(1,1);
+          }
+        }
+        \fill[red] (1,1) rectangle ++(1,1);
+        \node [anchor=south west] at (0, 2) {1}; % top-left
+        \node [anchor=south west] at (1, 2) {2}; % top-middle
+        \node [anchor=south west] at (2, 2) {3}; % top-right
+        \node [anchor=south west] at (0, 1) {4}; % middle-left
+        \node [anchor=south west] at (2, 1) {5}; % middle-right
+        \node [anchor=south west] at (0, 0){6}; % bottom-left
+        \node [anchor=south west] at (1, 0) {7}; % bottom-middle
+        \node [anchor=south west] at (2, 0) {8}; % bottom-right
+      \end{tikzpicture}
+    }
+  }
+}
 
 \section{Conclusion}
 
@@ -1012,7 +1057,7 @@ describe to the computer the things we want to make.
     number in a register and \emph{adds one} to that binary number?
   \item Can you extend the board you made above to contain two separate registers and have the board
     add the two binary numbers together? Try one-bit and two-bit registers. What limits do you run
-    up against as you try to increase the number of bits?   
+    up against as you try to increase the number of bits?
   \end{enumerate}
 
 \item Figure out the rule that the following Turing Tumble boards follow when a blue ball is released first:
@@ -1087,16 +1132,15 @@ describe to the computer the things we want to make.
   \end{tasks}
 \item Predict the answer to the following Python rules:
   \begin{enumerate}
-  \item \code{1 \enterkey}
-  \item \code{-1 \enterkey}
-  \item \code{3 + 2 \enterkey}
-  \item \code{3 * 9 + 6 \enterkey}
-  \item \code{6 * 3 * 2 \enterkey}
-  \item \code{6 + 3 + 2 \enterkey}
-  \item \code{6 * 4 - 8 * 2 \enterkey}
-  \item \code{6 * 4 // 2 \enterkey}\hint{Remember that \code{//} means division in Python}
+  \item \code{1 \enterkey}\answer{1}
+  \item \code{-1 \enterkey}\answer{-1}
+  \item \code{3 + 2 \enterkey}\answer{5}
+  \item \code{3 * 9 + 6 \enterkey}\answer{35}
+  \item \code{6 * 3 * 2 \enterkey}\answer{36}
+  \item \code{6 + 3 + 2 \enterkey}\answer{11}
+  \item \code{6 * 4 - 8 * 2 \enterkey}\answer{8}
+  \item \code{6 * 4 // 2 \enterkey}\hint{Remember that \code{//} means division in Python}\answer{12}
   \end{enumerate}
-  \answer{1,-1,5}
 
 \item Try the following rules.
   \begin{enumerate}
@@ -1106,9 +1150,10 @@ describe to the computer the things we want to make.
   \item \code{len("")}
   \end{enumerate}
   What does the \code{len} rule do?
+  \answer{It calculates how many letters are in the word.}
 \end{exercises}
 
-\begin{largetable}
+\begin{table*}
   \caption{This is a list of symbols you can use to combine rules in
     Python. Symbols that appear first are executed first, unless you
     use parentheses to force some rules to ge first. The behavior of
@@ -1128,4 +1173,4 @@ describe to the computer the things we want to make.
       \code{len} & \code{len(word)} & Get the number of letters and digits in the word \\
       \code{bin} & \code{bin(number)} & Get the binary number corresponding to the number \\\bottomrule
   \end{tabularx}
-\end{largetable}
+\end{table*}

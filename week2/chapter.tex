@@ -1,3 +1,5 @@
+% -*- mode: latex -*-
+
 \week{Data}
 
 Get out a piece of paper and draw a duck. It can be any kind of duck you want, in whatever pose.
@@ -33,129 +35,19 @@ meaning that made sense to them. Computers don't do that. They simply do exactly
 
 \section{Week 1 Review}
 
-Last week, we discussed how certain machines obey rules. Once the rules are set up, the machine
-always obeys those rules. We constructed machines last week that counted marbles. We counted out the
-right number of marbles by manipulating switches on a board. The orientation of these switches
-determined how many marbles would fall.
+Last week, we discussed how certain machines obey rules. Once the rules were set up, the machine
+always obeyed those rules. The machines we constructed counted marbles. We controlled how many
+marbles came out by manipulating switches on a board.
 
-Computers also use switches to store numbers. Each switch in a computer can be on or off, or a ``1''
-or ``0''. Any combination of 1s and 0s can be used to write a number in binary form.
+Computers also use switches to count. Each switch in a computer can be on or off, or a ``1''
+or ``0''. Every number can be written as 1s and 0s.
 
 All of these principles are based on fixed rules.
 
-We saw that Python also follows rules. Python can manipulate numbers and words. Although numbers are
-stored internally in a binary form, Python interprets them for us, so that we can talk to it using
-the numbers we're familiar with. Python has rules for converting numbers back into binary form and
-also for manipulating words.
-
-We also saw that Python has rules regarding what kind of things it can
-talk about. When we mistyped something in Python, we get something
-called an error. See \prettyref{tab:python-errors} for a list of
-errors we may see this week.
-
-\begin{table}
-  \fixfigure
-
-\begin{tabularx}{\linewidth}{lp{0.5\linewidth}}
-\toprule
-\code{NameError} & A name of a rule was mistyped (i.e., you typed \code{length} instead of \code{len}). \\
-\code{TypeError} & You used a number where a word was expected or vice versa (i.e., \code{'hello'/2}). \\
-\code{ZeroDivisionError} & You tried to divide a number by zero. Uh-oh! \\
-\code{SyntaxError} & Python couldn't make sense of what you typed because it didn't follow Python's rules (i.e., you typed \code{2 + 5 *} and python doesn't know what to multiply 5 by). \\
-\code{OverflowError} & Some kinds of calculations on numbers can result in very large numbers that don't fit into the computer. \\\bottomrule
-\end{tabularx}
-
-\caption{As we continue in our learning, we will most likely encounter more errors. Errors are a
-  \emph{normal} part of programming. They do not mean anything is broken! It just means there's been
-  a misunderstanding between what you thought was going to happen and what actually happened when
-  the computer followed through exactly with the rules you set out for it. Instead of being
-  discouraged, think of every error as an opportunity learn \emph{more}!}
-\label{tab:python-errors}
-\end{table}
-
-\section{Numbers All the Way Down}
-
-Last week, we discussed how computers store numbers using switches that are either on or
-off. \hint{See \prettyref{sec:binary-numbers} for a review.}
-
-Everything on a computer is stored as numbers. Even the words we saw last class are stored using
-numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
-call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as \code{str}.}
-
-Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
-\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
-international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
-  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
-computer systems would often use their own custom standard or a standard particular to individual
-countries and languages. Reading files created using one standard on a computer designed to work
-with another standard could result in garbage data. Another common way to write strings as numbers
-is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
-Interchange}. ASCII covers most characters used in English and other languages that use the Latin
-alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
-character.
-
-It may seem crazy that each letter has a number that goes along with it, but I can prove it to you. Try this in Python:
-
-\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
-\code{ord('hello')}!}
-\begin{replbox}
->>> ord('5')<ENTER>
-53
->>> ord('Z')<ENTER>
-90
->>> ord('>')<ENTER>
-62
->>> ord('\'')<ENTER>(*@ \tikzmarknode{python escapes node}{} @*)
-39
->>> ord('h')<ENTER>
-104
-\end{replbox}
-\makemargmark{python escapes node}{\notestyle\hintnote Python words are delimited by single quotation marks (\code{'}). But what if you want to talk about the word consisting of just the single quote character itself or a word containing a single quote character (like an Irish name with \enquote{O'})? In order to tell Python that you want a \code{'} treated as just the letter and not part of the Python rules, you use the \code{\textbackslash} character in front of it. This word \code{'\textbackslash''} is just the word consisting of a single single-quote letter.}
-%}
-
-
-You can also go from a number \emph{to} a word.
-
-\hint{Try all kinds of numbers here, and see what you get!}
-\begin{replbox}
->>> chr(76)<ENTER>
-'L'
->>> chr(53)<ENTER>
-'5'
->>> chr(54)<ENTER>
-'6'
->>> chr(233)<ENTER>
-'é'
->>> chr(1103)<ENTER>
-'я'
->>> chr(26159)<ENTER>
-'是'
->>> chr(22398)<ENTER>
-'学'(*@\tikzmarknode{chinese xie}{}@*)
->>> chr(128512)<ENTER>
-'(*@{\EmojiFont 😀}@*)'
-\end{replbox}
-\makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
-
-Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
-learned about last week to see the binary representation of these numbers.
-
-\begin{replbox}
->>> bin(ord('5'))<ENTER>
-'0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
->>> bin(ord('Z'))<ENTER>
-'0b1011010'
->>> bin(ord('\''))<ENTER>
-'0b100111'
-\end{replbox}
-\makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
-Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
-
-See it's just numbers all the way down!
-
-\begin{BigIdeaBox}
-  All information inside a modern computer is stored as numbers, even words!
-\end{BigIdeaBox}
+We saw that Python also follows rules. We learned that Python can manipulate numbers and
+words. Although numbers are stored internally in a binary form, Python interprets them for us, so
+that we talk to it using the numbers we're familiar with. Python has rules for converting
+numbers back into binary form and also for manipulating words.
 
 \section{Drawing a Very Precise Duck}
 
@@ -168,18 +60,19 @@ See it's just numbers all the way down!
   \label{fig:precise-duck}
 \end{marginfigure}
 
-Think back to the duck exercise we did at the beginning of class. We
-found it was hard to describe a duck perfectly to our friend. But that's because we didn't know
-\emph{how} to describe a duck properly. We weren't \emph{precise} enough.
+Think back to the duck exercise we did at the beginning of class. We found it was hard to describe a
+duck perfectly to our friend. That wasn't because we didn't know what a duck is -- it's because we
+had no way to describe it precisely.
 
 \begin{BigIdeaBox}
 English is a great language for everyday communication, but it is not great at being exact about
-visual information. To talk about drawings, we need a language that allows us to be precise about something.
+visual information. To talk about drawings, we need a language that allows us to be precise about
+something.
 \end{BigIdeaBox}
 
 Whenever we want to describe something in detail, we have to understand how to be precise about
 it. Switches are precise -- they are either on or off. Numbers are precise too, because they can be
-represented by a bunch of switches. We need a way of turning an image into numbers.
+represented by a bunch of switches. We need a way of describing images in a similar manner.
 
 %\begin{marginfigure}
 %  \centering
@@ -195,7 +88,9 @@ represented by a bunch of switches. We need a way of turning an image into numbe
 %   called a \term{simulation}.
 % \end{TrackBox}
 
-
+\begin{bookbox}[p]
+  \fixfigure
+\label{box:pixels}
 \begin{TrackBox}{Graphics}
   \boxtitle{How Computers Draw}
 
@@ -220,16 +115,6 @@ square on the grid can be named by giving two numbers. These two numbers togethe
 \term{coordinate}. We usually write the \emph{column} number first, and the \emph{row} number
 last. This system is called the \emph{cartesian coordinate} system.
 
-\makemargmark{points on a screen}{
-  \par\medskip
-  \input{../week2/figures/cartesian-grid.tex}
-  \par
-  \captionof{figure}{Just like we can refer to any
-    point on a line by a number, we can refer to any point on a rectangle or grid using two
-    numbers. In this image of a flower, we can use cartesian coordinates to reference any square and
-    change its color or turn it on or off.}
-  \label{fig:cartesian-grid}
-}
 \emph{Everything} you see on your screen is the result of your
 computer following rules that turn lights on or off (see
 \prettyref{fig:pixels}). Even the text you read is created by following
@@ -256,10 +141,421 @@ Here are some problems to think about.
 \item How would you draw a \emph{circle} around the point $(3, 8)$?
 \end{enumerate}
 \end{TrackBox}
-
+\end{bookbox}
+\onfloatpage{box:pixels}{
+  \makemargmark{points on a screen}{
+    \input{../week2/figures/cartesian-grid.tex} \par
+    \captionof{figure}{Just like we can refer to any point on a line by
+      a number, we can refer to any point on a rectangle or grid using
+      two numbers. In this image of a flower, we can use cartesian
+      coordinates to reference any square and change its color or turn
+      it on or off.}
+    \label{fig:cartesian-grid}
+  }
+}
 
 \subsection{Drawing Our First Image}
 
+In order to draw on a computer, we have to first think about what sort of \emph{language} we need to
+use to be specific about what to draw. Once such language is called Turtle.
+
+Turtle works by following -- you guessed it -- rules! Turtle works like an Etch-a-sketch. You supply
+instructions that move a pen around a page. Turtle draws a line as the pen moves.
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\textwidth]{../week2/figures/Jack_of_hearts.jpg}
+  \caption{The Turtle language works like an Etch-a-sketch. A pen moves around the page leaving marks that turn into images, such as this one.\attribution{By Etcha - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=5395767}}
+  \label{fig:etchasketch}
+\end{marginfigure}
+
+% TODO Setup course materials
+
+We're going to use a version of Turtle that is a bit more intuitive than ``standard'' Turtle. This
+is provided as part of the course materials in the form of a \term{module}, which is a re-usable
+bundle of Python code. In order to use this version, we will have to load it into Python. We can do
+this with the \kw{import} rule.
+
+We don't need to know all the details to use it. \curious{Check out \prettyref{fig:import} for a
+  complete rundown of \kw{import}.} Let's go ahead and load Turtle and draw our first shape: a line.
+
+\begin{figure}
+  \centering
+  \begin{minipage}{0.9\textwidth}
+    \Huge \ttfamily
+    \vspace{1.5cm}
+    \begin{tcolorbox}[sharp corners]
+      \tikzmarknode{importkw}{\kw{import}} \tikzmarknode{import module name}{week2.draw} \tikzmarknode{aspart}{\kw{as} draw}
+    \end{tcolorbox}
+    \vspace{3cm}
+  \end{minipage}
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[above] (importkwnote) at ($(importkw) + (0, 1cm)$) {
+      \begin{tcolorbox}[code note]
+        \footnotesize \sffamily
+        The \kw{import} rule tells Python to start loading a module.
+      \end{tcolorbox}
+    };
+    \node[below] (import module name note) at ([yshift=2.5cm]import module name.north) {
+      \begin{tcolorbox}[code note]
+        \footnotesize \sffamily
+        This is the name of the ruleset we want to use. These are known as \term{modules}.
+      \end{tcolorbox}
+    };
+    \node[anchor=north west] (aspartnote) at ([yshift=-0.6cm]aspart.south west) {
+      \begin{tcolorbox}[code note, width=5cm]
+        \footnotesize \sffamily
+        This \emph{names} the module. We can refer to rules in the
+        module as \code{draw.rule}. You can also ignore the \kw{as}
+        part, and use the full name \code{week2.draw.rule}.
+      \end{tcolorbox}
+    };
+    \draw[->] (importkwnote.south) -- ([yshift=1em]importkw.north);
+    \draw[->] (aspartnote.north) -- (aspart.south);
+    \draw[->] ([yshift=2ex]import module name note.south) -- ([yshift=1em]import module name.north);
+  \end{tikzpicture}
+  \caption{The \kw{import} rule in Python lets you use extra sets of functionality that are not
+    built-in to Python. It takes the name of a module, which is a series of words, separated by
+    dots. You also specify how you want to refer to the rules contained in that module, after
+    \kw{as}. If you don't include \kw{as}, you have to use the full name of the module.}
+  \label{fig:import}
+\end{figure}
+
+\begin{replbox}
+>>> (*@\tikzmarknode{import keyword}{\kw{import}}@*) week2.draw as (*@\tikzmarknode{week2 draw name}{draw}@*)<ENTER>
+>>> draw.draw(draw.forward(100))<ENTER>
+\end{replbox}
+
+What happened here? The pen started in the middle of the page, and then went \emph{forward} by 100
+units.\curious{The units used by Turtle are called \term{pixels}. See \prettyref{fig:pixels} for
+  more information} In this case, the pen always starts pointed to the right. So when we go forward,
+turtle draws a line to the right.
+
+Let's break it down further though. There are actually \emph{two} rules being used here. The first
+is \code{draw.draw}. This rule takes a drawing and draws it. It doesn't draw anything on its own. If
+you just did the following, you'd get a blank screen:
+
+\begin{replbox}
+>>> draw.draw()<ENTER>
+\end{replbox}
+
+You need to make a drawing in order for \code{draw.draw} to do something. This is what the
+\code{draw.forward} rule does. Go ahead and try this:
+
+\begin{replbox}
+>>> draw.forward(10)<ENTER>
+[('forward', 10)]
+\end{replbox}
+
+That didn't draw anything! That's because the \code{draw.forward} rule only describes \emph{what} to
+draw. It doesn't do any drawing yourself. You need to ask Python to draw the drawing you create.
+
+Now that we understand the difference between doing the drawing and planning the drawing, let's talk
+about what we can do with the plans.
+
+The simplest thing we can do with drawing plans is to combine them together in sequence -- first
+make one drawing, then the other. You can put drawings together by using \code{+}, just like you can
+with numbers. Let's try this:
+
+\begin{replbox}
+>>> draw.forward(10) + draw.turn('right') + draw.forward(20)<ENTER>
+[('forward', 10), ('right', 90), ('forward', 20)]
+\end{replbox}
+
+Again, that's just the \emph{plan} for the drawing. It doesn't \emph{do} anything until you draw
+it. Let's try drawing it:
+
+\begin{replbox}
+>>> draw.draw(draw.forward(10) + draw.turn('right') + draw.forward(20))<ENTER>
+\end{replbox}
+
+That's more like it.
+
+What we saw above is the distinction between \term{data} and
+effects. Data is information about something. Data describes what
+something is. The \code{draw.forward} and \code{draw.turn} rules made
+\emph{data}. The \code{draw.draw} rule used that data to make a
+drawing.\didyouknow{The difference between data and effects is similar
+  to the difference between \emph{nouns} and \emph{verbs}. Nouns don't
+  do anything on their own. They're just there. You need a verb to do
+  something with it.}
+
+\subsection{More Complex Drawings}
+
+\curious{For a full list of all the Turtle rules we can use see \prettyref{tab:turtle}.}
+Let's try changing the pen color using the \code{draw.color} rule.
+
+\begin{replbox}
+>>> draw.draw(draw.color('blue')+draw.forward(100))<ENTER>
+\end{replbox}
+
+Did it do what you thought it would?
+
+You've seen how to turn the pen above to draw a corner. We can go ahead and extend that to draw a square.
+
+\AddToHookNext{shipout/foreground}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \node (repl dots hint) at ($(repl dots.north east) + (8cm, 1cm)$) {
+      \begin{tcolorbox}[code note]
+        \footnotesize \sffamily
+        If we don't complete our rule on the \code{{>}{>}{>}} line, Python will respond with these dots to
+        ask us to complete the rule. It tries to be nice that way!
+      \end{tcolorbox}
+    };
+    \draw[->] (repl dots hint.south) to[bend left] (repl dots.south east);
+  \end{tikzpicture}
+}
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week2/figures/CatPixels.pdf}
+  \caption{Every image you see on a computer screen is made up of tiny lights called \term{pixels}
+    arranged in a grid. If you carefully look at your computer screen, you may be able to see the
+    individual pixels. By turning the lights on and off and adjusting the color, the computer can
+    display any image, such as this one of a cat.  \attribution{Original: ReffPixels?Vector:
+      OmegaFallon, CC BY-SA 4.0 <\url{https://creativecommons.org/licenses/by-sa/4.0}>, via
+      Wikimedia Commons}}
+  \label{fig:pixels}
+\end{marginfigure}
+\begin{replbox}
+>>> draw.draw(draw.color('blue') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+(*@\tikzmarknode{repl dots}{...}@*)  draw.forward(100))<ENTER>
+\end{replbox}
+\AddToHookNext{shipout/foreground}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \node (repl dots hint) at ($(repl dots.north east) + (8cm, 1cm)$) {
+      \begin{tcolorbox}[code note]
+        \footnotesize \sffamily
+        If we don't complete our rule on the \code{{>}{>}{>}} line, Python will respond with these dots to
+        ask us to complete the rule. It tries to be nice that way!
+      \end{tcolorbox}
+    };
+    \draw[->] (repl dots hint.south) to[bend left] (repl dots.south east);
+  \end{tikzpicture}
+}
+
+Phew! That was a lot of typing! If we had to do that everytime we wanted to draw a square, we would
+have to write \emph{a lot} of \emph{rules}.
+
+\section{Re-using models}
+
+One of the benefits of saving our rules is that we can do the same thing over again. Above, we
+created a precise description of a square. Now we need to figure out a way to re-use it.
+
+The first way to re-use rules is to save them into a \term{file}. We call rules that we save on a
+computer \term{source code}.
+
+Let's try saving a rule. Open up Thonny and, instead of the prompt, point your mouse at the editor
+(\prettyref{fig:thonny-interface}). Rules that we type here can be saved on the computer.
+\hint{You can also access all these files on the internet at \url{\giturl}.\\
+\begin{center}
+\qrcode{\giturl}
+\end{center}
+}
+
+\aside{\textcolor{red}{TODO DESCRIBE HOW TO LOAD THE FILE}}
+\begin{TryThisBox}
+  Type the following into the editor and then save it in a file named
+  \texttt{model.py}.
+  \begin{lstlisting}
+from week2.draw import *<ENTER>
+<ENTER>
+draw(<ENTER>
+  color('blue') +<ENTER>
+  forward(100) + turn('right') +<ENTER>
+  forward(100) + turn('right') +<ENTER>
+  forward(100) + turn('right') +<ENTER>
+  forward(100)
+)<ENTER>
+\end{lstlisting}
+\end{TryThisBox}
+
+Let's try using it:
+
+% TODO describe how to load the file
+
+You should get something like this:\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
+  lights going on and off, but how do they represent \emph{sound}?
+
+  When our ears hear sound, they are responding to \emph{changes} in
+  air pressure.
+
+  Computers represent this -- you guessed it -- using numbers!
+
+  With graphics, we had to break up the rectangular screen into small
+  chunks called pixels. For sound, we instead break up \emph{time}
+  into really small sections (tens of thousands per second!) called
+  samples. Within each sample, we store a number which represents the
+  pressure the computer ought to output at that time. When the samples
+  are sequenced together rapidly using a componenty called a DAC or
+  \term{digital-to-analog converter}. }
+
+
+\includegraphics[width=0.8\linewidth]{../week2/figures/onesquare.eps}
+\subsection{Introducing \kw{def}}
+
+That's good, but computers can draw squares without loading
+files. This is where the \kw{def} rule come in. Here's how it works.
+
+When we have a bunch of rules we want to re-use, we can use \kw{def} to give a \emph{name} to our
+rules. Then, underneath
+\kw{def}, we write the rules that make up the new rule. The rules underneath have to be \term{indented}, which means that we have to type two
+{\spacekey}s before typing the rule.\curious{Python is known as an \emph{indentation-aware}
+language. Some languages do not care about spaces and have other ways to figure out which rules
+belong as sub-rules of other rules. But for now, we'll stick with how Python does things!}
+
+\begin{TryThisBox}
+  Type the following into \texttt{model.py}
+  \begin{lstlisting}
+def square():
+  draw.draw(<ENTER>
+    draw.color('blue') +<ENTER>
+    draw.forward(100) + draw.turn('right') +<ENTER>
+    draw.forward(100) + draw.turn('right') +<ENTER>
+    draw.forward(100) + draw.turn('right') +<ENTER>
+    draw.forward(100)
+  \end{lstlisting}
+\end{TryThisBox}
+
+Now try this in the prompt.\hint{Remember to reload the file.}
+
+\begin{replbox}
+>>> square()<ENTER>
+\end{replbox}
+
+Can we draw two squares? Let's try it?
+
+\begin{replbox}
+>>> square()<ENTER>
+>>> square()<ENTER>
+\end{replbox}
+
+Uh-oh! The second \code{square()} started from a blank screen. This is
+because the \code{draw.draw()} rule always starts from a blank
+screen. Because we put \code{draw.draw} in our \code{square} rule
+above, \code{square} became an action, even though we just wanted the
+\emph{data} that was describing our drawing.
+
+Let's be clear about what happened.
+
+\begin{enumerate}
+\item You used the \code{square()} rule.
+\item Inside \code{square()}, \code{draw()} drew the drawing we gave to it, which is one square on a new blank screen.
+\item You used the \code{square()} rule \emph{again}.
+\item This caused \code{draw()} to do what it \emph{always} does, which is to create a blank screen and draw a square.
+\end{enumerate}
+
+If we want to draw two squares, we're going to have to combine the
+rules that just specified the \emph{data} that describes the
+square. Let's try it.
+
+\hint{The \code{\textbackslash} at the end of the line means to treat the next line as part of the
+  current line. You can skip them if you want and write everything on one line, but such long lines
+  won't fit on this page!}
+\begin{TryThisBox}
+  Type the following into \texttt{model.py}
+  \begin{lstlisting}
+def square_shape():
+  draw.color('blue') + \<ENTER>
+  draw.forward(100) + draw.turn('right') + \<ENTER>
+  draw.forward(100) + draw.turn('right') + \<ENTER>
+  draw.forward(100) + draw.turn('right') + \<ENTER>
+  draw.forward(100)
+  \end{lstlisting}
+\end{TryThisBox}
+
+Reload the file into the prompt, and let's try it.
+
+\begin{replbox}
+>>> draw.draw(square_shape() + draw.forward(200) + square_shape())<ENTER>
+\end{replbox}
+
+Uh-oh! That didn't work. What's going on?
+
+Remember above how the \code{draw.forward()} was a \emph{plan} for a
+drawing, but not the drawing itself? We were able to see the plan, by
+just using \code{draw.forward()} without \code{draw.draw()}. Let's see
+if we can figure out what's going on with \code{square\_shape()}.
+
+First, let's think about what we want. We would want
+\code{square\_shape()} to be a drawing plan that went forward four
+times, and turned right each time.
+
+Is that what really happens?
+
+\hint{Even though \code{square\_shape()} didn't do what we wanted,
+  Python never gave an error. That's because \code{square\_shape()} is
+  not an error according to Python. Python just followed its rules
+  exactly -- they just weren't the same as the rules we had in mind.}
+\begin{replbox}
+>>> square_shape()
+\end{replbox}
+
+Nothing comes out!
+
+\subsection{The \kw{return} rule}
+
+Here's what's going on. Inside \code{square\_shape()}, we wrote down a
+drawing plan, but we never told Python what to do with that plan. In
+the prompt, rules that make data cause Python to respond with that
+data. Inside a \kw{def}, Python just throws it away, because we didn't
+ask Python to keep it.
+
+We use the word \kw{return} inside \kw{def} to say: I've made some data, and this is what I want to
+keep. This is the word we need to get Python to keep our plan. Go ahead and modify
+\code{square\_shape()}.
+
+\hint{Make sure to pay attention to indentation. You have to add
+  spaces in front of \code{draw.forward} in order to keep it ``under''
+  the \kw{return}. You can also choose to type it all on one
+  line. Remember \code{\textbackslash} is just a convenience.}
+\begin{TryThisBox}
+\begin{lstlisting}
+def square_shape():
+  @@return@@ draw.color('blue') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100)
+\end{lstlisting}
+\end{TryThisBox}
+
+Now, let's see if it does what we expect:
+
+% TODO
+\begin{replbox}
+>>> square_shape()
+\end{replbox}
+
+\begin{BigIdeaBox}
+  We can enter as many rules as we want into \kw{def} but we have
+  to use \kw{return} if we want Python to respond with particular data.
+\end{BigIdeaBox}
+
+\subsection{Combining rules}
+
+Now \code{square\_shape()} results in the drawing plan for a square. Programmers often say that
+\code{square\_shape()} \term{evaluates} into the drawing plan for a square, and this is the
+terminology we'll use from now on.
+
+We can now use \code{square\_shape()}  with \code{draw()}.
+
+\begin{replbox}
+>>> draw.draw(square_shape() + draw.forward(200) + square_shape())
+\end{replbox}
+
+And there's two squares!
+
+\begin{DeepDiveBox}
+  % TODO: The Stack
+\end{DeepDiveBox}
+
+\subsection{Complex Rules}
 
 \begin{table*}[t]
   \fixfigure
@@ -284,287 +580,105 @@ Here are some problems to think about.
   \label{tab:turtle}
 \end{table*}
 
-Turtle works by following -- you guessed it -- rules! Turtle works like an Etch-a-sketch. You supply
-instructions that move a pen around a page. Turtle draws a line as the pen moves.
-
-Let's try it.
-
-\hint{The \kw{import} keyword lets us use \term{libraries} of rules that are not considered core to
-  Python. The set of rules we're importing here is in the \texttt{week2/draw.py} file that comes
-  from the course materials. These rules let us draw pictures!}
-\begin{replbox}
->>> (*@\tikzmarknode{import keyword}{\kw{import}}@*) week2.draw as draw<ENTER>
->>> draw.draw(draw.forward(100))<ENTER>
-\end{replbox}
-
-What happened here? The pen started in the middle of the page, and then went \emph{forward} by 100
-units.\curious{The units used by Turtle are called \term{pixels}. See \prettyref{fig:pixels} for
-  more information} In this case, the pen always starts pointed to the right. So when we go forward,
-turtle draws a line to the right.
-
-Let's try changing the pen color using the \code{draw.color} rule
-
-\begin{replbox}
-draw.draw(draw.color('blue')+draw.forward(100))<ENTER>
-\end{replbox}
-
-Did it do what you thought it would?
-
-We can even draw a square!
-
-\begin{replbox}
-draw.draw(draw.color('blue') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100) +
-  draw.turn('right') +
-  draw.forward(100))<ENTER>
-\end{replbox}
-
-Phew! That was a lot of typing! If we had to do that everytime we wanted to draw a square, we would
-have to write \emph{a lot} of code.
-
-\section{Re-using models}
-
-\begin{marginfigure}
-  \centering
-  \includegraphics[width=0.9\marginparwidth]{../week2/figures/CatPixels.pdf}
-  \caption{Every image you see on a computer screen is made up of tiny lights called \term{pixels}
-    arranged in a grid. If you carefully look at your computer screen, you may be able to see the
-    individual pixels. By turning the lights on and off and adjusting the color, the computer can
-    display any image, such as this one of a cat.  \attribution{Original: ReffPixels?Vector:
-      OmegaFallon, CC BY-SA 4.0 <\url{https://creativecommons.org/licenses/by-sa/4.0}>, via
-      Wikimedia Commons}}
-  \label{fig:pixels}
-\end{marginfigure}
-
-The purpose of providing instructions is so that we can do the same thing over again. Above, we
-created a precise description of a square. Now we need to figure out a way to re-use it again and
-again so we never have to write it out again!
-
-The first way to re-use rules is to save them into a \term{file}. We call rules that we save on a
-computer \term{source code}.
-
-Let's try saving a rule. Open up Thonny and, instead of the prompt, point your mouse at the editor
-(\prettyref{fig:thonny-interface}). Rules that we type here can be saved on the computer.
-\hint{You can also access all these files on the internet at \url{\giturl}.\\
-\begin{center}
-\qrcode{\giturl}
-\end{center}
-}
-
-\aside{\textcolor{red}{TODO DESCRIBE HOW TO LOAD THE FILE}}
-\begin{TryThisBox}
-  Type the following into the editor and then save it in a file named
-  \texttt{model.py}.
-  \begin{lstlisting}
-draw.draw(<ENTER>
-  draw.color('blue') +<ENTER>
-  draw.forward(n) + draw.turn('right') +<ENTER>
-  draw.forward(n) + draw.turn('right') +<ENTER>
-  draw.forward(n) + draw.turn('right') +<ENTER>
-  draw.forward(n)
-)<ENTER>
-\end{lstlisting}
-\end{TryThisBox}
-\hint{From now on, all the rules we see will be
-    \emph{colored}. You don't need to enter the colors in. The colors
-    only serve to make the rules easier to read. This is called
-    \term{syntax highlighting}.}
-
-Let's try using it:
-
-% TODO describe how to load the file
-
-You should get something like this:
-
-\includegraphics[width=0.8\linewidth]{../week2/figures/onesquare.eps}\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
-  lights going on and off, but how do they represent \emph{sound}?
-
-  When our ears hear sound, they are responding to \emph{changes} in
-  air pressure.
-
-  Computers represent this -- you guessed it -- using numbers!
-
-  With graphics, we had to break up the rectangular screen into small
-  chunks called pixels. For sound, we instead break up \emph{time}
-  into really small sections (tens of thousands per second!) called
-  samples. Within each sample, we store a number which represents the
-  pressure the computer ought to output at that time. When the samples
-  are sequenced together rapidly using a componenty called a DAC or
-  \term{digital-to-analog converter}. }
-
-\subsection{Introducing \kw{def} and \kw{return}}
-
-That's good, but computers can draw squares without loading files. This is where the \kw{def}
-and \kw{return} rules come in. Here's how it works.
-
-When we have a bunch of rules we want to re-use, we can use \kw{def} to give a \emph{name} to our
-rules. Then, underneath
-\kw{def}, we write the rules that make up the new rule. The rules underneath have to be \term{indented}, which means that we have to type two
-{\spacekey}s before typing the rule.\curious{Python is known as an \emph{indentation-aware}
-language. Some languages do not care about spaces and have other ways to figure out which rules
-belong as sub-rules of other rules. But for now, we'll stick with how Python does things!}
-
-When Python follows the rules we make, it does \emph{exactly} the rules we included as part of our
-named rule, but it doesn't show us the result of these rules, like what happened when we typed the
-rules into the prompt directly. In order to get the final answer from our named rules, we have to
-use \kw{return}.
-
-\begin{TryThisBox}
-  Type the following into \texttt{model.py}
-  \begin{lstlisting}
-def three_and_five():
-  5
-  return 3
-  \end{lstlisting}
-\end{TryThisBox}
-
-Now try this in the prompt.
-
-\begin{replbox}
-three_and_five()<ENTER>
-\end{replbox}
-
-\begin{BigIdeaBox}
-  We can enter as many rules as we want into \kw{def} but we have
-  to use \kw{return} if we want Python to respond with a particular
-  rule.
-\end{BigIdeaBox}
-
-\subsection{Combining rules}
-
-Remember how \code{+} and \code{*} combined other rules? We can create
-our own ways to combine other rules with \kw{def}. First, we have to
-give names to the rules that we do not know yet. We can do this by
-putting these names in parentheses after \kw{def}.\curious{These names
-  for unknown rules are called \term{arguments}, even though there's
-  no disagreement. Names can be funny that way!}
-
-\begin{TryThisBox}
-  \begin{lstlisting}
-def mul_and_add(rule1, rule2, rule3):
-  return rule1 * rule2 + rule3
-  \end{lstlisting}
-\end{TryThisBox}
-
-What do you think will happen if you enter \code{mul\_and\_add(5,2,4)}
-into the prompt?
-%
-\curious{Just like it's important to predict what will
-  happen when a rule is used correctly, it's also important to think
-  about what happens when rules are used incorrectly. For example,
-  what do you think will happen if you entered \code{mul\_and\_add(2)}
-  at the prompt?}
-
-
-Let's think about it. We know what \kw{def} and \kw{return} do. When
-we used \code{mul\_and\_add} at the prompt, we gave it three rules:
-\code{5}, \code{2}, and \code{4}. If we look at the recipe for
-\code{mul\_and\_add} above, we see that it will \kw{return} the
-product of the first two rules added to the third one. So, Python's
-response will be \code{14}.
-
-We can also say that \code{mul\_and\_add(5,2,4)} \term{evaluates} to
-\code{14}. Also, from now on, we will call all the ``recipes'' we make
-\term{functions}.
-
-\begin{DeepDiveBox}
-  % TODO: The Stack
-\end{DeepDiveBox}
-
-\subsection{Complex Rules}
-
-Functions allow us to combine rules. For example, we can use one
-function from another. This is known as \term{calling} the function.
-
-By using functions in this way, we can create very complex rule
-systems.  \didyouknow{Just like the modeling clay we used at the
-  beginning of this class could be used to model any object, we can
-  use plain functions to model any system. There's an entire
-  discipline of computer science that deals with this idea called
-  \term{functional programming}. It's the programmer equivalent of
-  playing with Play-doh, but maybe not as messy!}
-
-\section{Drawing with Turtle}
-
-Let's try to apply what we've learned so far by learning how to draw
-with Python. As part of the course code, there is a source file named
-\texttt{week2/draw.py} which contains a simple \term{library} of
-functions that help us make drawings in Python. Let's try using it!
-
-To use a Python library (also called a \term{module}) we use
-\kw{import}. In the prompt type:
-
-\begin{replbox}
-import week2.draw as draw<ENTER>
-\end{replbox}
-
-We can now use functions in the module.
-\curious{What do you think would happen if we
-  wrote\code{import week2.draw as week2}?
-  Would the other code work? How would we have to change the code to
-  make it work with this new \kw{import}?}
-
-\begin{replbox}
-draw.draw(draw.forward(100))<ENTER>
-\end{replbox}
-
-You should see a line on your screen. Congratulations, you've
-programmed your first picture!
-
-The drawing system here is based off of an older programming language
-called Turtle. Turtle has a few simple rules, which are listed in
-\prettyref{tab:turtle}.
-
-But to really understand Turtle, we first have to understand how we
-can talk about a computer screen.
-
-\subsection{Introduction to Computer Graphics}
-
-%\curious{Some mathematicians think
-%  there are numbers we cannot quite name. The first person to think of
-%  this was a mathematician named \textbf{George Cantor}. If such a
-%  number cannot be written, can you think of it? What about write a
-%  description of it?}
-
-\subsection{Drawing Our First Image}
-
-Let's try writing a function to draw a square. Go to your Thonny
-editor and try writing a function to draw a square. It would probably
-look like the one below:
-
-\begin{TryThisBox}
-\end{TryThisBox}
-
-Nice! Now, let's see if we can draw more than one square. We'll also
-give our squares some color so that we can tell them apart.
+Grouping rules in this way is a fundamental part of computer programming. Computer programmers have
+special names for rules built using \kw{def} and \kw{return}. We call them
+\term{functions}. Functions allow complicated things, like shapes, to be hidden away inside rules
+that are easier to understand. Now that you've made a \code{square\_shape()}, you can forget all the
+details involved with drawing a square. Whenever you need a square, you can just use
+\code{square\_shape()}!
 
 \begin{replbox}
 draw.draw(
-  draw.color('blue') + square(200) +
-  draw.color('red') + square(100))<ENTER>
+  draw.color('blue') + square_shape() +
+  draw.color('red') + square_shape())<ENTER>
 \end{replbox}
+% TODO GRAPHICS\includegraphics[width=0.8\linewidth]{../week2/figures/twosquares1.eps}
 
+We did that without ever worrying about exactly \emph{how} the square was drawn.\curious{Much of Python itself is written using \kw{def} and \kw{return}. The rules we make with them are no less real than the rules that come with Python.}
+
+\subsection{Arguments}
+
+One of the limitations of \code{square\_shape()} is that it only draws squares of one size. If we
+wanted to draw a square for the duck's body and then a smaller square for the duck's head, then we
+would have to write two functions that looked the same, like below:
+
+\mTrackBox{Graphics}{ The sort of drawing we are doing with Turtle is called \term{vector
+    graphics}. Vector graphics store details on shapes and colors. Because computers can draw shapes
+  at any size, vector graphics can be scaled to any size. Your square could be bigger than your
+  classroom!}
+\begin{TryThisBox}
+\begin{lstlisting}
+def big_square_shape():
+  return draw.color('blue') + \<ENTER>
+    draw.forward(200) + draw.turn('right') + \<ENTER>
+    draw.forward(200) + draw.turn('right') + \<ENTER>
+    draw.forward(200) + draw.turn('right') + \<ENTER>
+    draw.forward(200)
+
+def small_square_shape():
+  return draw.color('blue') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100) + draw.turn('right') + \<ENTER>
+    draw.forward(100)
+\end{lstlisting}
+\end{TryThisBox}
+
+This would quickly get unwieldy. We used \kw{return} to get data out of our function. Now we need a
+way to put data \emph{in}. This is what \term{arguments} are.
+
+Arguments are placeholders for things that we don't know yet. Here's a function that could draw a
+square of any size:
+
+\begin{TryThisBox}
+\begin{lstlisting}
+def square_shape(n):
+  return draw.color('blue') + \<ENTER>
+    draw.forward(n) + draw.turn('right') + \<ENTER>
+    draw.forward(n) + draw.turn('right') + \<ENTER>
+    draw.forward(n) + draw.turn('right') + \<ENTER>
+    draw.forward(n)
+\end{lstlisting}
+\end{TryThisBox}
+
+Let's see how to use it:
+
+\begin{replboxannotated}
+>>> draw.draw(
+...   draw.color('blue') + square_shape(100) +
+...   draw.color('red') + square_shape(200))<ENTER>
+\tcblower
 \includegraphics[width=0.8\linewidth]{../week2/figures/twosquares1.eps}
+\end{replboxannotated}
 
-We were able to combine our rules together to draw more than one
-square and save us writing twice the amount of code. But hold one, the
-second square appeared in a \emph{different} position than the first
-one. To understand, let's ask Python to pause before it draws the
-squares. Maybe we can figure out what is going on.
+Hold on though, all of these programs draw the second square in a different way than the first. The
+second square appears on top of the first square, instead of in the same position. What's going on?
+
+\section{Errors with Data}
+
+When we originally wrote \code{square\_shape()}, Python did not make a fuss. However
+\code{square\_shape()} did not work the way we expected it to. When our expectation of how things
+work does not match what actually happens, we call it a \term{bug}.\didyouknow{The first computers
+  stored data using vacuum tubes, which were like lightbulbs that could either be switched on or
+  off. Vacuum tubes were large and unwieldy and not as reliable as the computers we use today. The
+  warm and bright tubes attracted insects, and these insects would sometimes cause the tubes to
+  short-circuit. This is the origin of the word \term{bug}! Yuck!}
+
+The squares appearing atop each other instead of in the same spot is another example of a bug.
+
+We work through errors in a process called \term{debugging}. One of the ways in which we debug is by
+asking the program to \emph{stop} before it's completed so we can see what it's doing.
+
+The Turtle library we are using provides a simple way to stop the drawing so we can look at it.
 
 \begin{replbox}
-draw.draw(draw.pause('square 1') + draw.color('blue') + square(200) + draw.pause('square 2') + draw.color('red') + square(200)
+>>> draw.draw(draw.pause('square 1') + draw.color('blue') + square(200) + draw.pause('square 2') + draw.color('red') + square(200)
 \end{replbox}
 
-When you run this in the prompt, Python will \emph{pause} before each
-square is drawn and wait for you to type \enterkey in the prompt
-before it continues drawing.  \hint{You can always get back to the
-  prompt and quit what you're currently doing by holding down both
-  \controlkey and \litkey{C}. This is known as an \emph{interrupt}.}
+The \code{draw.pause} rule causes Python to \emph{pause} before each square is drawn and wait for
+you to type \enterkey in the prompt before it continues drawing.  \hint{You can always get back to
+  the prompt and quit what you're currently doing by holding down both \controlkey and
+  \litkey{C}. This is known as an \emph{interrupt}.}
 
 You should get something like \prettyref{fig:twosquares-debug}.
 
@@ -589,19 +703,15 @@ You should get something like \prettyref{fig:twosquares-debug}.
     \textbf{Hint:} Look at the arrow.}
 \end{figure}
 
+What do you notice about the arrow in each picture? In Turtle, this arrow is called the
+\emph{cursor} and its direction changes how \code{draw.forward} works. If the arrow is pointing
+right, then \code{draw.forward} draws to the right. Similarly, if the arrow is pointing towards the
+top, then \code{draw.forward} draws towards the top. If you look at the arrow, you'll notice that,
+before the first square, it points right, and before the second, it points upward.
 
-What do you notice about the arrow? In Turtle, this arrow is called
-the \emph{cursor} and its direction changes how \code{draw.forward}
-works. If the arrow is pointing right, then \code{draw.forward} draws
-to the right. Similarly, if the arrow is pointing towards the top,
-then \code{draw.forward} draws towards the top. If you look at the
-arrow, you'll notice that, before the first square, it points right,
-and before the second, it points upward.
-
-How do we fix this issue? The cursor starts pointing right by
-default. It points upward after the first square is drawn using the
-\code{square} function. How do we get it to point right again? Can you
-think of an answer?
+How do we fix this issue? The cursor starts pointing right by default. It points upward after the
+first square is drawn using the \code{square} function. How do we get it to point right again? Can
+you think of an answer?
 
 \begin{BigIdeaBox}
   Sometimes, when combining programs together, things don't work the
@@ -610,15 +720,14 @@ think of an answer?
   computer followed.
 
   It often helps to use tools like \code{draw.pause} to inspect what
-  is happening in the middle of our program. This is called
-  \term{debugging}.
+  is happening in the middle of our program.
 \end{BigIdeaBox}
 
 Here's the solution (pay attention to the italicized part!)
 
 \begin{TryThisBox}
   \begin{lstlisting}
-def square(n):
+def square_shape(n):
   return \
     draw.forward(n) + draw.turn('right') + \
     draw.forward(n) + draw.turn('right') + \
@@ -627,25 +736,18 @@ def square(n):
   \end{lstlisting}
 \end{TryThisBox}
 
-Now, our squares are drawn the same way, but they overlap:
+Now, our squares are drawn the same way, but they overlap, just like we expected.
 
 \includegraphics[width=0.8\textwidth]{../week2/figures/twosquares-fixed.eps}
 
-There's only one problem now, which is that our squares all start at
-the same spot. Can we move them? The answer is yes, using \code{draw.goto}.
-
-\begin{replbox}
-draw.draw(draw.color('blue') + square(200) + \<ENTER>
-  draw.goto(50,50) + draw.color('red') + \<ENTER>
-  square(100))<ENTER>
-\end{replbox}
-
-\subsection{A More Complicated Example}
+\subsection{Going Full Circle}
 
 Squares and lines are interesting, but it would be hard to do a lot of
 interesting drawing using just those. Let's look at some other shapes.
 
-The first shape we'll introduce is a \emph{circle}. A circle is defined by its radius, which is half the total distance across the circle. For example, to draw a circle with a 30 unit radius, we can use \code{draw.circle(30)}. Try this and see what happens.
+The first shape we'll introduce is a \emph{circle}. A circle is defined by its radius, which is half
+the total distance across the circle. For example, to draw a circle with a 30 unit radius, we can
+use \code{draw.circle(30)}. Try this and see what happens.
 
 \begin{replbox}
   draw.draw(draw.circle(30))
@@ -675,7 +777,7 @@ Turtle assumes that when we want a circle, we always want to draw it in this dir
 (see \prettyref{fig:turtle-circles}). This arrangement where a computer system always does things
 one way and requires the programmer to explicitly choose another way is called a \term{default}.
 
-\begin{figure}[b]
+\begin{figure}[p]
   \fixfigure
   \label{fig:turtle-circles}
   \caption{The \code{draw.circle} rule produces some portion of a circle with a particular radius,
@@ -692,7 +794,7 @@ draw.draw(draw.circle(30, 1/2) + draw.circle(-30, 1/2))
 \end{replbox}
 
 With these shapes, we can make more complicated figures. There's just
-one thing left: adding color.
+one thing left: filling our shapes with color.
 
 We saw how to change the color of the lines we drew, but how do we
 \emph{fill} the shapes we draw with a color?
@@ -706,46 +808,46 @@ draw.draw(draw.fill('blue', draw.square(100)))<ENTER>
 
 \section{The Duck Challenge}
 
-Remember how we built that duck out of play-doh at the beginning of
-the class? Everyone chose different things to focus on. Now it's time
-to teach a computer to do what you did.
+\hint{Start by getting the basic shapes. Then change lengths and measures until it's just right. Try it!}
+Remember how we started class by drawing a duck and attempting to describe it to our friend? At that
+point we lacked a proper language to talk about drawings. But now we have a way to talk about
+drawings precisely! Take a look at your drawing, and break it up into \emph{rules}: lines, circles, etc.
+
+
 
 \begin{TryThisBox}
-  Try using what you've learned thus far to draw a duck using \kw{def}
-  and \kw{return} and Turtle. Name your function \code{duck}.
+  Try using what you've learned thus far to draw a duck using \kw{def} and \kw{return} and
+  Turtle. Name your function \code{duck}.
 
-  As you're doing this, try to keep re-usable parts of your duck in
-  separate functions, so you don't have to copy the code.
+  As you're doing this, try to keep re-usable parts of your duck in separate functions, so you don't
+  have to figure out the same code over and over again
 \end{TryThisBox}
 
-Here are some examples of what you may have created. All of these are
-examples of a ``duck'' that you can make using the simple rules for
-drawing we learned above.
+Here are some examples of what you may have created. All of these are examples of a ``duck'' that
+you can make using the simple rules for drawing we learned above.
 
 \begin{BigIdeaBox}
-  To the computer, there is no duck. It's just a set of rules you told
-  it to follow to draw one depiction of a duck that you found
-  useful. All computer programming requires us to understand the
-  problem we're trying to solve.
+  To the computer, there is no duck. It's just a set of rules you told it to follow to draw one
+  depiction of a duck that you found useful. All computer programming requires us to understand the
+  problem we're trying to solve precisely.
 \end{BigIdeaBox}
 
 \section{Copying Ducks}
 
-You've now drawn \emph{one} duck; what if we wanted more? The whole
-point of this was to codify exactly how to make a duck and explain
-that to the computer. Now, with these instructions in hand, we can
-make more ducks. Let's get started.
+You've now drawn \emph{one} duck; what if we wanted more? The whole point of this was to codify
+exactly how to make a duck and explain that precisely. Now, with these instructions in hand,
+we can make more ducks.
 
 \begin{replbox}
 from week2.examples import *<ENTER>
 lake_of(duck)
 \end{replbox}
 
-Nice! Look at all those ducks. But, there's one problem... all our
-ducks look the same. Can we make each one a bit more unique?
+Nice! Look at all those ducks. But, there's one problem... all our ducks look the same. Can we make
+each one a bit more unique?
 
-Let's add some \term{arguments} to our \code{duck} function. Modify
-your function to include some arguments.
+Let's add some \term{arguments} to our \code{duck} function. Modify your function to include some
+arguments.
 \begin{TryThisBox}
   \begin{lstlisting}
 def duck(@@body_color@@, @@eye_color@@):
@@ -753,9 +855,8 @@ def duck(@@body_color@@, @@eye_color@@):
   \end{lstlisting}
 \end{TryThisBox}
 
-Now, take these arguments and use it to change your duck's body and
-eye color using the \code{draw.color} and \code{draw.fill} functions
-we saw above.
+Now, take these arguments and use it to change your duck's body and eye color using the
+\code{draw.color} and \code{draw.fill} functions we saw above.
 
 Now, rerun the example above:
 
@@ -767,29 +868,29 @@ lake_of(duck)
 Much better!
 
 \begin{BigIdeaBox}
-  Since we packaged our duck into a function and added arguments to
-  allow certain parts to change, we made it trivial to re-use our duck
-  many times. This is a foundational part of computer programming.
+  Since we packaged our duck into a function and added arguments to allow certain parts to change,
+  we made it trivial to re-use our duck many times. This is a foundational part of computer
+  programming.
 \end{BigIdeaBox}
 
 \section{Conclusion: From Drawing to Computation}
 
 In this lesson we learned that we can often do things by hand that
-take effort to describe to the computer. But once we undertake that
-effort, we can use the computer to simulate things that we could not
-do by hand. By expressing our duck as sets of numerical rules, we
-could hand it to a computer -- a machine that follows rules -- and
-manipulate it in new ways. Even though the computer couldn't
-\emph{understand} the duck, it could still do useful things with our
-description.
+take effort to describe to the computer. This is because computers are
+precise and follow fixed rules. Once we are able to describe things
+precisely, then we can describe them to a computer and manipulate
+them. Python lets us store descriptions in \term{source code} or in
+\term{functions} which we write using \kw{def} and \kw{return}.
 
 Everything in computer science is a description of something real
 (whether a physical item or a real problem) that we want to solve. To
-be able to manipulate this thing with computers we have to be able to
+be able to manipulate things with computers we have to be able to
 express our problem as rules the computer understands. In the case of
 visual information, it means understanding graphics like the Turtle
-system. In the next chapters, we'll explore other ways of describing
-the world to a computer.
+system. Even though the computers don't \emph{understand} what a duck
+is, we were able to describe a drawing of a duck to the computer. In
+the next chapters, we'll explore other ways of describing the world to
+a computer.
 
 \Exercises
 

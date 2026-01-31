@@ -20,7 +20,10 @@
             fontspec
             polyglossia
             qrcode
+            eso-pic
+            zref
             xecjk         # nicer Chinese handling on XeTeX
+            newtx
             amsfonts amsmath # amssymb
             enumitem
             gfsdidot
@@ -53,6 +56,7 @@
             csquotes
             tikzlings
             tikzducks
+            newfloat
             hyperref;
         };
 
@@ -69,7 +73,7 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
-        dependencies = [ tex pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
+        dependencies = [ tex pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw  p.pygame p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
       in
       {
         devShells.default = pkgs.mkShell {
