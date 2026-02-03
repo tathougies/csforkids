@@ -58,6 +58,7 @@
 \usepackage{atbegshi}
 
 \pgfkeys{
+  /tcb/white code note/.style={opacityback=1.0},
   /tcb/code note/.style={enhanced jigsaw, width=4cm, colback=white, opacityback=0.4, boxrule=0.6pt, colframe=black, drop shadow southeast, fontupper={\footnotesize\sffamily}}
 }
 
@@ -298,7 +299,7 @@
 }
 \newcommand{\makemargmark@even}[2]{
   \tikz[remember picture,overlay]{
-    \coordinate (x) at ([xshift=-\marginparsep]current page text area.west |- #1.east);
+    \coordinate (x) at ([xshift=\marginparsep]current page text area.east |- #1.east);
     \node[anchor=east, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
   }
 }
@@ -422,6 +423,7 @@
   tabsize=2,
   xleftmargin=0.5em,
   xrightmargin=0.5em,
+  escapeinside={(*@}{@*)},
   literate=
     {<ENTER>}{\enterkey}7
     {<SPACE>}{\spacekey}5
