@@ -6,9 +6,10 @@
   style=authoryear
 ]{biblatex}
 \addbibresource{book.bib}
-\usepackage{zref-savepos}
-\usepackage{zref-abspage}
-\usepackage{eso-pic}
+%\usepackage{zref-savepos}
+%\usepackage{zref-abspage}
+%\usepackage{eso-pic}
+\usepackage{capt-of}
 \usepackage{xeCJK}
 \usepackage{csquotes}
 \usepackage{newfloat}
@@ -16,7 +17,8 @@
 \usepackage{tasks}
 \usepackage{forest}
 \usepackage{amsmath}
-\usepackage{subcaption}
+%\usepackage{caption}
+\usepackage[caption=false]{subfig}
 \usepackage{xparse}
 \usepackage{prettyref}
 \usepackage{tabularx}
@@ -26,11 +28,19 @@
 \usepackage{etoolbox}
 \usepackage{fmtcount}
 
+\makeatletter
+\patchcmd{\@caption}{: \ignorespaces}{ \ignorespaces}{}{}
+\makeatother
+\makeatletter
+\AtBeginDocument{\typeout{MAKECAPTION=\meaning\@makecaption}}
+\makeatother
 \def\giturl{https://github.com/tathougies/csforkids}
 
+\newcommand{\prettypageref}[1]{\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
 \newrefformat{subfig}{Figure~\ref{#1}\subref{#1}}
-\newrefformat{fig}{Figure~\ref{#1}\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
-\newrefformat{sec}{{\bfseries \nameref{#1}}\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
+\newrefformat{fig}{Figure~\ref{#1}\prettypageref{#1}}
+\newrefformat{sec}{{\bfseries \nameref{#1}}\prettypageref{#1}}
+\newrefformat{deepdive}{the Deep Dive Box~\prettypageref{#1}}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \makeatletter
@@ -43,13 +53,12 @@
 \usepackage {tikzpagenodes}
 \usetikzlibrary{calc,external,decorations.pathreplacing,arrows.meta,positioning,fit,tikzmark,ducks}
 % \tikzexternalize[prefix=figure-cache/]
-\usepackage{caption}
 
 \usepackage{graphicx} % for \rotatebox
 \usepackage{atbegshi}
 
 \pgfkeys{
-  /tcb/code note/.style={enhanced jigsaw, width=4cm, colback=white, opacityback=0.4, boxrule=0.6pt, colframe=black, drop shadow southeast}
+  /tcb/code note/.style={enhanced jigsaw, width=4cm, colback=white, opacityback=0.4, boxrule=0.6pt, colframe=black, drop shadow southeast, fontupper={\footnotesize\sffamily}}
 }
 
 \makeatletter
@@ -113,31 +122,44 @@
 \definecolor{HuhRed}{RGB}{165,58,42}
 \definecolor{ColumnHeaderBlue}{RGB}{45,95,140}
 
-\DeclareCaptionLabelFormat{boldcolored}{%
-  \textsf{\textbf{\textcolor{CaptionLabelSlate}{#1~#2}}}
-}
-
 \newcommand{\headercol}[1]{\textbf{\textsf{\textcolor{ColumnHeaderBlue}{#1}}}}
 
-\captionsetup{
-  font={sf,footnotesize},
-  textfont={sf,footnotesize},
-  labelformat=boldcolored,
-  labelsep=space
+\setcaptionfont{\sffamily\footnotesize}
+\makeatletter
+% Your label style: sans, bold, colored
+\newcommand{\TufteCaptionLabelStyle}[1]{%
+  \textsf{\textbf{\textcolor{CaptionLabelSlate}{#1}}}%
 }
 
-\captionsetup[table]{
-  font={sf,footnotesize},
-  textfont={sf,footnotesize},
-  labelformat=boldcolored,
-  labelsep=space
-}
+% Apply to Figure/Table labels
+\renewcommand{\fnum@figure}{\TufteCaptionLabelStyle{Figure~\thefigure}}
+\renewcommand{\fnum@table}{\TufteCaptionLabelStyle{Table~\thetable}}
+\makeatother
 
-\captionsetup[marginfigure]{
-  font={sf,footnotesize},
-  textfont={sf,footnotesize,color=black!85}
-}
-\captionsetup[table*]{skip=8pt}
+\AtBeginEnvironment{table*}{\setlength{\belowcaptionskip}{8pt}}
+
+%\DeclareCaptionLabelFormat{boldcolored}{%
+%  \textsf{\textbf{\textcolor{CaptionLabelSlate}{#1~#2}}}
+%
+%\captionsetup{
+%  font={sf,footnotesize},
+%  textfont={sf,footnotesize},
+%  labelformat=boldcolored,
+%  labelsep=space
+%}
+%
+%\captionsetup[table]{
+%  font={sf,footnotesize},
+%  textfont={sf,footnotesize},
+%  labelformat=boldcolored,
+%  labelsep=space
+%}
+%
+%\captionsetup[marginfigure]{
+%  font={sf,footnotesize},
+%  textfont={sf,footnotesize,color=black!85}
+%}
+%\captionsetup[table*]{skip=8pt}
 
 \newcommand{\tikzbackground}[1]{
   \AddToHookNext{shipout/background}{
@@ -148,10 +170,12 @@
   }
 }
 \newcommand{\tikzforeground}[1]{
-  \begin{tikzpicture}[remember picture, overlay]
-    \CheckTikzPictureSide
-    #1
-  \end{tikzpicture}
+  \AddToHookNext{shipout/foreground}{%
+    \begin{tikzpicture}[remember picture, overlay]
+      \CheckTikzPictureSide
+      #1
+    \end{tikzpicture}
+  }
 }
 
 \usepackage[most]{tcolorbox}
@@ -196,7 +220,9 @@
   left=6pt,right=6pt,top=6pt,bottom=6pt,
   fonttitle=\sffamily\bfseries,
   title=Try This!,
-  listing only,
+  listing engine=listings,
+  listing only=false,
+  listing and text,
   listing options={style=replstyle,#1}
 }
 
@@ -365,6 +391,7 @@
   label=\arabic*
 }
 
+
 \input{answers.tex}
 
 % ---------- Keyboard ----------
@@ -421,16 +448,9 @@
 \newcommand{\hint}[1]{\marginnote{\notestyle\hintnote\color{black}#1}}
 \newcommand{\huh}[2]{\marginnote{\notestyle\huhnote{#1}\\\color{black}#2}}
 
-\def\huhnote#1{\textbf{\textcolor{HuhRed}{Confused?}}\\\textbf{#1}}
-\def\hintnote{\textbf{\textcolor{TryGreen}{Hint}} }
+\def\huhnote#1{\textbf{\textcolor{HuhRed}{\sffamily Confused?}}\\\textbf{#1}}
+\def\hintnote{\textbf{\textcolor{TryGreen}{\sffamily Hint}} }
 \def\curiousboxtext{\textbf{\textcolor{DeepPurple}{\sffamily Curious? }}}
-
-\NewDocumentCommand{\pseudofigure}{o m m}{
-  \par\medskip
-  #3\par
-  \captionof{figure}{#2}
-  \IfValueT{#1}{\label{#1}}
-}
 
 % A margin image helper (use with an image file in images/)
 \newcommand{\asideimg}[2][]{%
@@ -443,45 +463,11 @@
       {\sffamily\large\bfseries \textcolor{TermSage}{#1}}\par
       \vspace{0.4\baselineskip}
 }
-\makeatletter
-\newlength{\oddshift}
-\newcommand{\captionatbottom}{% from https://tex.stackexchange.com/a/229419/161015
-    \long\def\@caption##1[##2]##3{%
-    \par
-    \addcontentsline{\csname ext@##1\endcsname}{##1}%
-    {\protect\numberline{\csname the##1\endcsname}{\ignorespaces ##2}}%
-    \begingroup
-    \@parboxrestore%
-    \if@minipage\@setminipage\fi%
-    \normalsize
-    \@makecaption{\csname fnum@##1\endcsname}{\ignorespaces ##3}\par
-    \endgroup}
-\long\def\@makecaption##1##2{%
-\vskip\abovecaptionskip%
-\@tufte@checkoddpage%
-\ifthenelse{\boolean{@tufte@odd@page}}%
-{\rlap{\parbox{\textwidth+\marginparwidth+\marginparsep}{\hskip0pt\@tufte@caption@font##1: ##2}}}%
-{\setlength{\oddshift}{-\marginparwidth-\marginparsep}\rlap{\hskip\oddshift\parbox{\textwidth+\marginparwidth+\marginparsep}{\sffamily \textcolor{CaptionLabelSlate}{\textbf{##1}} ##2}}}%
-\vskip\belowcaptionskip%
-}
-    \let\caption\@tufte@orig@caption%
-    \let\label\@tufte@orig@label}
-
-\newenvironment{largetable}{%
-\clearpage
-  \@tufte@checkoddpage%
-  \begin{fullwidth}
-    \captionsetup{type=table,labelformat=boldcolored,font={sf},textfont={sf}}
-    \captionatbottom
-    \begin{adjustwidth}{}{}\captionatbottom
-}{\end{adjustwidth}
-                 \end{fullwidth}
-                 \clearpage}
-\makeatother
 % ---------- Document ----------
 \title{How Computers Think}
 \author{Travis Athougies}
 \date{}
+
 
 \begin{document}
 \maketitle

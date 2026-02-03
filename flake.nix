@@ -48,9 +48,11 @@
             hardwrap
             catchfile
             biber
+            capt-of
             biblatex
             prettyref
             subfigure
+            subfig
             forest
             tasks
             fmtcount
@@ -74,7 +76,7 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
-        dependencies = [ tex pkgs.imagemagick pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3.withPackages (p:  [ p.tkinter p.pyopengl p.tkinter-gl p.pyglm p.pillow p.glfw  p.pygame p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
+        dependencies = [ pkgs.ispell tex pkgs.imagemagick pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3.withPackages (p:  [ p.tkinter p.pyopengl p.tkinter-gl p.pyglm p.pillow p.glfw  p.pygame p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
       in
       {
         devShells.default = pkgs.mkShell {

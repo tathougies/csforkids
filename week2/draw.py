@@ -2,20 +2,25 @@
 import turtle
 import time
 
+screensize = turtle.screensize
+
 def goto(x, y):
     return [('goto', (x, y))]
 
 def forward(x):
     return [('forward', x)]
 
-def penup(x):
+def penup():
     return ['penup']
 
-def pendown(x):
+def pendown():
     return ['pendown']
 
 def color(c):
     return [('color', c)]
+
+def pensize(z):
+    return [('pensize', z)]
 
 def fill(c, l):
     return [('fill', (c, l))]
@@ -24,7 +29,7 @@ def circle(r, p=None):
     return [('circle', (r, p))]
 
 def turn(d):
-    DIRS = { 'right': ('right', 90), 'left': ('left', 90) }
+    DIRS = { 'right': ('right', 90), 'left': ('left', 90), 'around': ('left', 180) }
     if isinstance(d, str):
         if d in DIRS:
             return [DIRS[d]]
@@ -36,16 +41,23 @@ def turn(d):
         else:
             return [('right', d)]
 
-
 def wait(seconds):
     return [('wait', seconds)]
 
 def pause(prompt):
     return [('pause', prompt)]
 
-def draw(l, speed=0.5, animate=True, save_pauses=False, pause_template=None):
-    turtle.clearscreen()
-    turtle.home() # Displays cursor before anything, if pause is used initially
+def clearscreen():
+    return ['clearscreen']
+
+def draw(l, speed=0.5, immediate=False, animate=True, save_pauses=False, pause_template=None, clear=True, relative=False):
+    if clear:
+        turtle.clearscreen()
+        turtle.home() # Displays cursor before anything, if pause is used initially
+
+        turtle.tracer(not immediate)
+
+    sx, sy = turtle.position()
 
     def dodraw(l):
         for c in l:
@@ -53,6 +65,8 @@ def draw(l, speed=0.5, animate=True, save_pauses=False, pause_template=None):
                 turtle.penup()
             elif c == 'pendown':
                 turtle.pendown()
+            elif c == 'clear':
+                turtle.clearscreen()
             elif c[0] == 'wait':
                 if not animate:
                     continue
@@ -64,16 +78,25 @@ def draw(l, speed=0.5, animate=True, save_pauses=False, pause_template=None):
                     if save_pauses:
                         turtle.getcanvas().postscript(file='{}.eps'.format(pause_template.format(c[1])))
                     print(f"Waiting at {c[1]}. Hit Enter to continue")
+                    if clear:
+                        turtle.tracer(True)
                     input()
+                    if clear:
+                        turtle.tracer(not immediate)
             elif c[0] == 'left':
                 turtle.left(c[1])
             elif c[0] == 'right':
                 turtle.right(c[1])
             elif c[0] == 'goto':
                 x, y = c[1]
-                turtle.goto(x, y)
+                if relative:
+                    turtle.goto(x + sx, y + sy)
+                else:
+                    turtle.goto(x, y)
             elif c[0] == 'color':
                 turtle.color(c[1])
+            elif c[0] == 'pensize':
+                turtle.pensize(c[1])
             elif c[0] == 'fill':
                 color, ls = c[1]
                 turtle.fillcolor(color)

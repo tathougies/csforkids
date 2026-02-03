@@ -1,0 +1,95 @@
+% -------------------------------
+% Answers machinery (full solution)
+% - Collects \answer{...} calls into a token list
+% - Labels answers as W<week>-<exercise><task> (e.g. W3-2b, W3-1.2, W3-2(a) if you change \thetask)
+% - Works with nested enumerate and with tasks (via \thetask when available)
+% - Prints answers as nicely formatted blocks (no itemize/enumerate)
+% - Stores answer text unexpanded (safe for TikZ, \textcolor, \ldots, \ttpieces, etc.)
+% -------------------------------
+
+\makeatletter
+
+% Accumulator
+\newtoks\answers
+\answers={}
+
+% ---------- Formatting knobs ----------
+\newcommand{\AnswerHeadingStyle}{\sffamily\bfseries\color{SoftGray}}
+\newcommand{\AnswerLabelStyle}{\sffamily\bfseries\color{IdeaBlue}}
+\newcommand{\AnswerTextStyle}{\normalfont}
+
+% Heading inserted each time you start an Exercises section
+\newcommand{\AnswerHeading}[1]{%
+  \par\bigskip
+  {\AnswerHeadingStyle #1}\par\nobreak\medskip
+}
+
+% One answer block
+% #1 label, #2 answer text
+\newcommand{\AnswerItem}[2]{%
+  \par\noindent
+  {\AnswerLabelStyle #1}\hspace{0.6em}%
+  {\AnswerTextStyle #2}%
+  \par\medskip
+}
+
+% ---------- Labeling: W<week>-<num><task> ----------
+% Base exercise number from enumerate depth:
+%  - top-level: 1, 2, 3...
+%  - nested: 1.1, 1.2...
+%  - deeper: 1.2.3 ...
+\newcommand{\BaseExerciseNumber}{%
+  \ifcase\@enumdepth
+    ?% not in enumerate
+  \or
+    \theenumi%
+  \or
+    \theenumi.\theenumii%
+  \or
+    \theenumi.\theenumii.\theenumiii%
+  \or
+    \theenumi.\theenumii.\theenumiii.\theenumiv%
+  \else
+    \theenumi%
+  \fi
+}
+
+% Full label:
+% - Always starts with W<week>-<base number>
+% - If tasks counter exists AND is currently > 0, append \thetask
+\newcommand{\CurrentExerciseLabel}{%
+  W\theweek-\BaseExerciseNumber%
+  \@ifundefined{c@task}{}{%
+    \ifnum\value{task}>0
+      \thetask
+    \fi
+  }%
+}
+
+% ---------- User-facing commands ----------
+% Call at start of each exercises section
+\newcommand{\Exercises}{%
+  \needspace{10em} % Need to be able to typeset at least 10 lines
+  \section*{Exercises}%
+  \answers\expandafter{%
+    \the\answers
+    \noexpand\AnswerHeading{Week \theweek}%
+  }%
+}
+
+% Store an answer for the current item / subitem / task
+% IMPORTANT: \unexpanded keeps answer text intact (no fragile expansion)
+\newcommand{\answer}[1]{%
+  \answers\expandafter{%
+    \the\answers
+    \noexpand\AnswerItem{\CurrentExerciseLabel}{\unexpanded{#1}}%
+  }%
+}
+
+% Print all collected answers (place in appendix)
+\newcommand{\printanswers}{%
+  \section*{Answers}%
+  \the\answers
+}
+
+\makeatother

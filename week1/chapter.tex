@@ -95,6 +95,7 @@ different ways.
 }
 
 \begin{figure}[ht]
+  \fixfigure
   \centering
 
 \begin{tikzpicture}
@@ -208,6 +209,7 @@ Can you think of a way to make a board to get exactly one marble out?\hint{It wi
 \end{marginfigure}
 
 \begin{figure}[p]
+  \fixfigure
   \centering
   \begin{tikzpicture}
     \begin{ttboard}[blue marbles = 8]
@@ -239,7 +241,6 @@ marble, the marble falls straight into the interceptor, and no marble reaches th
 
 One way to count more than one marble is to replace the interceptor with another copy of our bit
 machine as shown in \prettyref{fig:count-2}.
-
 \begin{marginfigure}
   \centering
   \begin{tikzpicture}
@@ -755,15 +756,15 @@ looks different than the diagram for the \code{2 * 3 + 4} rule.
 
 \begin{figure}
   \fixfigure
-  \begin{subfigure}{0.45\linewidth}
+  \begin{minipage}{0.45\linewidth}
     \centering
     \begin{forest}
       [{*}
         [2]
         [{+} [3] [4]]]
     \end{forest}
-  \end{subfigure}
-  \begin{subfigure}{0.45\linewidth}
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
     \centering
     \begin{forest}
       [{+}
@@ -772,7 +773,7 @@ looks different than the diagram for the \code{2 * 3 + 4} rule.
           [3]]
         [4]]
     \end{forest}
-  \end{subfigure}
+  \end{minipage}
   \caption{The rule \code{2 * (3 + 4)} is drawn differently than the rule \code{2 * 3 + 4}.}
   \label{fig:parenrules}
 \end{figure}
@@ -976,6 +977,7 @@ describe to the computer the things we want to make.
 
 \begin{DeepDiveBox}
   \boxtitle{Simple Rules, Surprising Worlds: The Game of Life}
+  \label{box:gameoflife}
 
   One of the most famous rule-based systems ever created is called the \emph{Game of Life}, invented
   by mathematician John Conway.
@@ -1142,12 +1144,6 @@ describe to the computer the things we want to make.
 \end{exercises}
 
 \begin{table*}
-  \caption{This is a list of symbols you can use to combine rules in
-    Python. Symbols that appear first are executed first, unless you
-    use parentheses to force some rules to ge first. The behavior of
-    symbols can depend on whether it's used with numbers or words. All
-    these variants are given here}
-  \label{tab:operator-rules-1}
   \begin{tabularx}{\linewidth}{llL}
       \toprule
       \headercol{Symbol} & & \headercol{Meaning} \\\midrule
@@ -1161,4 +1157,10 @@ describe to the computer the things we want to make.
       \code{len} & \code{len(word)} & Get the number of letters and digits in the word \\
       \code{bin} & \code{bin(number)} & Get the binary number corresponding to the number \\\bottomrule
   \end{tabularx}
+  \caption{This is a list of symbols you can use to combine rules in
+    Python. Symbols that appear first are executed first, unless you
+    use parentheses to force some rules to ge first. The behavior of
+    symbols can depend on whether it's used with numbers or words. All
+    these variants are given here}
+  \label{tab:operator-rules-1}
 \end{table*}

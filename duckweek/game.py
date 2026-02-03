@@ -48,16 +48,16 @@ uniform int darken;
 varying vec2 textureOffset;
 
 void main() {
-  vec2 tilePos = pos.xy;
   vec2 sourcePos = pos.zw;
   vec2 tileSize = lakeOffset.zw;
+  vec2 tilePos = pos.xy * tileSize;
 
   // tilePos is 0 -> 1 screen position
   // lakeOffset is 0 -> 1 offset of tile 0 in 0 -> screen width/height coords
 
   // Calculate the [-1,1] screen position of the tile
-  tilePos.x = tilePos.x * 2.0 - 1.0;
-  tilePos.y = tilePos.y * 2.0 - 1.0;
+  tilePos *= 2.0;
+  tilePos -= 1.0;
 
   // offset by lake offset
   tilePos.x -= lakeOffset.x * 2.0;
@@ -65,22 +65,26 @@ void main() {
 
   // Now this is the top left corner of the tile
   // a_position is the tile relative position, (0,0) -> top left, (1,1) -> bottom right
-  tilePos.x += a_position.x * tileSize.x;
-  tilePos.y += a_position.y * tileSize.y;
+  tilePos.x += a_position.x * tileSize.x * 2.0;
+  tilePos.y += a_position.y * tileSize.y * 2.0;
 
-//  textureOffset = vec2((sourcePos.x + a_position.x) * sourceTileSize.x,
-//                       (1.0 - (sourcePos.y + a_position.y)) * sourceTileSize.y);
-  textureOffset = a_position;
-  gl_Position = vec4(pos.xy, 0.0, 1.0);
+  tilePos.y *= -1.0;
+  textureOffset = vec2(sourcePos.x + a_position.x * sourceTileSize.x,
+                       1.0 - (sourcePos.y + a_position.y * sourceTileSize.y));
+//  textureOffset = a_position;
+  gl_Position = vec4(tilePos, 0.0, 1.0);
 }
 '''
 GL_FRAGMENT_SHADER_SRC = '''
 varying vec2 textureOffset;
 
+uniform int darken;
 uniform sampler2D atlas;
 
 void main() {
-  gl_FragColor = texture2D(atlas, textureOffset);
+  vec4 c = texture2D(atlas, textureOffset);
+  c.w -= float(darken) * 0.2;
+  gl_FragColor = c;
 }
 '''
 
@@ -947,20 +951,23 @@ class GlBackend(GameBackend):
     def _load_texture(self, gltex, file):
         from PIL import Image
         import numpy as np
-        img = Image.open(file)
+        img = Image.open(file).convert("RGBA")
+        img = img.transpose(Image.FLIP_TOP_BOTTOM)
         iw, ih = img.size
-        tex = np.asarray(img)
+        tex = np.asarray(img, dtype=np.uint8)
+        tex = np.ascontiguousarray(tex)
         img.close()
 
         gl = self.gl
         gl.glBindTexture(gl.GL_TEXTURE_2D, gltex)
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, iw, ih, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, tex)
+        gl.glPixelStorei(gl.GL_UNPACK_ALIGNMENT, 1)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, iw, ih, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, tex)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_BASE_LEVEL, 0);
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAX_LEVEL, 0);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_BASE_LEVEL, 0)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAX_LEVEL, 0)
 
     def screen_tile_size(self):
         return self.scale * self.game.tile_size
@@ -977,10 +984,12 @@ class GlBackend(GameBackend):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
     def start_lake_draw(self, lake_off):
-        # Switch to off-screen texture rendering
         if not self.initialized:
             self._init_opengl()
             self.initialized = True
+
+        self.gl.glEnable(self.gl.GL_BLEND)
+        self.gl.glBlendFunc(self.gl.GL_SRC_ALPHA, self.gl.GL_ONE_MINUS_SRC_ALPHA)
 
         self._switch_texture(self.lake_texture)
         self.gl.glUseProgram(self.shader_program)
@@ -996,11 +1005,12 @@ class GlBackend(GameBackend):
     def _switch_texture(self, tex):
         if self.cur_texture == tex:
             return
-        self.gl.glActiveTexture(self.gl.GL_TEXTURE0)
         self.gl.glBindTexture(self.gl.GL_TEXTURE_2D, tex)
+        self.gl.glActiveTexture(self.gl.GL_TEXTURE0)
+        self.gl.glUniform1i(self.gl.glGetUniformLocation(self.shader_program, 'atlas'), 0)
         self.cur_texture = tex
 
-    def draw_lake_sprite(self, tile_source, tile_pos, is_dark=False):
+    def draw_lake_sprite(self, tile_pos, tile_source, is_dark=False):
         self.gl.glUniform4f(self.pos_uniform,
                             float(tile_pos[0]),
                             float(tile_pos[1]),
@@ -1009,13 +1019,14 @@ class GlBackend(GameBackend):
         self.gl.glUniform1i(self.darken_uniform, 1 if is_dark else 0)
         self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
 
-    def draw_duck(self, tile_source, tile_pos):
+    def draw_duck(self, tile_pos, tile_source):
+        print(tile_source, tile_pos)
         self._switch_texture(self.duck_texture)
         self.gl.glUniform4f(self.pos_uniform,
                             float(tile_pos[0]),
                             float(tile_pos[1]),
-                            float(tile_source[0]),
-                            float(tile_source[1]))
+                            float(tile_source[0] / 4),
+                            float(tile_source[1] / 4))
         self.gl.glUniform1i(self.darken_uniform, 0)
         self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
 
@@ -1023,7 +1034,11 @@ class GlBackend(GameBackend):
         pass
 
     def process_events(self, renderer, dt):
-        pass # Not needed
+        # Update camera position
+        dcx, dcy = self.tk_renderer.get_camera_velocity()
+        tile_size = self.game.tile_size
+        renderer.set_camera_position(renderer.camera_position[0] + dcy * tile_size * dt,
+                                     renderer.camera_position[1] + dcx * tile_size * dt)
 
     def should_continue(self):
         return True # Not needed
@@ -1483,9 +1498,7 @@ class AsyncSuspended:
     '''Simple class to 'park' a coroutine for further processing.'''
 
     def __await__(self):
-        print("Await")
         value = yield None # What it seems like 'await self' returns
-        print("DONE AWAIT")
         return value
 
 class TkRenderer(BrainRenderer):
@@ -1526,7 +1539,6 @@ class TkRenderer(BrainRenderer):
                 self.parent = self
 
             def draw(self):
-                print("DRAW")
                 self.make_current()
                 if self.cont is not None:
                     self.cont.send(None)
@@ -1537,6 +1549,15 @@ class TkRenderer(BrainRenderer):
             self.glarea.grid(row=0, column=glarea, sticky="nsew", padx=8, pady=4)
             self.glarea.make_current()
             self.glarea.bind("<Configure>", self._glresized)
+
+            self.root.bind_all("<KeyPress>", functools.partial(self._onglkey, True))
+            self.root.bind_all("<KeyRelease>", functools.partial(self._onglkey, False))
+
+            self.dirkeys = { 'Up': False,
+                             'Down': False,
+                             'Left': False,
+                             'Right': False }
+
             self._glsize = (400, 400)
         else:
             self.glarea = None
@@ -1544,6 +1565,13 @@ class TkRenderer(BrainRenderer):
     def _glresized(self, i):
         self._glsize = (self.glarea.winfo_width(), self.glarea.winfo_height())
         self.gl.glViewport(0, 0, self._glsize[0], self._glsize[1])
+
+    def _onglkey(self, state, e):
+        if isinstance(e.widget, (self.tk.Entry, self.tk.Text)):
+            return
+
+        if e.keysym in self.dirkeys:
+            self.dirkeys[e.keysym] = state
 
     def glcanvas_size(self):
         return self._glsize
@@ -1571,8 +1599,20 @@ class TkRenderer(BrainRenderer):
     def show(self):
         self.root.deiconify()
 
-    def process_events(self):
-        pass # No need to process events in tkinter
+    def get_camera_velocity(self):
+        '''Calculate camera velocity based on keys down'''
+        vx = 0
+        vy = 0
+        if self.dirkeys.get('Up'):
+            vy -= 1
+        if self.dirkeys.get('Down'):
+            vy += 1
+        if self.dirkeys.get('Left'):
+            vx -= 1
+        if self.dirkeys.get('Right'):
+            vx += 1
+        return (vx * MOVE_VELOCITY, vy * MOVE_VELOCITY)
+
 
     def _reschedule(self, renderer, game_loop_fn, secs):
         self.root.after(secs, game_loop_fn) # Schedule the loop to be run again in some amount of seconds
@@ -1787,5 +1827,5 @@ def launch_pygame_tk(brain_file, tileset_file, map_file):
 
 # This checks to see if this is being run as a game
 if __name__ == '__main__':
-#    launch_tkgl('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
-    launch_pygame_tk('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
+    launch_tkgl('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
+#    launch_pygame_tk('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
