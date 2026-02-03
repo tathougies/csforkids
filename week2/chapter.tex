@@ -33,7 +33,7 @@ When it comes to computers, we have to describe things exactly, because computer
 rules. If the instructions you gave your friend were not clear, your friend probably figured out a
 meaning that made sense to them. Computers don't do that. They simply do exactly as they are told.
 
-\section{Week 1 Review}
+\section{Week 1 Review}c
 
 Last week, we discussed how certain machines obey rules. Once the rules were set up, the machine
 always obeyed those rules. The machines we constructed counted marbles. We controlled how many
@@ -179,7 +179,7 @@ this with the \kw{import} rule.
 We don't need to know all the details to use it. \curious{Check out \prettyref{fig:import} for a
   complete rundown of \kw{import}.} Let's go ahead and load Turtle and draw our first shape: a line.
 
-\begin{figure}
+\begin{figure}[p]
   \centering
   \begin{minipage}{0.9\textwidth}
     \Huge \ttfamily
@@ -188,6 +188,9 @@ We don't need to know all the details to use it. \curious{Check out \prettyref{f
       \tikzmarknode{importkw}{\kw{import}} \tikzmarknode{import module name}{week2.draw} \tikzmarknode{aspart}{\kw{as} draw}
     \end{tcolorbox}
     \vspace{3cm}
+    \begin{tcolorbox}[sharp corners]
+      \tikzmarknode{fromkw}{\kw{from}} \tikzmarknode{from import module name}{week2.draw} \tikzmarknode{import from}{\kw{import}} \tikzmarknode{import from star}{*}
+    \end{tcolorbox}
   \end{minipage}
   \begin{tikzpicture}[remember picture, overlay]
     \node[above] (importkwnote) at ($(importkw) + (0, 1cm)$) {
@@ -213,11 +216,15 @@ We don't need to know all the details to use it. \curious{Check out \prettyref{f
     \draw[->] (importkwnote.south) -- ([yshift=1em]importkw.north);
     \draw[->] (aspartnote.north) -- (aspart.south);
     \draw[->] ([yshift=2ex]import module name note.south) -- ([yshift=1em]import module name.north);
+    \draw[->] ([yshift=-2ex]import module name note.north) -- ([yshift=1em]from import module name.north);
   \end{tikzpicture}
   \caption{The \kw{import} rule in Python lets you use extra sets of functionality that are not
     built-in to Python. It takes the name of a module, which is a series of words, separated by
     dots. You also specify how you want to refer to the rules contained in that module, after
-    \kw{as}. If you don't include \kw{as}, you have to use the full name of the module.}
+    \kw{as}. If you don't include \kw{as}, you have to use the full name of the module.
+
+    You can also get all the rules from a module using the \kw{from} / \kw{import} rule.
+  }
   \label{fig:import}
 \end{figure}
 
@@ -358,10 +365,16 @@ Let's try saving a rule. Open up Thonny and, instead of the prompt, point your m
 \end{center}
 }
 
-\aside{\textcolor{red}{TODO DESCRIBE HOW TO LOAD THE FILE}}
+\hint{Ask your teacher to help you find the \texttt{csforkids} code folder.}
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{../week2/figures/thonny-run.png}
+  \caption{The ``Run'' button at the top of the Thonny interface lets you run code saved in a file.}
+  \label{fig:thonny-run}
+\end{marginfigure}
 \begin{TryThisBox}
   Type the following into the editor and then save it in a file named
-  \texttt{model.py}.
+  \texttt{duck.py} inside the top-level \texttt{csforkids} folder.
   \begin{lstlisting}
 from week2.draw import *<ENTER>
 <ENTER>
@@ -375,9 +388,7 @@ draw(<ENTER>
 \end{lstlisting}
 \end{TryThisBox}
 
-Let's try using it:
-
-% TODO describe how to load the file
+We can load this file by clicking the green ``Run'' button in the Thonny interface as shown in \prettyref{fig:thonny-run}.
 
 You should get something like this:\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
   lights going on and off, but how do they represent \emph{sound}?
@@ -410,19 +421,19 @@ language. Some languages do not care about spaces and have other ways to figure 
 belong as sub-rules of other rules. But for now, we'll stick with how Python does things!}
 
 \begin{TryThisBox}
-  Type the following into \texttt{model.py}
+  Type the following into \texttt{duck.py}:
   \begin{lstlisting}
 def square():
-  draw.draw(<ENTER>
-    draw.color('blue') +<ENTER>
-    draw.forward(100) + draw.turn('right') +<ENTER>
-    draw.forward(100) + draw.turn('right') +<ENTER>
-    draw.forward(100) + draw.turn('right') +<ENTER>
-    draw.forward(100)
+  draw(<ENTER>
+    color('blue') +<ENTER>
+    forward(100) + turn('right') +<ENTER>
+    forward(100) + turn('right') +<ENTER>
+    forward(100) + turn('right') +<ENTER>
+    forward(100)
   \end{lstlisting}
 \end{TryThisBox}
 
-Now try this in the prompt.\hint{Remember to reload the file.}
+Now try this in the prompt.\hint{Remember to re-run the file (see \prettyref{fig:thonny-run}).}
 
 \begin{replbox}
 >>> square()<ENTER>
@@ -436,8 +447,8 @@ Can we draw two squares? Let's try it?
 \end{replbox}
 
 Uh-oh! The second \code{square()} started from a blank screen. This is
-because the \code{draw.draw()} rule always starts from a blank
-screen. Because we put \code{draw.draw} in our \code{square} rule
+because the \code{draw()} rule always starts from a blank
+screen. Because we put \code{draw} in our \code{square} rule
 above, \code{square} became an action, even though we just wanted the
 \emph{data} that was describing our drawing.
 
@@ -458,28 +469,27 @@ square. Let's try it.
   current line. You can skip them if you want and write everything on one line, but such long lines
   won't fit on this page!}
 \begin{TryThisBox}
-  Type the following into \texttt{model.py}
-  \begin{lstlisting}
+  Type the following into \texttt{duck.py} \begin{lstlisting}
 def square_shape():
-  draw.color('blue') + \<ENTER>
-  draw.forward(100) + draw.turn('right') + \<ENTER>
-  draw.forward(100) + draw.turn('right') + \<ENTER>
-  draw.forward(100) + draw.turn('right') + \<ENTER>
-  draw.forward(100)
+  color('blue') + \<ENTER>
+  forward(100) + turn('right') + \<ENTER>
+  forward(100) + turn('right') + \<ENTER>
+  forward(100) + turn('right') + \<ENTER>
+  forward(100)
   \end{lstlisting}
 \end{TryThisBox}
 
-Reload the file into the prompt, and let's try it.
+Reload the file by hitting the ``Run'' button and let's try it.
 
 \begin{replbox}
->>> draw.draw(square_shape() + draw.forward(200) + square_shape())<ENTER>
+>>> draw(square_shape() + forward(200) + square_shape())<ENTER>
 \end{replbox}
 
 Uh-oh! That didn't work. What's going on?
 
-Remember above how the \code{draw.forward()} was a \emph{plan} for a
+Remember above how the \code{forward()} was a \emph{plan} for a
 drawing, but not the drawing itself? We were able to see the plan, by
-just using \code{draw.forward()} without \code{draw.draw()}. Let's see
+just using \code{forward()} without \code{draw()}. Let's see
 if we can figure out what's going on with \code{square\_shape()}.
 
 First, let's think about what we want. We would want
@@ -511,17 +521,17 @@ keep. This is the word we need to get Python to keep our plan. Go ahead and modi
 \code{square\_shape()}.
 
 \hint{Make sure to pay attention to indentation. You have to add
-  spaces in front of \code{draw.forward} in order to keep it ``under''
+  spaces in front of \code{forward} in order to keep it ``under''
   the \kw{return}. You can also choose to type it all on one
   line. Remember \code{\textbackslash} is just a convenience.}
 \begin{TryThisBox}
 \begin{lstlisting}
 def square_shape():
-  @@return@@ draw.color('blue') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100)
+  @@return@@ color('blue') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100)
 \end{lstlisting}
 \end{TryThisBox}
 
@@ -546,7 +556,7 @@ terminology we'll use from now on.
 We can now use \code{square\_shape()}  with \code{draw()}.
 
 \begin{replbox}
->>> draw.draw(square_shape() + draw.forward(200) + square_shape())
+>>> draw(square_shape() + forward(200) + square_shape())
 \end{replbox}
 
 And there's two squares!
@@ -609,18 +619,18 @@ would have to write two functions that looked the same, like below:
 \begin{TryThisBox}
 \begin{lstlisting}
 def big_square_shape():
-  return draw.color('blue') + \<ENTER>
-    draw.forward(200) + draw.turn('right') + \<ENTER>
-    draw.forward(200) + draw.turn('right') + \<ENTER>
-    draw.forward(200) + draw.turn('right') + \<ENTER>
-    draw.forward(200)
+  return color('blue') + \<ENTER>
+    forward(200) + turn('right') + \<ENTER>
+    forward(200) + turn('right') + \<ENTER>
+    forward(200) + turn('right') + \<ENTER>
+    forward(200)
 
 def small_square_shape():
-  return draw.color('blue') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100) + draw.turn('right') + \<ENTER>
-    draw.forward(100)
+  return color('blue') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100)
 \end{lstlisting}
 \end{TryThisBox}
 
@@ -633,11 +643,11 @@ square of any size:
 \begin{TryThisBox}
 \begin{lstlisting}
 def square_shape(n):
-  return draw.color('blue') + \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n) + draw.turn('right') + \<ENTER>
-    draw.forward(n)
+  return color('blue') + \<ENTER>
+    forward(n) + turn('right') + \<ENTER>
+    forward(n) + turn('right') + \<ENTER>
+    forward(n) + turn('right') + \<ENTER>
+    forward(n)
 \end{lstlisting}
 \end{TryThisBox}
 
@@ -813,7 +823,13 @@ Remember how we started class by drawing a duck and attempting to describe it to
 point we lacked a proper language to talk about drawings. But now we have a way to talk about
 drawings precisely! Take a look at your drawing, and break it up into \emph{rules}: lines, circles, etc.
 
+\didyouknow{One of the earliest kinds of computers was known as the
+  \textbf{Jacquard Loom}. It revolutionized the manufacture of complex
+  patterns in cloth. Weavers would punch cards giving the machine
+  directions to raise or lower threads to create complex patterns.
 
+  \includegraphics[width=0.9\textwidth]{../week2/figures/Jacquard.loom.cards.jpg}
+}
 
 \begin{TryThisBox}
   Try using what you've learned thus far to draw a duck using \kw{def} and \kw{return} and

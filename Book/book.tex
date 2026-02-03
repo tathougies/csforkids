@@ -1,5 +1,6 @@
 % Compile with xelatex
 \documentclass[12pt,twoside,symmetric,nobib]{tufte-book}
+\usepackage{needspace}
 \usepackage[
   backend=biber,
   style=authoryear
@@ -184,6 +185,7 @@
   listing only,
   listing options={style=replstyle,#1}
 }
+
 \newtcblisting{replboxannotated}[1][]{
   enhanced,
   breakable,
@@ -223,6 +225,12 @@
   before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{DeepPurple}\intcbtrue},
   after upper={\intcbfalse}
 }
+\newtcolorbox{DeepDiveBoxFloat}{
+  colback=DeepPurple!6,colframe=DeepPurple!55,
+  title={\sffamily\bfseries Optional: Going Deeper},
+  before upper={\setlength{\parskip}{0.75em}\renewcommand{\currboxcolor}{DeepPurple}\intcbtrue},
+  after upper={\intcbfalse}
+}
 \newtcolorbox{TrackBox}[1]{
   colback=TrackOrange!6,colframe=TrackOrange!55,
   title={\sffamily\bfseries Track: #1},
@@ -259,13 +267,13 @@
 \newcommand{\makemargmark@odd}[2]{
   \tikz[remember picture,overlay]{
     \coordinate (x) at ([xshift=\marginparsep]current page text area.east |- #1.east);
-    \node[anchor=west, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily odd #2\end{minipage}};
+    \node[anchor=west, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
   }
 }
 \newcommand{\makemargmark@even}[2]{
   \tikz[remember picture,overlay]{
     \coordinate (x) at ([xshift=-\marginparsep]current page text area.west |- #1.east);
-    \node[anchor=east, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily even #2\end{minipage}};
+    \node[anchor=east, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
   }
 }
 
@@ -357,53 +365,7 @@
   label=\arabic*
 }
 
-% ---------- Answer collection to an appendix ----------
-\makeatletter
-
-\newcommand{\Exercises}{
-  \section*{Exercises}
-
-  \begingroup
-  \immediate\write\tt@answers{
-    \string\AnswerHeading{Week \theweek}
-  }
-  \endgroup
-}
-\newwrite\tt@answers
-\AtBeginDocument{%
-  \immediate\openout\tt@answers=\jobname.answers.tex%
-}
-\AtEndDocument{%
-  \immediate\closeout\tt@answers%
-}
-
-% Write an answer for the *current* exercise number
-\newcommand{\answer}[1]{%
-  \begingroup
-    % Write a macro call into the answers file.
-    \immediate\write\tt@answers{%
-    \string\AnswerItem{\thechapter-\theenumi}{#1}%
-    }%
-  \endgroup
-}
-\newcommand{\AnswerItem}[2]{%
-\item[\textcolor{IdeaBlue}{\sffamily\bfseries #1}] #2%
-}%
-\newcommand{\AnswerHeading}[1]{
-\item \textbf{\textsf{\textcolor{SoftGray}{#1}}}
-}
-
-% Print all answers (put this in your Appendix)
-\newcommand{\printanswers}{%
-    % Define how each saved answer line is rendered
-  \begin{description}
-    \item[test] hello
-    \IfFileExists{\jobname.answers.tex}{
-      \input{\jobname.answers.tex}
-    }{\item[Error] Please run \LaTeX again}
-  \end{description}
-}
-\makeatother
+\input{answers.tex}
 
 % ---------- Keyboard ----------
 \newcommand{\litkey}[1]{\;\tikz[baseline=-0.6ex]\node[draw,rounded corners=2pt,inner sep=2pt,font=\scriptsize\sffamily]{#1};}

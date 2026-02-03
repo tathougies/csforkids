@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"></script>
+    <style>
+      /* basic styling */
+      #editor {
+          border: 1px solid darkgray;
+          height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div><canvas tabindex="0" id="canvas" width="1024" height="768"></canvas></div>
+      <div class="gameinfo">
+        <div class="state">State: <span id="state"></span></div>
+        <table class="properties">
+          <tr>
+            <td class="name">thought</td>
+            <td>=</td>
+            <td id="thought"></td>
+          </tr>
+
+          <tr>
+            <td class="name">north</td>
+            <td>=</td>
+            <td id="north"></td>
+          </tr>
+
+          <tr>
+            <td class="name">east</td>
+            <td>=</td>
+            <td id="east"></td>
+          </tr>
+
+          <tr>
+            <td class="name">south</td>
+            <td>=</td>
+            <td id="south"></td>
+          </tr>
+
+          <tr>
+            <td class="name">west</td>
+            <td>=</td>
+            <td id="west"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="srcarea" id="srcarea">
+    </div>
+    <script type="text/javascript">
+      // Must exist before the SDL/emscripten runtime wires up events
+      globalThis.Module = globalThis.Module || {};
+      globalThis.Module.doNotCaptureKeyboard = true;
+    </script>
+    <script type="module">
+      import {EditorView, basicSetup} from 'https://cdn.jsdelivr.net/npm/@codemirror/basic-setup@0.20.0/+esm';
+      import {python} from 'https://cdn.jsdelivr.net/npm/@codemirror/lang-python@6.2.1/+esm';
+
+      window.editorView = new EditorView({
+          doc: '',
+          parent: document.getElementById("srcarea"),
+          extensions: [basicSetup, python()]
+      });
+
+      async function main(){
+          let pyodide = await loadPyodide();
+          pyodide._api._skip_unwind_fatal_error = true;
+          await pyodide.loadPackage("pygame-ce");
+          // Downloading a single file
+          await pyodide.runPythonAsync(`
+    from pyodide.http import pyfetch
+    import asyncio
+    import pathlib
+    import os
+    os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'
+
+    async def download_to(http, dest):
+     pathlib.Path(dest).parent.mkdir(parents=True, exist_ok=True)
+     response = await pyfetch(http)
+     with open(dest, "wb") as f:
+        f.write(await response.bytes())
+
+    async def download_all():
+      async with asyncio.TaskGroup() as tg:
+         tg.create_task(download_to('../game.py', 'game.py'))
+         tg.create_task(download_to('../sample_brain.py', 'sample_brain.py'))
+         tg.create_task(download_to('../assets/tileset.json', 'assets/tileset.json'))
+         tg.create_task(download_to('../assets/maps/level1.json', 'assets/maps/level1.json'))
+         tg.create_task(download_to('../assets/duck.png', 'duckweek/assets/duck.png'))
+         tg.create_task(download_to('../assets/terrain_atlas.png', 'assets/terrain_atlas.png'))
+
+
+    await download_all()
+`);
+
+          pyodide.canvas.setCanvas2D(document.getElementById('canvas'));
+          const pkg = pyodide.pyimport("game");
+          const stateBox = document.getElementById("state");
+          const thoughtBox = document.getElementById("thought");
+          const northBox = document.getElementById("north");
+          const eastBox = document.getElementById("east");
+          const southBox = document.getElementById("south");
+          const westBox = document.getElementById("west");
+          pkg.launch_html('sample_brain.py', 'assets/tileset.json', 'assets/maps/level1.json',
+                          {
+                              setBrain: (b) => {
+                                  window.editorView.dispatch({
+                                      changes: {
+                                          from: 0,
+                                          to: window.editorView.state.doc.length,
+                                          insert: b
+                                      }
+                                  });
+                              },
+                              updateGameInfo: (i) => {
+                                const input = i.input;
+                                stateBox.innerHTML = i.game_state;
+                                thoughtBox.innerHTML = input.thought;
+                                northBox.innerHTML = input.north;
+                                southBox.innerHTML = input.south;
+                                westBox.innerHTML = input.west;
+                                eastBox.innerHTML = input.east;
+                            }});
+      }
+      main();
+    </script>
+  </body>
+</html>

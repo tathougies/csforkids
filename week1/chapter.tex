@@ -950,73 +950,6 @@ memorize these, but it may be useful to refer back.
 \label{tab:python-errors}
 \end{table}
 
-\begin{bookbox}[p]
-\fixfigure
-\begin{DeepDiveBox}
-  \boxtitle{Simple Rules, Surprising Worlds: The Game of Life}
-
-  One of the most famous rule-based systems ever created is called the \emph{Game of Life}, invented
-  by mathematician John Conway.
-
-  Despite the name it isn't really a game -- it's a world that follows rules.
-
-  Imagine a giant sheet of graph paper. Each square can either be \emph{alive} or
-  \emph{dead}. That's it. No colors, no thinking, nothing. Just alive or \tikzmarknode{play game of life}{dead}.
-
-  The game proceeds in turns. At each turn, each square looks at its eight neighbors and follows
-  these simple rules (all squares update at the same time):
-  \begin{enumerate}
-  \item If a square is \emph{alive} and has fewer than two live neighbors, it gets lonely and dies.
-  \item If a square is \emph{alive} and has two or three live neighbors, it stays alive.
-  \item If a square is \emph{alive} and has more than three live neighbors, it suffocates and dies.
-  \item If a square is \emph{dead} and has exactly three live neighbors, it comes to life.
-  \end{enumerate}
-  \tikzmarknode{game of life rules}{}
-
-  \textbf{\sffamily \large What Happens?}
-
-  Surprisingly, this system is a \emph{full} computer and can compute \emph{anything}. You can build
-  patterns that do all sorts of things. Some patterns move across the board. Some repeat
-  forever. Some patterns build other patterns.
-
-  All of this comes from just four simple rules!
-
-  The Game of Life shows something very important: \textbf{Simple rules can create behavior that
-    looks alive, planned, or intelligent -- even when nothing is thinking}. This is the same idea
-  behind the electronic computers that we use every day.
-\end{DeepDiveBox}
-\label{box:gameoflife}
-\end{bookbox}
-\onfloatpage{box:gameoflife}{
-  \makemargmark{play game of life}{
-    \margmark{play-life}{\curiousboxtext You can play the game of life by going to \href{https://playgameoflife.com}{https://playgameoflife.com}.\\
-      \begin{center}
-        \qrcode{https://playgameoflife.com}
-    \end{center}}
-  }
-  \makemargmark{game of life rules}{
-    \margmark{gameofliferules}{
-      Each turn, a cell looks at its neighbors and decides to either come to life, stay alive, or die. \\
-      \begin{tikzpicture}
-        \foreach \x in {0,1,2} {
-          \foreach \y in {0,1,2} {
-            \draw (\x,\y) rectangle ++(1,1);
-          }
-        }
-        \fill[red] (1,1) rectangle ++(1,1);
-        \node [anchor=south west] at (0, 2) {1}; % top-left
-        \node [anchor=south west] at (1, 2) {2}; % top-middle
-        \node [anchor=south west] at (2, 2) {3}; % top-right
-        \node [anchor=south west] at (0, 1) {4}; % middle-left
-        \node [anchor=south west] at (2, 1) {5}; % middle-right
-        \node [anchor=south west] at (0, 0){6}; % bottom-left
-        \node [anchor=south west] at (1, 0) {7}; % bottom-middle
-        \node [anchor=south west] at (2, 0) {8}; % bottom-right
-      \end{tikzpicture}
-    }
-  }
-}
-
 \section{Conclusion}
 
 Computers follow rules exactly. When we program a computer, we make
@@ -1040,6 +973,62 @@ game, machine, or a person -- can follow your ideas without confusion.
 
 In the next chapter we'll start to think deeper about how to precisely
 describe to the computer the things we want to make.
+
+\begin{DeepDiveBox}
+  \boxtitle{Simple Rules, Surprising Worlds: The Game of Life}
+
+  One of the most famous rule-based systems ever created is called the \emph{Game of Life}, invented
+  by mathematician John Conway.
+
+  Despite the name it isn't really a game -- it's a world that follows rules.
+
+  Imagine a giant sheet of graph paper. Each square can either be \emph{alive} or
+  \emph{dead}. That's it. No colors, no thinking, nothing. Just alive or dead.
+  \margmark{play-life}{\curiousboxtext You can play the game of life by going to \href{https://playgameoflife.com}{https://playgameoflife.com}.\\
+    \begin{center}
+      \qrcode{https://playgameoflife.com}
+  \end{center}}
+
+  The game proceeds in turns. At each turn, each square looks at its eight neighbors and follows
+  these simple rules (all squares update at the same time):
+  \begin{enumerate}
+  \item If a square is \emph{alive} and has fewer than two live neighbors, it gets lonely and dies.
+  \item If a square is \emph{alive} and has two or three live neighbors, it stays alive.
+  \item If a square is \emph{alive} and has more than three live neighbors, it suffocates and dies.
+  \item If a square is \emph{dead} and has exactly three live neighbors, it comes to life.
+  \end{enumerate}
+  \margmark{gameofliferules}{
+      Each turn, a cell looks at its neighbors and decides to either come to life, stay alive, or die. \\
+      \begin{tikzpicture}
+        \foreach \x in {0,1,2} {
+          \foreach \y in {0,1,2} {
+            \draw (\x,\y) rectangle ++(1,1);
+          }
+        }
+        \fill[red] (1,1) rectangle ++(1,1);
+        \node [anchor=south west] at (0, 2) {1}; % top-left
+        \node [anchor=south west] at (1, 2) {2}; % top-middle
+        \node [anchor=south west] at (2, 2) {3}; % top-right
+        \node [anchor=south west] at (0, 1) {4}; % middle-left
+        \node [anchor=south west] at (2, 1) {5}; % middle-right
+        \node [anchor=south west] at (0, 0){6}; % bottom-left
+        \node [anchor=south west] at (1, 0) {7}; % bottom-middle
+        \node [anchor=south west] at (2, 0) {8}; % bottom-right
+      \end{tikzpicture}
+    }
+
+  \textbf{\sffamily \large What Happens?}
+
+  Surprisingly, this system is a \emph{full} computer and can compute \emph{anything}. You can build
+  patterns that do all sorts of things. Some patterns move across the board. Some repeat
+  forever. Some patterns build other patterns.
+
+  All of this comes from just four simple rules!
+
+  The Game of Life shows something very important: \textbf{Simple rules can create behavior that
+    looks alive, planned, or intelligent -- even when nothing is thinking}. This is the same idea
+  behind the electronic computers that we use every day.
+\end{DeepDiveBox}
 
 \Exercises
 

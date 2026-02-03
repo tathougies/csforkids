@@ -2,7 +2,7 @@
   description = "XeLaTeX project with amssymb, enumitem, Devanagari + Chinese";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -23,6 +23,7 @@
             eso-pic
             zref
             xecjk         # nicer Chinese handling on XeTeX
+            needspace
             newtx
             amsfonts amsmath # amssymb
             enumitem
@@ -64,8 +65,8 @@
         fonts = [
           pkgs.noto-fonts            # Latin + many scripts
 #          pkgs.noto-fonts-cjk        # Chinese/Japanese/Korean
-          pkgs.noto-fonts-emoji
-          pkgs.noto-fonts-extra      # includes Noto Serif/Sans Devanagari
+          pkgs.noto-fonts-color-emoji
+#          pkgs.noto-fonts-extra      # includes Noto Serif/Sans Devanagari
 #          pkgs.noto-fonts-cjk-serif
           pkgs.noto-fonts-lgc-plus
           pkgs.libertinus
@@ -73,7 +74,7 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
-        dependencies = [ tex pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3Full.withPackages (p:  [ p.pyopengl p.pyglm p.glfw  p.pygame p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
+        dependencies = [ tex pkgs.imagemagick pkgs.ghostscript pkgs.inkscape pkgs.caddy (pkgs.python3.withPackages (p:  [ p.tkinter p.pyopengl p.tkinter-gl p.pyglm p.pillow p.glfw  p.pygame p.pyx p.sounddevice p.mido p.numba p.matplotlib ])) ] ++ fonts;
       in
       {
         devShells.default = pkgs.mkShell {

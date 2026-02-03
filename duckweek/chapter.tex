@@ -1,0 +1,86 @@
+\chapter{Making DEcisions}
+
+
+\section{Numbers All the Way Down}
+
+Last week, we discussed how computers store numbers using switches that are either on or
+off. \hint{See \prettyref{sec:binary-numbers} for a review.}
+
+Everything on a computer is stored as numbers. Even the words we saw last class are stored using
+numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
+call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as \code{str}.}
+
+Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
+\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
+international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
+  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
+computer systems would often use their own custom standard or a standard particular to individual
+countries and languages. Reading files created using one standard on a computer designed to work
+with another standard could result in garbage data. Another common way to write strings as numbers
+is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
+Interchange}. ASCII covers most characters used in English and other languages that use the Latin
+alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
+character.
+
+It may seem crazy that each letter has a number that goes along with it, but I can prove it to you. Try this in Python:
+
+\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
+\code{ord('hello')}!}
+\begin{replbox}
+>>> ord('5')<ENTER>
+53
+>>> ord('Z')<ENTER>
+90
+>>> ord('>')<ENTER>
+62
+>>> ord('\'')<ENTER>(*@ \tikzmarknode{python escapes node}{} @*)
+39
+>>> ord('h')<ENTER>
+104
+\end{replbox}
+\makemargmark{python escapes node}{\notestyle\hintnote Python words are delimited by single quotation marks (\code{'}). But what if you want to talk about the word consisting of just the single quote character itself or a word containing a single quote character (like an Irish name with \enquote{O'})? In order to tell Python that you want a \code{'} treated as just the letter and not part of the Python rules, you use the \code{\textbackslash} character in front of it. This word \code{'\textbackslash''} is just the word consisting of a single single-quote letter.}
+%}
+
+
+You can also go from a number \emph{to} a word.
+
+\hint{Try all kinds of numbers here, and see what you get!}
+\begin{replbox}
+>>> chr(76)<ENTER>
+'L'
+>>> chr(53)<ENTER>
+'5'
+>>> chr(54)<ENTER>
+'6'
+>>> chr(233)<ENTER>
+'é'
+>>> chr(1103)<ENTER>
+'я'
+>>> chr(26159)<ENTER>
+'是'
+>>> chr(22398)<ENTER>
+'学'(*@\tikzmarknode{chinese xie}{}@*)
+>>> chr(128512)<ENTER>
+'(*@{\EmojiFont 😀}@*)'
+\end{replbox}
+\makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
+
+Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
+learned about last week to see the binary representation of these numbers.
+
+\begin{replbox}
+>>> bin(ord('5'))<ENTER>
+'0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
+>>> bin(ord('Z'))<ENTER>
+'0b1011010'
+>>> bin(ord('\''))<ENTER>
+'0b100111'
+\end{replbox}
+\makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
+Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
+
+See it's just numbers all the way down!
+
+\begin{BigIdeaBox}
+  All information inside a modern computer is stored as numbers, even words!
+\end{BigIdeaBox}
