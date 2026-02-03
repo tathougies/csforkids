@@ -7,43 +7,48 @@ Get out a piece of paper and draw a duck. It can be any kind of duck you want, i
 Once you're done, have your friend take out a new sheet of paper. Without showing them your drawing,
 describe exactly what you drew and have them attempt to replicate it.
 
-How did they do? If you're like most people, you probably gave directions that were vague enough to
-be interpreted in many ways. Your friend's drawing probably doesn't look a whole lot like yours.
+How did they do? If you're like most people, your directions were
+vague enough to be interpreted in many ways, and your friend's drawing
+probably doesn't look much like yours.
 
 \begin{marginfigure}
   \centering
   \includegraphics[width=0.8\marginparwidth]{../week2/figures/duck.jpg}
-  \caption{Can you describe exactly how to draw this duck? Your computer can!}
+  \caption{Can you describe exactly how to draw this duck? Your computer can -- if we know how to b precise enough!}
 \end{marginfigure}
 
-In casual conversation, we often mix up our own ideas of how things ought to be with the way things
-are. None of the instructions you gave about how to draw your duck were wrong, and the drawing your
-friend made from them is also not wrong. They just highlight different parts of how \emph{you}
-interpreted your own drawing and how \emph{they} interpreted your description of it.\didyouknow{Many of the products we use today are
-  made by computers that manipulate real life materials, like wood,
-  metals, and plastic. Precise instructions are provided to these
-  machines using a special computer unit called a \term{Computer
-    Numerical Control} (or \term{CNC} module) that produce highly-detailed pieces like the one shown here.
+In casual conversation, people fill in the gaps using their own
+assumptions when information is missing. None of the instructions you
+gave about how to draw your duck were wrong, and the drawing your
+friend made from them is also not wrong. They just highlight different
+parts of how \emph{you} interpreted your own drawing and how
+\emph{they} interpreted your description of it.\didyouknow{Many of the
+  products we use today are made by computers that manipulate real
+  life materials, like wood, metals, and plastic. Precise instructions
+  are provided to these machines using a special computer unit called
+  a \term{Computer Numerical Control} (or \term{CNC} module) that
+  produce highly-detailed pieces like the one shown here.
   \vspace{0.6em}
 
   \includegraphics[width=0.8\marginparwidth]{../week2/figures/cnc-machine.jpg}
   \attribution{Cameronm125, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons}
   }
 
-When it comes to computers, we have to describe things exactly, because computers simply follow
-rules. If the instructions you gave your friend were not clear, your friend probably figured out a
-meaning that made sense to them. Computers don't do that. They simply do exactly as they are told.
+When it comes to computers, we have to describe things exactly, because computers blindly follow
+rules -- they never guess what we meant. If the instructions you gave your friend were not clear,
+your friend probably figured out a meaning that made sense to them. Computers don't do that. They
+simply do exactly as they are told.
 
-\section{Week 1 Review}c
+\section{Week 1 Review}
 
 Last week, we discussed how certain machines obey rules. Once the rules were set up, the machine
 always obeyed those rules. The machines we constructed counted marbles. We controlled how many
 marbles came out by manipulating switches on a board.
 
-Computers also use switches to count. Each switch in a computer can be on or off, or a ``1''
+Computers also use switches to count. Each switch in a computer can be on or off -- a ``1''
 or ``0''. Every number can be written as 1s and 0s.
 
-All of these principles are based on fixed rules.
+All these machines followed fixed rules.
 
 We saw that Python also follows rules. We learned that Python can manipulate numbers and
 words. Although numbers are stored internally in a binary form, Python interprets them for us, so
@@ -65,22 +70,25 @@ Think back to the duck exercise we did at the beginning of class. We found it wa
 duck perfectly to our friend. That wasn't because we didn't know what a duck is -- it's because we
 had no way to describe it precisely.
 
+Whenever we want to describe something in detail, we have to understand how to be precise about
+it. Switches are precise -- they are either on or off. Numbers are precise too because we've figured
+out a way to write them as a series of switches. We need a way of describing images in a similar
+manner.
+
 \begin{BigIdeaBox}
 English is a great language for everyday communication, but it is not great at being exact about
 visual information. To talk about drawings, we need a language that allows us to be precise about
 something.
 \end{BigIdeaBox}
 
-Whenever we want to describe something in detail, we have to understand how to be precise about
-it. Switches are precise -- they are either on or off. Numbers are precise too, because they can be
-represented by a bunch of switches. We need a way of describing images in a similar manner.
-
-%\begin{marginfigure}
-%  \centering
-%  \includegraphics[width=0.8\marginparwidth]{../week2/figures/plato.jpg}
-%  \caption{The Greek philosopher \textbf{Plato} believed that things
-%    existed before being described.}
-%\end{marginfigure}
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.8\marginparwidth]{../week2/figures/plato.jpg}
+  \caption{The Greek philosopher \textbf{Plato} believed that
+    \emph{ideas} are precise, even when our descriptions of them are
+    not. Our attempts at describing what a duck looks like might not
+    be perfect, but they can get us pretty close!}
+\end{marginfigure}
 
 % \begin{TrackBox}{Gaming}
 %   Some computer scientists try to match the descriptions and names on
@@ -89,15 +97,119 @@ represented by a bunch of switches. We need a way of describing images in a simi
 %   called a \term{simulation}.
 % \end{TrackBox}
 
+\subsection{Drawing Our First Image}
+
+In order to draw on a computer, we have to first think about what sort of \emph{language} we need to
+use to be specific about what to draw. Some people have thought really hard about how to do this and
+they came up with a language called Turtle.
+
+Turtle works by following -- you guessed it -- rules! Turtle works like an Etch-a-sketch. You supply
+instructions that move a pen around a page. Turtle draws a line as the pen moves.
+
+
+% TODO Setup course materials
+
+We're going to use a version of Turtle that is a bit more intuitive than ``standard'' Turtle. This
+is provided as part of the course materials in the form of a \term{module}, which is a re-usable
+bundle of Python code. In order to use this version, we will have to load it into Python. We can do
+this with the \kw{import} rule.
+
+We don't need to know all the details to use it. \curious{Check out \prettyref{fig:import} for a
+  complete rundown of \kw{import}.} Let's go ahead and load Turtle and draw our first shape: a line.
+
+\begin{figure}[!b] % Need the ! to force latex to put it on a page for whatever reason
+  \centering
+  \input{../week2/figures/importkw.tex}
+  \caption{The \kw{import} rule in Python lets you use extra sets of functionality that are not
+    built into Python. It takes the name of a module, which is a series of words, separated by
+    dots. You also specify how you want to refer to the rules contained in that module, after
+    \kw{as}. If you don't include \kw{as}, you have to use the full name of the module.
+
+    You can also get all the rules from a module using the \kw{from} / \kw{import} rule.
+  }
+  \label{fig:import}
+\end{figure}
+
+\begin{replbox}
+>>> (*@\tikzmarknode{import keyword}{\kw{import}}@*) week2.draw as (*@\tikzmarknode{week2 draw name}{draw}@*)<ENTER>
+>>> draw.draw(draw.forward(100))<ENTER>
+\end{replbox}
+
+What happened here? The pen started in the middle of the page, and then went \emph{forward} by 100
+units.\curious{The units used by Turtle are called \term{pixels}. See \prettyref{fig:pixels} for
+  more information} In this case, the pen always starts pointed to the right or ``east'', if we're
+using compass directions. So when we go forward, Turtle draws a line to the right.
+
+Let's break it down further though. There are actually \emph{two} rules being used here. The first
+is \code{draw.draw()}.\hint{\code{draw.draw()} refers to the rule within the \code{week2.draw}
+  module that we \kw{import}ed. See \prettyref{fig:import}.} This rule takes a drawing and draws
+it. It doesn't draw anything on its own. If you just did the following, you'd get a blank screen:
+
+\begin{replbox}
+>>> draw.draw()<ENTER>
+\end{replbox}
+
+You need to make a drawing in order for \code{draw.draw} to do something. This is what the
+\code{draw.forward} rule does. Go ahead and try this:\curious{For a full list of all the Turtle
+  rules we can use see \prettyref{tab:turtle}.}
+
+
+\begin{replbox}
+>>> draw.forward(10)<ENTER>
+[('forward', 10)]
+\end{replbox}
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\textwidth]{../week2/figures/Jack_of_hearts.jpg}
+  \caption{The Turtle language works like an Etch-a-sketch. A pen moves around the page leaving marks that turn into images, such as this one.\attribution{By Etcha - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=5395767}}
+  \label{fig:etchasketch}
+\end{marginfigure}
+That didn't draw anything! That's because the \code{draw.forward()} rule only describes \emph{what} to
+draw. It doesn't do any drawing yourself. You need to ask Python to draw the drawing you create.
+
+Now that we understand the difference between doing the drawing and planning the drawing, let's talk
+about what we can do with the plans.
+
+The simplest thing we can do with drawing plans is to combine them together in sequence -- first
+make one drawing, then the other. You can put drawings together by using \code{+}, just like you can
+with numbers. Let's try this:
+
+% Intentionally not adding .... here
+\begin{replbox}
+>>> draw.forward(10) + draw.turn('right') + draw.forward(20)<ENTER>
+[('forward', 10), ('right', 90), ('forward', 20)]
+\end{replbox}
+
+Again, that's just the \emph{plan} for the drawing. It doesn't \emph{do} anything until you draw
+it. Let's try drawing it:
+
+\hint{For a full explanation of \code{draw.turn}, see \prettyref{deepdive:draw-turn-angles}.}
+\begin{replbox}
+>>> draw.draw(draw.forward(10) + draw.turn('right') + draw.forward(20))<ENTER>
+\end{replbox}
+
+That's more like it.
+
+\didyouknow{The difference between data and effects is similar
+  to the difference between \emph{nouns} and \emph{verbs}. Nouns don't
+  do anything on their own. They're just there. You need a verb to do
+  something with it.}
+What we saw above is the distinction between \term{data} and
+effects. Data is information about something. Data describes what
+something is. The \code{draw.forward} and \code{draw.turn} rules made
+\emph{data}. The \code{draw.draw} rule used that data to make a
+drawing.
+
 \begin{bookbox}[p]
   \fixfigure
 \label{box:pixels}
 \begin{TrackBox}{Graphics}
   \boxtitle{How Computers Draw}
 
-Computers draw using -- you guessed it -- numbers! You've probably seen the \term{number line} in
-your math courses. All numbers can be placed on a simple line, and we can name any point on the line
-by writing down a number to name it.
+\tikzmarknode{number line note}{} Computers draw using -- you guessed it -- numbers! You've probably
+seen the \term{number line} in your math courses. All numbers can be placed on a simple line, and we
+can name any point on the line by writing down a number to name it.
 
 %\makemargmark{number line
 %  comment}{\notestyle \huhnote{This coordinate system looks different than my math courses! What's
@@ -107,24 +219,25 @@ by writing down a number to name it.
 %    how things are physically drawn. It doesn't matter which system you choose, as long as everyone
 %    does it the same way. In both systems, each grid is named by a unique number.}}
 
-But to make graphics, we need to be able to talk about \tikzmarknode{points on a screen}{points} on
+But to make graphics, we need to be able to talk about points on
 a rectangular screen, not a line. How do we name a point on a rectangle? The first person to think
 about this systematically was a scientist, mathematician, and philosopher named \textbf{Ren\'e
-  Descartes} who invented \emph{Cartesian plane}. Here's how it works. Instead of a line, we draw a
-grid. We number all the columns and all the rows (see \prettyref{fig:cartesian-grid}). Now, any
-square on the grid can be named by giving two numbers. These two numbers together are called the
+  Descartes} who invented the \emph{Cartesian plane}. Here's how it works. Instead of a line, we
+draw a grid. We number all the columns and all the rows (see \prettyref{fig:cartesian-grid}). Now,
+any square on the grid can be named by giving two numbers. These two numbers together are called the
 \term{coordinate}. We usually write the \emph{column} number first, and the \emph{row} number
-last. This system is called the \emph{cartesian coordinate} system.
+last. This system is called the \emph{cartesian coordinate} system. For example, in the figure of a
+flower (Figure~\ref{fig:cartesian-grid}), square $(4, 6)$ (the one highlighted in the red box) is colored
+\textcolor[RGB]{248,200,70}{$\blacksquare$}.
 
 \emph{Everything} you see on your screen is the result of your
 computer following rules that turn lights on or off (see
-\prettyref{fig:pixels}). Even the text you read is created by following
+\prettyref{fig:pixels}). \tikzmarknode{points on a screen}{} Even the text you read is created by following
 rules (known as \term{fonts}) that specify how to turn on a pattern of
 lights to create the letter shapes.
 
-The drawing library we are using in class translates the functions
-you use into rules that turn on the right lights. Can you think of
-how you might write some rules to draw some of the shapes below?
+Turtle translates the rules you use into rules that turqn on the right lights. Can you think of how
+you might write some rules to draw some of the shapes below?
 
 \tryitsection
 
@@ -144,157 +257,38 @@ Here are some problems to think about.
 \end{TrackBox}
 \end{bookbox}
 \onfloatpage{box:pixels}{
+  \makemargmark{number line note}{
+    \begin{center}
+      \begin{tikzpicture}
+        \fill[black] (0,0) circle (0.3em);
+        \draw[<->] (-2.2, 0) -- (2.2, 0);
+        \foreach \i in {-4,...,4} {
+          \pgfmathsetmacro{\p}{\i * 0.5}
+          \draw (\p, 0.2em) -- (\p, -0.2em) node[below, anchor=north, yshift=-0.1em] {$\i$};
+        }
+      \end{tikzpicture}
+    \end{center}
+    \par
+    \captionof{figure}{We can name any point on this line with just one number.}
+    \label{fig:number-line}
+  }
   \makemargmark{points on a screen}{
-    \input{../week2/figures/cartesian-grid.tex} \par
+    \begin{center}
+      \input{../week2/figures/cartesian-grid.tex}
+    \end{center}\par
     \captionof{figure}{Just like we can refer to any point on a line by
       a number, we can refer to any point on a rectangle or grid using
       two numbers. In this image of a flower, we can use cartesian
       coordinates to reference any square and change its color or turn
-      it on or off.}
+      it on or off. For example, the pixel located in the red rectangle can be named by the coordinate $(4,6)$.}
     \label{fig:cartesian-grid}
   }
 }
-
-\subsection{Drawing Our First Image}
-
-In order to draw on a computer, we have to first think about what sort of \emph{language} we need to
-use to be specific about what to draw. Once such language is called Turtle.
-
-Turtle works by following -- you guessed it -- rules! Turtle works like an Etch-a-sketch. You supply
-instructions that move a pen around a page. Turtle draws a line as the pen moves.
-
-\begin{marginfigure}
-  \centering
-  \includegraphics[width=0.9\textwidth]{../week2/figures/Jack_of_hearts.jpg}
-  \caption{The Turtle language works like an Etch-a-sketch. A pen moves around the page leaving marks that turn into images, such as this one.\attribution{By Etcha - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=5395767}}
-  \label{fig:etchasketch}
-\end{marginfigure}
-
-% TODO Setup course materials
-
-We're going to use a version of Turtle that is a bit more intuitive than ``standard'' Turtle. This
-is provided as part of the course materials in the form of a \term{module}, which is a re-usable
-bundle of Python code. In order to use this version, we will have to load it into Python. We can do
-this with the \kw{import} rule.
-
-We don't need to know all the details to use it. \curious{Check out \prettyref{fig:import} for a
-  complete rundown of \kw{import}.} Let's go ahead and load Turtle and draw our first shape: a line.
-
-\begin{figure}[b]
-  \centering
-  \begin{minipage}{0.9\textwidth}
-    \Large \ttfamily
-    \vspace{1.5cm}
-    \begin{tcolorbox}[sharp corners]
-      \tikzmarknode{importkw}{\kw{import}} \tikzmarknode{import module name}{week2.draw} \tikzmarknode{aspart}{\kw{as} draw}
-    \end{tcolorbox}
-    \vspace{3cm}
-    \begin{tcolorbox}[sharp corners]
-      \tikzmarknode{fromkw}{\kw{from}} \tikzmarknode{from import module name}{week2.draw} \tikzmarknode{import from}{\kw{import}} \tikzmarknode{import from star}{*}
-    \end{tcolorbox}
-  \end{minipage}
-  \begin{tikzpicture}[remember picture, overlay]
-    \node[above] (importkwnote) at ($(importkw) + (1cm, 1.5cm)$) {
-      \begin{tcolorbox}[code note]
-        \footnotesize \sffamily
-        The \kw{import} rule tells Python to start loading a module.
-      \end{tcolorbox}
-    };
-    \node[below] (import module name note) at ([xshift=-1cm, yshift=-1cm]import module name.south) {
-      \begin{tcolorbox}[code note]
-        \footnotesize \sffamily
-        This is the name of the ruleset or \term{module} we want to use.
-      \end{tcolorbox}
-    };
-    \node[anchor=north west] (aspartnote) at ([yshift=-0.6cm]aspart.south west) {
-      \begin{tcolorbox}[code note, width=5cm]
-        \footnotesize \sffamily
-        This \emph{names} the module. We can refer to rules in the
-        module as \code{draw.rule}. You can also ignore the \kw{as}
-        part, and use the full name \code{week2.draw.rule}.
-      \end{tcolorbox}
-    };
-    \draw[->, ultra thick] (importkwnote.south) to[in=90,out=-90] ([yshift=1em]importkw.north);
-    \draw[->, ultra thick] (aspartnote.north) to[in=-90,out=90] (aspart.south);
-    \draw[->, ultra thick] ([yshift=0.2ex]import module name note.north) to[in=-90,out=90] ([yshift=-0.5em]import module name.south);
-    \draw[->, ultra thick] ([yshift=-0.2ex]import module name note.south) to[in=90,out=-90] ([yshift=2em]from import module name.north);
-  \end{tikzpicture}
-  \caption{The \kw{import} rule in Python lets you use extra sets of functionality that are not
-    built-in to Python. It takes the name of a module, which is a series of words, separated by
-    dots. You also specify how you want to refer to the rules contained in that module, after
-    \kw{as}. If you don't include \kw{as}, you have to use the full name of the module.
-
-    You can also get all the rules from a module using the \kw{from} / \kw{import} rule.
-  }
-  \label{fig:import}
-\end{figure}
-
-\begin{replbox}
->>> (*@\tikzmarknode{import keyword}{\kw{import}}@*) week2.draw as (*@\tikzmarknode{week2 draw name}{draw}@*)<ENTER>
->>> draw.draw(draw.forward(100))<ENTER>
-\end{replbox}
-
-What happened here? The pen started in the middle of the page, and then went \emph{forward} by 100
-units.\curious{The units used by Turtle are called \term{pixels}. See \prettyref{fig:pixels} for
-  more information} In this case, the pen always starts pointed to the right. So when we go forward,
-turtle draws a line to the right.
-
-Let's break it down further though. There are actually \emph{two} rules being used here. The first
-is \code{draw.draw}. This rule takes a drawing and draws it. It doesn't draw anything on its own. If
-you just did the following, you'd get a blank screen:
-
-\begin{replbox}
->>> draw.draw()<ENTER>
-\end{replbox}
-
-You need to make a drawing in order for \code{draw.draw} to do something. This is what the
-\code{draw.forward} rule does. Go ahead and try this:
-
-\begin{replbox}
->>> draw.forward(10)<ENTER>
-[('forward', 10)]
-\end{replbox}
-
-That didn't draw anything! That's because the \code{draw.forward} rule only describes \emph{what} to
-draw. It doesn't do any drawing yourself. You need to ask Python to draw the drawing you create.
-
-Now that we understand the difference between doing the drawing and planning the drawing, let's talk
-about what we can do with the plans.
-
-The simplest thing we can do with drawing plans is to combine them together in sequence -- first
-make one drawing, then the other. You can put drawings together by using \code{+}, just like you can
-with numbers. Let's try this:
-
-\begin{replbox}
->>> draw.forward(10) + draw.turn('right') + draw.forward(20)<ENTER>
-[('forward', 10), ('right', 90), ('forward', 20)]
-\end{replbox}
-
-Again, that's just the \emph{plan} for the drawing. It doesn't \emph{do} anything until you draw
-it. Let's try drawing it:
-
-\hint{For a full explanation of \code{draw.turn}, see \prettyref{deepdive:draw-turn-angles}}
-\begin{replbox}
->>> draw.draw(draw.forward(10) + draw.turn('right') + draw.forward(20))<ENTER>
-\end{replbox}
-
-That's more like it.
-
-What we saw above is the distinction between \term{data} and
-effects. Data is information about something. Data describes what
-something is. The \code{draw.forward} and \code{draw.turn} rules made
-\emph{data}. The \code{draw.draw} rule used that data to make a
-drawing.\didyouknow{The difference between data and effects is similar
-  to the difference between \emph{nouns} and \emph{verbs}. Nouns don't
-  do anything on their own. They're just there. You need a verb to do
-  something with it.}
-
 \subsection{More Complex Drawings}
 
-\curious{For a full list of all the Turtle rules we can use see \prettyref{tab:turtle}.}
-Let's try changing the pen color using the \code{draw.color} rule.
+\hint{For a sample list of colors we can use, see \prettyref{fig:turtlecolors}} Let's try changing
+the pen color using the \code{draw.color} rule.
 
-\hint{For a sample list of colors we can use, see \prettyref{fig:turtlecolors}}
 \begin{replbox}
 >>> draw.draw(draw.color('blue')+draw.forward(100))<ENTER>
 \end{replbox}
@@ -338,17 +332,16 @@ You've seen how to turn the pen above to draw a corner. We can go ahead and exte
 Phew! That was a lot of typing! If we had to do that everytime we wanted to draw a square, we would
 have to write \emph{a lot} of \emph{rules}.
 
-\begin{figure}[b] 
+\begin{figure}[b]
   \centering
-  \includegraphics[width=\linewidth, trim={0 3cm 0 3cm}]{../week2/figures/turtle-colors.eps}
+  \includegraphics[width=1.3\linewidth, trim={1cm 3cm 1cm 3cm}]{../week2/figures/turtle-colors.eps}
   \caption{Some common Turtle colors that you can use. Get creative!}
   \label{fig:turtlecolors}
 \end{figure}
 
 \section{Re-using models}
 
-One of the benefits of saving our rules is that we can do the same thing over again. Above, we
-created a precise description of a square. Now we need to figure out a way to re-use it.
+Our description of the square is now precise. We just need to figure out a way to re-use it.
 
 The first way to re-use rules is to save them into a \term{file}. We call rules that we save on a
 computer \term{source code}.
@@ -373,8 +366,17 @@ Let's try saving a rule. Open up Thonny and, instead of the prompt, point your m
   \texttt{duck.py} inside the top-level \texttt{csforkids} folder.
 
   You can load this file by clicking the green ``Run'' button in the Thonny interface as shown in \prettyref{fig:thonny-run}.
+\tikzforeground{
+  \node[anchor=west] (from weekdraw import star note) at ([xshift=3cm,yshift=1cm]from weekdraw import star) {
+    \begin{tcolorbox}[code note, white code note]
+      Remember, \code{\kw{import} *} means we don't need to use \code{draw.} to refer to our rules
+      within this file. See \prettyref{fig:import} for details.
+    \end{tcolorbox}
+  };
+  \draw[->] (from weekdraw import star note.north) to[out=90,in=0,looseness=0.8] ([yshift=3cm,xshift=6em]from weekdraw import star);
+}
   \begin{lstlisting}
-from week2.draw import *<ENTER>
+from week2.draw import (*@\tikzmarknode{from weekdraw import star}{*}@*)<ENTER>
 <ENTER>
 draw(<ENTER>
   color('blue') +<ENTER>
@@ -386,8 +388,9 @@ draw(<ENTER>
   \end{lstlisting}
   \tcblower
   You should get something like this:\\
-  \includegraphics[width=0.7\linewidth, trim={0 2cm 0 2cm}]{../week2/figures/onesquare.eps}
+  \includegraphics[width=0.9\linewidth, trim={0 2cm 0 2cm}]{../week2/figures/onesquare.eps}
 \end{TryThisBox}
+\hint{You may need to ask your instructor to help you find the \code{csforkids} folder.}
 
 \subsection{Introducing \kw{def}}
 
@@ -397,9 +400,12 @@ files. This is where the \kw{def} rule come in. Here's how it works.
 When we have a bunch of rules we want to re-use, we can use \kw{def} to give a \emph{name} to our
 rules. Then, underneath
 \kw{def}, we write the rules that make up the new rule. The rules underneath have to be \term{indented}, which means that we have to type two
-{\spacekey}s before typing the rule.\curious{Python is known as an \emph{indentation-aware}
+{\spacekey}s before typing the rule.\hint{Python is known as an \emph{indentation-aware}
 language. Some languages do not care about spaces and have other ways to figure out which rules
-belong as sub-rules of other rules. But for now, we'll stick with how Python does things!}
+belong as sub-rules of other rules. But for now, we'll stick with how Python does things!
+
+One gotcha you may run into is how Python treats tabs and spaces. Python works with both, but you
+have to be consistent. In this class, we will stick to using spaces.  }
 
 \begin{TryThisBox}
   Type the following into \texttt{duck.py}:
@@ -410,7 +416,7 @@ def square():
     forward(100) + turn('right') +<ENTER>
     forward(100) + turn('right') +<ENTER>
     forward(100) + turn('right') +<ENTER>
-    forward(100)
+    forward(100))
   \end{lstlisting}
 \end{TryThisBox}
 
@@ -420,7 +426,7 @@ Now try this in the prompt.\hint{Remember to re-run the file (see \prettyref{fig
 >>> square()<ENTER>
 \end{replbox}
 
-Can we draw two squares? Let's try it?
+Can we draw two squares? Let's try it.
 
 \begin{replbox}
 >>> square()<ENTER>
@@ -429,8 +435,8 @@ Can we draw two squares? Let's try it?
 
 Uh-oh! The second \code{square()} started from a blank screen. This is
 because the \code{draw()} rule always starts from a blank
-screen. Because we put \code{draw} in our \code{square} rule
-above, \code{square} became an action, even though we just wanted the
+screen. Because we put \code{draw()} in our \code{square()} rule
+above, \code{square()} became an action, even though we just wanted the
 \emph{data} that was describing our drawing.
 
 Let's be clear about what happened.
@@ -453,20 +459,21 @@ square. Let's try it.
   Type the following into \texttt{duck.py} \begin{lstlisting}
 def square_shape():
   color('blue') + \<ENTER>
-  forward(100) + turn('right') + \<ENTER>
-  forward(100) + turn('right') + \<ENTER>
-  forward(100) + turn('right') + \<ENTER>
-  forward(100)
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100) + turn('right') + \<ENTER>
+    forward(100)
   \end{lstlisting}
 \end{TryThisBox}
 
 Reload the file by hitting the ``Run'' button and let's try it.
 
 \begin{replbox}
->>> draw(square_shape() + forward(200) + square_shape())<ENTER>
+>>> draw(square_shape() + forward(200) +<ENTER>
+... square_shape())<ENTER>
 \end{replbox}
 
-Uh-oh! That didn't work. What's going on?
+That didn't work. What's going on?
 
 Remember above how the \code{forward()} was a \emph{plan} for a
 drawing, but not the drawing itself? We were able to see the plan, by
@@ -484,7 +491,7 @@ Is that what really happens?
   not an error according to Python. Python just followed its rules
   exactly -- they just weren't the same as the rules we had in mind.}
 \begin{replbox}
->>> square_shape()
+>>> square_shape()<ENTER>
 \end{replbox}
 
 Nothing comes out!
@@ -520,7 +527,7 @@ Now, let's see if it does what we expect:
 
 % TODO
 \begin{replbox}
->>> square_shape()
+>>> square_shape()<ENTER>
 \end{replbox}
 
 \begin{BigIdeaBox}
@@ -537,7 +544,8 @@ terminology we'll use from now on.
 We can now use \code{square\_shape()}  with \code{draw()}.
 
 \begin{replbox}
->>> draw(square_shape() + forward(200) + square_shape())
+>>> draw(square_shape() + forward(200) +<ENTER>
+... square_shape())<ENTER>
 \end{replbox}
 
 And there's two squares!
@@ -563,19 +571,38 @@ And there's two squares!
   common angles you might need to know.
 
   \begin{center}
-    \begin{tikzpicture}
-      \draw[<->] (0, -2) -- (0, 2) node[above, xshift=1em] {$y$};
-      \draw[<->] (-2, 0) -- (2, 0) node[anchor=west, yshift=-0.5em] {$x$};
-      \draw[->, green, thick] (0.5,0) arc (0:90:0.5) node[midway,xshift=0.5em,yshift=0.5em] {$90^{\circ}$};
-      \draw[->, blue, thick] (1,0) arc (0:180:1) node[pos=0.7,anchor=south east] {$180^{\circ}$};
-      \draw[->, orange, thick] (1.5,0) arc (0:270:1.5) node[pos=0.8,anchor=north east] {$270^{\circ}$};
-      \draw[->, red, thick] (2,0) arc (0:360:2) node[pos=0.8,anchor=north west] {$360^{\circ}$};
+    \begin{tikzpicture} %TODO
+      \draw[<->] (0, -3.5) -- (0, 3.5) node[above, xshift=1em] {$y$};
+      \draw[<->] (-3.5, 0) -- (3.5, 0) node[anchor=west, yshift=-0.5em] {$x$};
+      \draw[->, green, thick] (1.5,0) arc (0:90:1.5) node[pos=0.8,xshift=0.5em,yshift=0.5em] {$90^{\circ}$};
+      \draw[->, blue, thick] (2,0) arc (0:180:2) node[pos=0.8,anchor=north west] {$180^{\circ}$};
+      \draw[->, orange, thick] (2.5,0) arc (0:270:2.5) node[pos=0.8,anchor=south west] {$270^{\circ}$};
+      \draw[->, red, thick] (3,0) arc (0:360:3) node[pos=0.8,anchor=north west] {$360^{\circ}$};
+
+
+      \draw[->, dashed, purple] (0,0) -- (30:3.2);
+      \draw[dashed, purple] (0.4,0) arc(0:30:0.4) node[midway,anchor=west] {$30^{\circ}$};
+
+      \draw[->, dashed, color=teal] (0,0) -- (45:3.2);
+      \draw[dashed, color=teal] (0.8,0) arc(0:45:0.8) node[pos=0.3,anchor=south west] {$45^{\circ}$};
+
+      \draw[->, dashed, black] (0, 0) -- (110:3.2) node (onetenline) {};
+      \draw[dashed] (0,0.7) arc (90:110:0.7) node[midway,anchor=south,yshift=0.5em,xshift=-0.1em] {$20^{\circ}$};
+
+      \node[anchor=west] (onetennote) at (3,2.5) {
+        \begin{tcolorbox}[code note]
+          Angles add. This line is $20^{\circ}$ away in the counter clockwise from the $90^{\circ}$ degree line, so it's at $110^{\circ}$.
+        \end{tcolorbox}
+      };
+      \draw[->] (onetennote.west) to[bend right] (onetenline.east);
     \end{tikzpicture}
   \end{center}
 \end{DeepDiveBox}
 \end{bookbox}
 \onfloatpage{deepdive:draw-turn-angles}{
   \makemargmark{angle names}{
+    \notestyle
+    \hintnote
     \code{draw.turn()} allows the following angle names as shortcuts:
     \begin{description}
     \item[\kw{'right'}] Turn towards the right
@@ -619,9 +646,9 @@ details involved with drawing a square. Whenever you need a square, you can just
 \code{square\_shape()}!
 
 \begin{replbox}
-draw.draw(
-  draw.color('blue') + square_shape() +
-  draw.color('red') + square_shape())<ENTER>
+>>> draw.draw(<ENTER>
+... draw.color('blue') + square_shape() +<ENTER>
+... draw.color('red') + square_shape())<ENTER>
 \end{replbox}
 % TODO GRAPHICS\includegraphics[width=0.8\linewidth]{../week2/figures/twosquares1.eps}
 
@@ -651,8 +678,9 @@ def small_square_shape():
 \end{lstlisting}
 \end{TryThisBox}
 
-This would quickly get unwieldy. We used \kw{return} to get data out of our function. Now we need a
-way to put data \emph{in}. This is what \term{arguments} are.
+This would quickly get unwieldy. We would have to make a new function for every size!  Now we need a
+way to put data \emph{in} -- to tell a single function that we want a square of a particular
+size. This is what \term{arguments} are.
 
 Arguments are placeholders for things that we don't know yet. Here's a function that could draw a
 square of any size:
@@ -674,13 +702,13 @@ Let's see how to use it:
     graphics}. Vector graphics store details on shapes and colors. Because computers can draw shapes
   at any size, vector graphics can be scaled to any size. Your square could be bigger than your
   classroom!}
-\begin{replboxannotated}
->>> draw.draw(
-...   draw.color('blue') + square\_shape(100) +
-...   draw.color('red') + square\_shape(200))<ENTER>
-\tcblower
+\begin{replbox}
+>>> draw.draw(<ENTER>
+... draw.color('blue') + square\_shape(100) +<ENTER>
+... draw.color('red') + square\_shape(200))<ENTER>
+\end{replbox}
+
 \includegraphics[trim={0 0 0 3cm}, width=0.8\linewidth]{../week2/figures/twosquares1.eps}
-\end{replboxannotated}
 
 There's one problem: all of these programs draw the second square in a different way than the first. The
 second square appears on top of the first square, instead of in the same position. What's going on?
@@ -744,9 +772,10 @@ right, then \code{draw.forward} draws to the right. Similarly, if the arrow is p
 top, then \code{draw.forward} draws towards the top. If you look at the arrow, you'll notice that,
 before the first square, it points right, and before the second, it points upward.
 
-How do we fix this issue? The cursor starts pointing right by default. It points upward after the
-first square is drawn using the \code{square} function. How do we get it to point right again? Can
-you think of an answer?
+\hint{Maybe you can figure it out by checking out \prettyref{deepdive:draw-turn-angles}!}  How do we
+fix this issue? The cursor starts pointing right by default. It points upward after the first square
+is drawn using the plan from the \code{square\_shape()} function. How do we get it to point right
+again? Can you think of an answer?
 
 \begin{BigIdeaBox}
   Sometimes, when combining programs together, things don't work the
@@ -785,7 +814,7 @@ the total distance across the circle. For example, to draw a circle with a 30 un
 use \code{draw.circle(30)}. Try this and see what happens.
 
 \begin{replbox}
-  draw.draw(draw.circle(30))
+>>> draw.draw(draw.circle(30))
 \end{replbox}
 
 But there's more, you can also draw \emph{parts} of a circle. This is
@@ -795,9 +824,9 @@ circle\hint{You can use \code{1/2} or \code{0.5}. Python understands
   both.}
 
 \begin{replbox}
-draw.draw(draw.circle(30, 0.5))<ENTER>
-draw.draw(draw.circle(40, 1))<ENTER>
-draw.draw(draw.circle(20, 1/3))<ENTER>
+>>> draw.draw(draw.circle(30, 0.5))<ENTER>
+>>> draw.draw(draw.circle(40, 1))<ENTER>
+>>> draw.draw(draw.circle(20, 1/3))<ENTER>
 \end{replbox}
 
 Now, try drawing this figure.
@@ -821,7 +850,8 @@ one way and requires the programmer to explicitly choose another way is called a
 
     The diagram here demonstrates the result of
 
-    \code{draw.circle(30, 0.15) + draw.circle(-15,0.6)}
+    \code{draw.circle(30, 0.15) +}
+    \code{draw.circle(-15,0.6)}
   }
   \input{../week2/figures/circles.tex}
 \end{figure}
@@ -831,16 +861,17 @@ To draw the diagram, use this code:
   portion is drawn by which command!}
 \tikzforeground{
   \coordinate (immediate note middle) at ($(immediate note target)!0.5!(immediate note target end)$);
-  \node[anchor=west] (immediate note hint) at ([xshift=0.7cm,yshift=-0.2cm]current page text area.east|-immediate note middle) {
+  \node[anchor=east] (immediate note hint) at ([xshift=-0.7cm,yshift=-0.2cm]current page text area.west|-immediate note middle) {
     \begin{tcolorbox}[code note]
       You can set \code{immediate=True} to just get the final output, without having to watch Turtle draw.
     \end{tcolorbox}
   };
 
-  \draw[->] (immediate note hint.west) to[out=180,in=-40,looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
+  \draw[->] (immediate note hint.east) to[out=0,in=-140,looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
 }
 \begin{replbox}
->>> draw.draw(draw.circle(30, 1/2) + draw.circle(-30, 1/2), (*@\tikzmarknode{immediate note target}{}@*)immediate=True(*@\tikzmarknode{immediate note target end}{}@*))
+>>> draw.draw(draw.circle(30, 1/2) +<ENTER>
+... draw.circle(-30, 1/2), (*@\tikzmarknode{immediate note target}{}@*)immediate=True(*@\tikzmarknode{immediate note target end}{}@*))<ENTER>
 \end{replbox}
 
 With these shapes, we can make more complicated figures. There's just
@@ -853,7 +884,8 @@ The \code{draw} module provides the \code{draw.fill} rule to create
 filled diagrams. Let's try it.
 
 \begin{replbox}
->>> draw.draw(draw.fill('blue', square_shape(100)))<ENTER>
+>>> draw.draw(draw.fill('blue',<ENTER>
+... square_shape(100)))<ENTER>
 \end{replbox}
 
 \section{The Duck Challenge}
@@ -872,11 +904,12 @@ drawings precisely! Take a look at your drawing, and break it up into \emph{rule
   \end{center}
 }
 \begin{TryThisBox}
-  Try using what you've learned thus far to draw a duck using \kw{def} and \kw{return} and
+  Try using what you've learned thus far to draw a duck using \kw{def}/\kw{return} and
   Turtle. Name your function \code{duck}.
 
   As you're doing this, try to keep re-usable parts of your duck in separate functions, so you don't
-  have to figure out the same code over and over again
+  have to figure out the same code over and over again. For example, you might write a function to
+  draw an eye, and then re-use that function to draw both eyes.
 \end{TryThisBox}
 
 Here are some examples of what you may have created. All of these are examples of a ``duck'' that
@@ -917,8 +950,8 @@ each one a bit more unique?
 
 
 Let's add some \term{arguments} to our \code{duck} function. Modify
-your function to include some arguments.  \hint{The \code{lake_of}
-  function supports \code{body_color}, \code{eye_color}, and
+your function to include some arguments.  \hint{The \code{lake\_of}
+  function supports \code{body\_color}, \code{eye\_color}, and
   \code{size}, and will use whatever arguments your function has. The
   colors can be used however you want, and the size just says how
   ``big'' to draw the duck. Try it and see!}
@@ -962,9 +995,7 @@ be able to manipulate things with computers we have to be able to
 express our problem as rules the computer understands. In the case of
 visual information, it means understanding graphics like the Turtle
 system. Even though the computers don't \emph{understand} what a duck
-is, we were able to describe a drawing of a duck to the computer. In
-the next chapters, we'll explore other ways of describing the world to
-a computer.
+is, we were able to describe a drawing of a duck to the computer.
 
 \Exercises
 
@@ -982,8 +1013,8 @@ a computer.
   polygon. It has three sides, all of the same length. How would you draw this in Turtle? What about
   a square? A pentagon? A hexagon?
 
-  \hintnote The sum of all angles in any polygon sum to $180(n - 2)$, where $n$ is the number of
-  sides. So the angles of a triangle always sum to $180(3 - 2) = 180$ degrees.
+  \hintnote The sum of all angles in any polygon sum to $180 \times (n - 2)$, where $n$ is the number of
+  sides. So the angles of a triangle always sum to $180 \times (3 - 2) = 180$ degrees.
 
   \begin{center}
   \begin{tikzpicture}

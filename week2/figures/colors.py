@@ -1,10 +1,5 @@
 from turtle import Screen, Turtle, getcanvas
 
-screen = Screen()
-screen.setup(width=860, height=290)   # fixed logical size
-
-t = Turtle()
-
 # List of common turtle / Tk color names
 COLORS = [
     # Basics
@@ -30,7 +25,7 @@ COLORS = [
     "brown", "sienna", "chocolate", "tan", "khaki",
 
     # Metallic / special
-    "gold", "goldenrod", "amber", "darkorange", "peachpuff", "darkgoldenrod"
+    "gold", "goldenrod", "lemonchiffon", "darkorange", "peachpuff", "darkgoldenrod", "lightyellow"
 ]
 
 #COLORS = [
@@ -43,17 +38,23 @@ COLORS = [
 #    "salmon", "khaki", "orchid", "plum"
 #]
 
+# Grid settings
+cols = 4
+cell_x = 160
+cell_y = 30
+start_x = -420
+start_y = 135
+
+screen = Screen()
+screen.setup(width=20 + cell_x * (cols - 1), # Why?
+             height=20 + cell_y * ((len(COLORS) + cols - 1)//cols))   # fixed logical size
+
+t = Turtle()
+
 #turtle.colormode(255)
 t.speed(0)
 t.hideturtle()
 t.penup()
-
-# Grid settings
-cols = 6
-cell_x = 140
-cell_y = 30
-start_x = -420
-start_y = 135
 
 for i, color in enumerate(COLORS):
     row = i // cols
@@ -81,6 +82,6 @@ for i, color in enumerate(COLORS):
 
     # Write label
     t.goto(x + 30, y - 20)
-    t.write(color, align="left", font=("Arial", 13, "normal"))
+    t.write(color, align="left", font=("Arial", 16, "normal"))
 
 getcanvas().postscript(file='turtle-colors.eps')
