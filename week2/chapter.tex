@@ -309,6 +309,15 @@ You've seen how to turn the pen above to draw a corner. We can go ahead and exte
   \label{fig:pixels}
 \end{marginfigure}
 
+\begin{replbox}
+>>> draw.draw(draw.color('blue') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+...  draw.forward(100) +
+...  draw.turn('right') +
+(*@\tikzmarknode{repl dots}{...}@*)  draw.forward(100))<ENTER>(*@
 \tikzforeground{
   \node (repl dots hint) at ($(repl dots.north east) + (8cm, 2cm)$) {
     \begin{tcolorbox}[code note]
@@ -318,15 +327,7 @@ You've seen how to turn the pen above to draw a corner. We can go ahead and exte
   };
   \draw[->] (repl dots hint.south) to[in=-20,out=-90,looseness=0.6] (repl dots.south east);
 }
-\begin{replbox}
->>> draw.draw(draw.color('blue') +
-...  draw.forward(100) +
-...  draw.turn('right') +
-...  draw.forward(100) +
-...  draw.turn('right') +
-...  draw.forward(100) +
-...  draw.turn('right') +
-(*@\tikzmarknode{repl dots}{...}@*)  draw.forward(100))<ENTER>
+@*)
 \end{replbox}
 
 Phew! That was a lot of typing! If we had to do that everytime we wanted to draw a square, we would
@@ -366,15 +367,6 @@ Let's try saving a rule. Open up Thonny and, instead of the prompt, point your m
   \texttt{duck.py} inside the top-level \texttt{csforkids} folder.
 
   You can load this file by clicking the green ``Run'' button in the Thonny interface as shown in \prettyref{fig:thonny-run}.
-\tikzforeground{
-  \node[anchor=west] (from weekdraw import star note) at ([xshift=3cm,yshift=1cm]from weekdraw import star) {
-    \begin{tcolorbox}[code note, white code note]
-      Remember, \code{\kw{import} *} means we don't need to use \code{draw.} to refer to our rules
-      within this file. See \prettyref{fig:import} for details.
-    \end{tcolorbox}
-  };
-  \draw[->] (from weekdraw import star note.north) to[out=90,in=0,looseness=0.8] ([yshift=3cm,xshift=6em]from weekdraw import star);
-}
   \begin{lstlisting}
 from week2.draw import (*@\tikzmarknode{from weekdraw import star}{*}@*)<ENTER>
 <ENTER>
@@ -384,8 +376,17 @@ draw(<ENTER>
   forward(100) + turn('right') +<ENTER>
   forward(100) + turn('right') +<ENTER>
   forward(100)<ENTER>
-)<ENTER>
-  \end{lstlisting}
+)<ENTER>(*@
+\tikzforeground{
+  \node[anchor=west] (from weekdraw import star note) at ([xshift=3cm,yshift=1cm]from weekdraw import star) {
+    \begin{tcolorbox}[code note, white code note]
+      Remember, \code{\kw{import} *} means we don't need to use \code{draw.} to refer to our rules
+      within this file. See \prettyref{fig:import} for details.
+    \end{tcolorbox}
+  };
+  \draw[->] (from weekdraw import star note.north) to[out=90,in=0,looseness=0.8] ([yshift=3cm,xshift=6em]from weekdraw import star);
+}
+  @*)\end{lstlisting}
   \tcblower
   You should get something like this:\\
   \includegraphics[width=0.9\linewidth, trim={0 2cm 0 2cm}]{../week2/figures/onesquare.eps}
@@ -859,6 +860,9 @@ one way and requires the programmer to explicitly choose another way is called a
 To draw the diagram, use this code:
 \curious{Try using \code{draw.pause} to visualize exactly which
   portion is drawn by which command!}
+\begin{replbox}
+>>> draw.draw(draw.circle(30, 1/2) +<ENTER>
+... draw.circle(-30, 1/2), (*@\tikzmarknode{immediate note target}{}@*)immediate=True(*@\tikzmarknode{immediate note target end}{}@*))<ENTER>(*@
 \tikzforeground{
   \coordinate (immediate note middle) at ($(immediate note target)!0.5!(immediate note target end)$);
   \node[anchor=east] (immediate note hint) at ([xshift=-0.7cm,yshift=-0.2cm]current page text area.west|-immediate note middle) {
@@ -869,10 +873,7 @@ To draw the diagram, use this code:
 
   \draw[->] (immediate note hint.east) to[out=0,in=-140,looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
 }
-\begin{replbox}
->>> draw.draw(draw.circle(30, 1/2) +<ENTER>
-... draw.circle(-30, 1/2), (*@\tikzmarknode{immediate note target}{}@*)immediate=True(*@\tikzmarknode{immediate note target end}{}@*))<ENTER>
-\end{replbox}
+*@)\end{replbox}
 
 With these shapes, we can make more complicated figures. There's just
 one thing left: filling our shapes with color.
@@ -912,13 +913,29 @@ drawings precisely! Take a look at your drawing, and break it up into \emph{rule
   draw an eye, and then re-use that function to draw both eyes.
 \end{TryThisBox}
 
-Here are some examples of what you may have created. All of these are examples of a ``duck'' that
-you can make using the simple rules for drawing we learned above.
+\prettyref{fig:example-ducks} shows some examples of what you may have
+created. All of these are examples of a ``duck'' that you can make
+using the simple rules for drawing we learned above.
 
 \begin{BigIdeaBox}
   To the computer, there is no duck. It's just a set of rules you told it to follow to draw one
   depiction of a duck that you found useful. We have tonundeesrand the problems we are trying to solve precisely to program them into a conputer.
 \end{BigIdeaBox}
+
+\begin{figure}
+  \centering
+  \begin{minipage}{0.48\linewidth}
+    \includegraphics[width=\textwidth]{../week2/figures/duck1.eps}
+  \end{minipage}
+  \begin{minipage}{0.48\linewidth}
+      \includegraphics[width=\textwidth]{../week2/figures/duck2.eps}
+  \end{minipage}
+  \caption{These are all ducks created using Turtle commands. Try
+    decomposing the shapes and instructions needed to make these
+    ducks. See \texttt{week2/ducks.py} for the code that generated
+    them.}
+  \label{fig:example-ducks}
+\end{figure}
 
 \section{Copying Ducks}
 
@@ -1007,45 +1024,47 @@ is, we were able to describe a drawing of a duck to the computer.
     function treat it the same way. Each animal is just a rule
     for Python to draw.}
 
-\item A \emph{regular} polygon is a shape with some number of sides whose sides are all of equal
+\item \tikzmarknode{equilateral triangle}{A} \emph{regular} polygon is a shape with some number of sides whose sides are all of equal
   lengths. Can you think of a way to write a function that represent a drawing of a regular polygon
-  of any number of sides? For example, an equilateral triangle (see below) is the simplest
+  of any number of sides? For example, an equilateral triangle (see the figure in the margin) is the simplest
   polygon. It has three sides, all of the same length. How would you draw this in Turtle? What about
   a square? A pentagon? A hexagon?
 
   \hintnote The sum of all angles in any polygon sum to $180 \times (n - 2)$, where $n$ is the number of
   sides. So the angles of a triangle always sum to $180 \times (3 - 2) = 180$ degrees.
 
-  \begin{center}
-  \begin{tikzpicture}
-    \coordinate[label=left:$A$]  (A) at (0,0);
-    \coordinate[label=right:$B$] (B) at (4,0);
-    \coordinate[label=above:$C$] (C) at (2,3.464);
+  \makemargmark{equilateral triangle} {
+    \begin{center}
+      \begin{tikzpicture}
+        \coordinate[label=left:$A$]  (A) at (0,0);
+        \coordinate[label=right:$B$] (B) at (4,0);
+        \coordinate[label=above:$C$] (C) at (2,3.464);
 
-    \coordinate[label=below:$c$](c) at ($ (A)!.5!(B) $);
-    \coordinate[label=left:$b$] (b) at ($ (A)!.5!(C) $);
-    \coordinate[label=right:$a$](a) at ($ (B)!.5!(C) $);
+        \coordinate[label=below:$c$](c) at ($ (A)!.5!(B) $);
+        \coordinate[label=left:$b$] (b) at ($ (A)!.5!(C) $);
+        \coordinate[label=right:$a$](a) at ($ (B)!.5!(C) $);
 
-    % angle alpha
-    \draw[fill=green!30] (0,0) -- (0:0.75cm) arc (0:60:.75cm);
-    \draw (0.36cm,0.25cm) node {\small $60^{\circ}$};
+        % angle alpha
+        \draw[fill=green!30] (0,0) -- (0:0.75cm) arc (0:60:.75cm);
+        \draw (0.36cm,0.25cm) node {\small $60^{\circ}$};
 
-    % angle beta
-    \begin{scope}[shift={(4cm,0cm)}]
-      \draw[fill=green!30] (0,0) -- (-180:0.75cm) arc (180:120:0.75cm);
-      \draw (150:0.5cm) node {\small $60^{\circ}$};
-    \end{scope}
+        % angle beta
+        \begin{scope}[shift={(4cm,0cm)}]
+          \draw[fill=green!30] (0,0) -- (-180:0.75cm) arc (180:120:0.75cm);
+          \draw (150:0.5cm) node {\small $60^{\circ}$};
+        \end{scope}
 
-    % angle gamma
-    \begin{scope}[shift={(60:4)}]
-      \draw[fill=green!30] (0,0) -- (-120:.75cm) arc (-120:-60:.75cm);
-      \draw (-90:0.5cm) node {\small $60^{\circ}$};
-    \end{scope}
+        % angle gamma
+        \begin{scope}[shift={(60:4)}]
+          \draw[fill=green!30] (0,0) -- (-120:.75cm) arc (-120:-60:.75cm);
+          \draw (-90:0.5cm) node {\small $60^{\circ}$};
+        \end{scope}
 
-    % the triangle
-    \draw [line width=1.5pt] (A) -- (B) -- (C) -- cycle;
-  \end{tikzpicture}
-  \end{center}
+        % the triangle
+        \draw [line width=1.5pt] (A) -- (B) -- (C) -- cycle;
+      \end{tikzpicture}
+    \end{center}
+  }
 \item An animation is a series of still images. The \code{lake\_of} function uses your duck function
   to create a simple animation of ducks swimming in a lake. You can do the same thing using
   \code{draw.draw()} function with \code{immediate=True} and the \code{draw.wait} function. Try it!

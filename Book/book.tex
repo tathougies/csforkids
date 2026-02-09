@@ -299,7 +299,7 @@
 }
 \newcommand{\makemargmark@even}[2]{
   \tikz[remember picture,overlay]{
-    \coordinate (x) at ([xshift=\marginparsep]current page text area.east |- #1.east);
+    \coordinate (x) at ([xshift=-\marginparsep]current page text area.west |- #1.east);
     \node[anchor=east, align=left, font=\footnotesize, text width=\marginparwidth] at (x) {\begin{minipage}{\marginparwidth}\sffamily #2\end{minipage}};
   }
 }

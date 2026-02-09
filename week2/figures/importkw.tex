@@ -1,6 +1,6 @@
 \begin{minipage}{0.9\textwidth}
   \Large \ttfamily
-  \vspace{1.5cm}
+%  \vspace{0.5cm}
   \begin{tcolorbox}[sharp corners]
     \tikzmarknode{importkw}{\kw{import}} \tikzmarknode{import module name}{week2.draw} \tikzmarknode{aspart}{\kw{as} draw}
   \end{tcolorbox}
@@ -22,7 +22,7 @@
       This is the name of the ruleset or \term{module} we want to use.
     \end{tcolorbox}
   };
-  \node[anchor=north west] (aspartnote) at ([yshift=-0.6cm]aspart.south west) {
+  \node[anchor=south west] (aspartnote) at ([yshift=1.5cm]aspart.north west) {
     \begin{tcolorbox}[code note, width=5cm]
       \footnotesize \sffamily
       This \emph{names} the module. We can refer to rules in the
@@ -30,18 +30,17 @@
       part, and use the full name \code{week2.draw.rule}.
     \end{tcolorbox}
   };
-  \node[anchor=north] (star note) at ([yshift=-3em]import from star.south) {
-    \begin{tcolorbox}[code note,width=8cm]
+  \node[anchor=south] (star note) at ([yshift=2.5em,xshift=4em]import from star.north) {
+    \begin{tcolorbox}[code note,width=5cm]
       The \code{\kw{import} *} part tells Python that we don't want to have to use the module name
       every time we want to talk about a rule in that module. If we used this form of \kw{import},
-      then we could simply use rule names like \code{draw()} and \code{forward()}. We often keep
-      modules named in case we ever have two rules with the same name.
+      then we could simply use rule names like \code{draw()} and \code{forward()}.
     \end{tcolorbox}
   };
   \coordinate (import star mid) at ($(import from.west)!0.5!(import from star.east)$);
   \draw[->, ultra thick] (importkwnote.south) to[in=90,out=-90] ([yshift=1em]importkw.north);
-  \draw[->, ultra thick] (aspartnote.north) to[in=-90,out=90] (aspart.south);
+  \draw[->, ultra thick] (aspartnote.south) to[in=90,out=-90] ([yshift=1em]aspart.north);
   \draw[->, ultra thick] ([yshift=0.2ex]import module name note.north) to[in=-90,out=90] ([yshift=-0.5em]import module name.south);
   \draw[->, ultra thick] ([yshift=-0.2ex]import module name note.south) to[in=90,out=-90] ([yshift=2em]from import module name.north);
-  \draw[->, ultra thick] ([yshift=0.1ex]star note.north) to[in=-90,out=90] ([yshift=-0.2em]import star mid);
+  \draw[->, ultra thick] ([yshift=0.1ex]star note.south) to[in=90,out=-90] ([yshift=1.5em]import star mid);
 \end{tikzpicture}

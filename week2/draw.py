@@ -1,6 +1,7 @@
 '''Simple Turtle interpreter'''
 import turtle
 import time
+import colorsys
 
 screensize = turtle.screensize
 
@@ -49,6 +50,55 @@ def pause(prompt):
 
 def clearscreen():
     return ['clearscreen']
+
+
+def darken(color, percentage=10):
+    '''Darken a color by a certain percent'''
+    return color_transform(color, 1 - (percentage / 100.0))
+
+def lighten(color, percentage=10):
+    '''Lighten a color'''
+    return color_transform(color, 1 + (percentage / 100.0))
+
+def color_to_rgb(color):
+    '''Transform a turtle color to rgb'''
+    canvas = turtle.getcanvas()
+    r, g, b = canvas.winfo_rgb(color)
+    return (r / 65536.0, g / 65536.0, b / 65536.0)
+
+def blend(color1, color2, weight=0.5):
+    '''Returns a color intermediate between color1 and color2'''
+    r1, g1, b1 = color_to_rgb(color1)
+    r2, g2, b2 = color_to_rgb(color2)
+
+    return rgb_to_hex(r1 * weight + r2 * (1 - weight),
+                      g1 * weight + g2 * (1 - weight),
+                      b1 * weight + b2 * (1 - weight))
+
+def color_transform(color, factor):
+    '''Scale a color's lightness'''
+
+    # Convert color to RGB format
+    r, g, b = color_to_rgb(color)
+
+    # Convert RGB to HSV
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+
+    # Decrease the brightness/value by the provided percentage
+    v = max(0, min(1.0, v * factor))
+
+    # Convert back to RGB
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return rgb_to_hex(r, g, b)
+
+def rgb_to_hex(r, g, b):
+    '''Convert rgb (red, green, blue) values into hex'''
+    darkened_rgb = (int(r * 255), int(g * 255), int(b * 255))
+
+    # Convert to a format that turtle can ingest (hex string)
+    darkened_color = '#{:02x}{:02x}{:02x}'.format(*darkened_rgb)
+
+    return darkened_color
 
 def draw(l, speed=0.5, immediate=False, animate=True, save_pauses=False, pause_template=None, clear=True, relative=False):
     if clear:

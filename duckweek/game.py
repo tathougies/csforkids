@@ -101,8 +101,27 @@ def ceildiv(a, b):
 
 class DuckState(Enum):
     ALIVE = 'ALIVE'
+    STEPPING = 'STEPPING'
     COMPLETE = 'COMPLETE'
     DEAD = 'DEAD'
+    STOPPED = 'STOPPED'
+
+    @property
+    def next_state(self):
+        if self == DuckState.STEPPING:
+            return DuckState.STOPPED
+        else:
+            return self
+
+    @property
+    def is_alive(self):
+        '''Check if the current sate is considered alive'''
+        return self == DuckState.ALIVE or self == DuckState.STEPPING
+
+    @property
+    def is_complete(self):
+        '''Check if the duck is complete.'''
+        return self == DuckState.DEAD or self == DuckState.COMPLETE
 
 @dataclass
 class DuckInput:
@@ -281,6 +300,13 @@ class MapLayer:
     def __init__(self, map, data):
         self.map = map
         self.data = data
+        self.draw_duck_after = False
+
+        props = self.data.get('properties')
+        if props is not None:
+            for prop in props:
+                if prop.get('name') == 'draw_duck_after' and prop.get('type') == 'bool' and isinstance(prop.get('value'), bool):
+                    self.draw_duck_after = prop['value']
 
     def __getitem__(self, c):
         y, x = c
@@ -294,6 +320,9 @@ class Map:
             self.data = json.load(f)
 
         self.layers = [MapLayer(self, d) for d in self.data['layers']]
+
+        if all(not l.draw_duck_after for l in self.layers):
+            self.layers[0].draw_duck_after = True # If no layer is specified as 'draw_duck_after', then draw after layer 0
 
     def make_tracker(self, x=None):
         return [x] * (self.rows * self.cols)
@@ -359,6 +388,42 @@ class GameDelegate(Protocol):
         '''Set camera bounds'''
         pass
 
+@dataclass
+class GameResult:
+    game: 'Game'
+    final_state: DuckState
+    duck_pos: tuple[int, int]
+    duck_tracker: list[Any]
+
+    def find_unreachable(self) -> Optional[tuple[int, int]]:
+        for r, c in self.game.current_map.get_water_tiles(self.game.tileset):
+            if self.duck_tracker[self.game.current_map.get_index((r, c))] is None:
+                return (r, c)
+        return None
+
+class GameRunner:
+    '''runs a game and tells you what happens'''
+
+    def __init__(self, game):
+        self.game = game
+
+    def __call__(self, max_steps=10000) -> GameResult:
+        game = self.game.clone()
+        game.duck_game_state = DuckState.ALIVE
+
+        steps = 0
+        while game.duck_game_state.is_alive:
+            if steps > max_steps:
+                break
+
+            game.complete_step()
+
+            steps += 1
+        return GameResult(final_state=game.duck_game_state,
+                          game=self.game,
+                          duck_pos=game.duck_pos,
+                          duck_tracker=game.duck_tracker)
+
 class Game:
     __slots__ = ('brain', 'tileset', 'tile_size', '_current_map',
                  'duck_pos', 'next_duck_pos', 'duck_state', 'initial_duck_pos',
@@ -380,11 +445,15 @@ class Game:
         self.next_duck_pos = (0, 0) # Position at the end of the current step
 
         self.duck_state = 0 # Duck's current memory
-        self.duck_game_state = DuckState.ALIVE
+        self.duck_game_state = DuckState.STOPPED
         self.duck_dir = None
         self.duck_tracker = None
 
         self.current_map = first_map
+
+    def clone(self):
+        import copy
+        return copy.deepcopy(self)
 
     def reload_brain(self, brain: Brain):
         self.brain = brain
@@ -426,10 +495,11 @@ class Game:
                 self.delegate.duck_game_state_changed(self, self.duck_game_state)
 
         duck_input = self.get_duck_input()
-        if self.duck_game_state == DuckState.ALIVE:
+        if self.duck_game_state.is_alive:
             nextdir, self.duck_state, thought_path = self.brain(duck_input)
             self.add_thought_path(duck_input, thought_path)
             self.set_duck_dir(nextdir)
+            self.duck_game_state = self.duck_game_state.next_state
 
         if self.delegate is not None:
             self.delegate.duck_input_changed(self, duck_input, self.duck_dir, self.duck_pos)
@@ -464,12 +534,17 @@ class Game:
         self.initial_duck_pos = self.duck_pos
         self.reset_game()
 
-    def reset_game(self):
+    def reset_game(self, randomize_starting_position=False):
         '''Reset the game so the duck is in its old starting position.'''
-        self.duck_game_state = DuckState.ALIVE
+
+        if randomize_starting_position:
+            self.initial_duck_pos = self.current_map.random_starting_pos(self.tileset)
+
+        self.duck_game_state = DuckState.STOPPED
         self.duck_state = 0
         self.duck_tracker = self.current_map.make_tracker()
         self.thought_path = []
+        self.duck_pos = self.initial_duck_pos
         duck_input = self.get_duck_input()
         nextdir, self.duck_state, thought_path = self.brain(duck_input)
         self.add_thought_path(duck_input, thought_path)
@@ -481,6 +556,14 @@ class Game:
 class GameBackend(Protocol):
     def get_brain_renderer(self) -> Optional['BrainRenderer']:
         '''Get the brain renderer, if any'''
+        pass
+
+    def set_brain(self, brain_src):
+        '''Set the brain source code.'''
+        pass
+
+    def reset_game(self):
+        '''Reset the current game'''
         pass
 
     def screen_tile_size(self) -> int:
@@ -882,8 +965,30 @@ class GlBackend(GameBackend):
         self.cur_texture = None
         self.initialized = False
 
+    def duck_input_changed(self, *args):
+        self.tk_renderer.update_state_from_game(self.game)
+    def duck_game_state_changed(self, *args):
+        self.tk_renderer.update_state_from_game(self.game)
+
     def get_brain_renderer(self):
         return self.tk_renderer
+
+    def start_or_pause(self):
+        if self.game.duck_game_state == DuckState.STOPPED:
+            self.game.duck_game_state = DuckState.ALIVE
+        elif self.game.duck_game_state == DuckState.ALIVE:
+            self.game.duck_game_state = DuckState.STOPPED
+
+    def set_brain(self, brain_src):
+        try:
+            brain = Brain(source=brain_src)
+        except SyntaxError as e:
+            self.tk_renderer.report_syntax_error(e)
+        else:
+            self.game.reload_brain(brain)
+
+    def reset_game(self):
+        self.game.reset_game(randomize_starting_position=True)
 
     def _init_opengl(self):
         import numpy as np
@@ -931,9 +1036,6 @@ class GlBackend(GameBackend):
         a_position = gl.glGetAttribLocation(self.shader_program, 'a_position')
         gl.glVertexAttribPointer(a_position, 2, gl.GL_FLOAT, gl.GL_FALSE, 8, ctypes.c_void_p(0))
         gl.glEnableVertexAttribArray(a_position)
-
-        # Set tile size in [0,1] coords
-        gl.glUniform2f(self.source_tile_size_uniform, 1/self.game.tileset.tile_width, 1/self.game.tileset.tile_height)
 
         # Bind sampler to texture 0
         gl.glActiveTexture(gl.GL_TEXTURE0)
@@ -991,8 +1093,10 @@ class GlBackend(GameBackend):
         self.gl.glEnable(self.gl.GL_BLEND)
         self.gl.glBlendFunc(self.gl.GL_SRC_ALPHA, self.gl.GL_ONE_MINUS_SRC_ALPHA)
 
-        self._switch_texture(self.lake_texture)
         self.gl.glUseProgram(self.shader_program)
+
+        # Set tile size in [0,1] coords
+        self._switch_to_lake_texture()
 
         screenw, screenh = self.screen_size()
         tile_size = self.screen_tile_size()
@@ -1002,12 +1106,16 @@ class GlBackend(GameBackend):
                             tile_size / screenw,
                             tile_size / screenh)
 
-    def _switch_texture(self, tex):
+    def _switch_to_lake_texture(self):
+        self._switch_texture(self.lake_texture, 1/self.game.tileset.tile_width, 1/self.game.tileset.tile_height)
+
+    def _switch_texture(self, tex, tilew, tileh):
         if self.cur_texture == tex:
             return
         self.gl.glBindTexture(self.gl.GL_TEXTURE_2D, tex)
         self.gl.glActiveTexture(self.gl.GL_TEXTURE0)
         self.gl.glUniform1i(self.gl.glGetUniformLocation(self.shader_program, 'atlas'), 0)
+        self.gl.glUniform2f(self.source_tile_size_uniform, tilew, tileh)
         self.cur_texture = tex
 
     def draw_lake_sprite(self, tile_pos, tile_source, is_dark=False):
@@ -1020,8 +1128,7 @@ class GlBackend(GameBackend):
         self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
 
     def draw_duck(self, tile_pos, tile_source):
-        print(tile_source, tile_pos)
-        self._switch_texture(self.duck_texture)
+        self._switch_texture(self.duck_texture, 1/4, 1/4)
         self.gl.glUniform4f(self.pos_uniform,
                             float(tile_pos[0]),
                             float(tile_pos[1]),
@@ -1029,6 +1136,7 @@ class GlBackend(GameBackend):
                             float(tile_source[1] / 4))
         self.gl.glUniform1i(self.darken_uniform, 0)
         self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
+        self._switch_to_lake_texture()
 
     def complete_frame(self, lake_off):
         pass
@@ -1039,6 +1147,8 @@ class GlBackend(GameBackend):
         tile_size = self.game.tile_size
         renderer.set_camera_position(renderer.camera_position[0] + dcy * tile_size * dt,
                                      renderer.camera_position[1] + dcx * tile_size * dt)
+
+        self.tk_renderer.process_events(self)
 
     def should_continue(self):
         return True # Not needed
@@ -1121,22 +1231,6 @@ class GameRenderer:
         tile_height = int(bottom_tile_y - top_tile_y) + 1
 
         tileset = self.game.tileset
-        self.backend.start_lake_draw(lake_off)
-        for layer_ix, layer in enumerate(self.game.current_map.layers):
-            for x in range(tile_width):
-                for y in range(tile_height):
-                    tile = layer[top_tile_y + y, left_tile_x + x]
-                    if tile == 0:
-                        continue
-                    animframes, tiledef = tileset[tile]
-                    if isinstance(tiledef, list):
-                        tiledef = tiledef[tile_anim_frame % animframes]
-                    sprite_y, sprite_x = tiledef
-                    is_dark = False
-                    if layer_ix == 0 and self.game.duck_tracker is not None and \
-                       self.game.duck_tracker[self.game.current_map.get_index((top_tile_y + y, left_tile_x + x))]:
-                        is_dark = True
-                    self.backend.draw_lake_sprite((x,  y), (sprite_x, sprite_y), is_dark=is_dark)
 
         duck_row, duck_col = self.game.duck_pos
 
@@ -1156,11 +1250,27 @@ class GameRenderer:
         duck_y_off = (next_duck_row - duck_row) * frame_progress
         duck_x_off = (next_duck_col - duck_col) * frame_progress
 
-        if duck_col_off is not None and duck_row_off is not None:
-            # Todo draw moving
-            dir_to_row = {'N': 0, 'E': 1, 'S': 2, 'W': 3}
-            self.backend.draw_duck((duck_col_off + duck_x_off, duck_row_off + duck_y_off),
-                                   ((tile_anim_frame % 4), dir_to_row[self.game.duck_dir or 'S']))
+        self.backend.start_lake_draw(lake_off)
+        for layer_ix, layer in enumerate(self.game.current_map.layers):
+            for x in range(tile_width):
+                for y in range(tile_height):
+                    tile = layer[top_tile_y + y, left_tile_x + x]
+                    if tile == 0:
+                        continue
+                    animframes, tiledef = tileset[tile]
+                    if isinstance(tiledef, list):
+                        tiledef = tiledef[tile_anim_frame % animframes]
+                    sprite_y, sprite_x = tiledef
+                    is_dark = False
+                    if self.game.duck_tracker is not None and \
+                       self.game.duck_tracker[self.game.current_map.get_index((top_tile_y + y, left_tile_x + x))]:
+                        is_dark = True
+                    self.backend.draw_lake_sprite((x,  y), (sprite_x, sprite_y), is_dark=is_dark)
+            if layer.draw_duck_after and \
+               duck_col_off is not None and duck_row_off is not None:
+                 dir_to_row = {'N': 0, 'E': 1, 'S': 2, 'W': 3}
+                 self.backend.draw_duck((duck_col_off + duck_x_off, duck_row_off + duck_y_off),
+                                        ((tile_anim_frame % 4), dir_to_row[self.game.duck_dir or 'S']))
 
     def game_loop_iter(self, dt: float):
         '''Run one iteration of the game loop, with dt seconds passing since the last iteration.'''
@@ -1513,6 +1623,8 @@ class TkRenderer(BrainRenderer):
         self.gl = GL
         self.tk = tkinter
 
+        self._events = []
+
         self.root = root = tkinter.Tk()
         root.title("DuckBot!")
 
@@ -1521,15 +1633,37 @@ class TkRenderer(BrainRenderer):
             glarea = 0
             sourcearea = 1
             root.grid_columnconfigure(0, weight=1) # GL canvas area
-            root.grid_columnconfigure(1, weight=0) # Source area
+            root.grid_columnconfigure((1,2), weight=0) # Source area
         else:
             sourcearea = 0
             root.grid_columnconfigure(0, weight=0)
 
         root.grid_rowconfigure(0, weight=1)
+        root.grid_rowconfigure((1,2), weight=0)
 
         self.source_code = ScrolledText(root, wrap="none")
-        self.source_code.grid(row=0, column=sourcearea, sticky="nsew", padx=8, pady=4)
+        self.source_code.grid(row=0, column=sourcearea, columnspan=2, sticky="nsew", padx=8, pady=4)
+
+        self.controls = tkinter.Frame(self.root)
+        self.controls.grid(row=1, column=sourcearea, sticky="nsew", padx=8, pady=4)
+
+        self.controls.grid_rowconfigure((0,1), weight=1)
+        self.controls.grid_columnconfigure((0,1), weight=1)
+
+        self.reloadbrain = tkinter.Button(self.root, text="Reload Brain",
+                                          command=self._reload_brain)
+        self.reloadbrain.grid(row=1, column=sourcearea, sticky="ew", padx=4)
+        self.startpause = tkinter.Button(self.root, text="Stop Duck",
+                                         command=self._startpause_brain)
+        self.startpause.grid(row=1, column=sourcearea+1, sticky="ew", padx=4)
+        self.duck_state = None
+        self.resetduck = tkinter.Button(self.root, text="Reset Game",
+                                        command=self._reset_game)
+        self.resetduck.grid(row=2, column=sourcearea, sticky="ew", padx=4)
+
+        self.loadmap = tkinter.Button(self.root, text="Load Map",
+                                      command=self._load_map)
+        self.loadmap.grid(row=2, column=sourcearea+1, sticky="ew", padx=4)
 
         owner = self
         class MyGlCanvas(GLCanvas):
@@ -1550,17 +1684,117 @@ class TkRenderer(BrainRenderer):
             self.glarea.make_current()
             self.glarea.bind("<Configure>", self._glresized)
 
+            self.stateframe = tkinter.Frame(self.root);
+            self.stateframe.grid(row=1, column=glarea)
+
             self.root.bind_all("<KeyPress>", functools.partial(self._onglkey, True))
             self.root.bind_all("<KeyRelease>", functools.partial(self._onglkey, False))
 
             self.dirkeys = { 'Up': False,
                              'Down': False,
                              'Left': False,
-                             'Right': False }
+                             'Right': False,
+                             'Shift_L': False,
+                             'Shift_R': False }
 
             self._glsize = (400, 400)
         else:
             self.glarea = None
+
+        self.stateframe.grid_columnconfigure((0,1,2,3), weight=0)
+        self.stateframe.grid_columnconfigure(4, weight=1)
+        self.stateframe.grid_rowconfigure((0,1,2), weight=0)
+
+        tkinter.Label(self.stateframe, text="thought =").grid(row=0, column=0, sticky="nsew", padx=8, pady=4)
+        self.thoughtlabel = tkinter.Label(self.stateframe, text="")
+        self.thoughtlabel.grid(row=0, column=1, columnspan=3)
+
+        tkinter.Label(self.stateframe, text="north =").grid(row=1, column=0, sticky="nsew", padx=8, pady=4)
+        self.northlabel = tkinter.Label(self.stateframe, text="")
+        self.northlabel.grid(row=1, column=1)
+
+        tkinter.Label(self.stateframe, text="east =").grid(row=1, column=2, sticky="nsew", padx=8, pady=4)
+        self.eastlabel = tkinter.Label(self.stateframe, text="")
+        self.eastlabel.grid(row=1, column=3)
+
+        tkinter.Label(self.stateframe, text="south =").grid(row=2, column=0, sticky="nsew", padx=8, pady=4)
+        self.southlabel = tkinter.Label(self.stateframe, text="")
+        self.southlabel.grid(row=2, column=1)
+
+        tkinter.Label(self.stateframe, text="west =").grid(row=2, column=2, sticky="nsew", padx=8, pady=4)
+        self.westlabel = tkinter.Label(self.stateframe, text="")
+        self.westlabel.grid(row=2, column=3)
+
+    def _reload_brain(self):
+        brainsrc = self.source_code.get("1.0", self.tk.END)
+        self._events.append(('brain', brainsrc))
+
+    def _reset_game(self):
+        self._events.append(('reset', ()))
+
+    def _startpause_brain(self):
+        self._events.append(('startpause', ()))
+
+    def _load_map(self):
+        from tkinter import filedialog, messagebox
+        selected = filedialog.askopenfilename(title="Select map .json file",
+                                              filetypes=[("Duckbot map files", "*.json")])
+        if selected is not None:
+            try:
+                new_map = Map(selected)
+            except:
+                import traceback
+                traceback.print_exc()
+                messagebox.showwarning(title = "Ooops",message = "That was not a valid map file")
+            else:
+                self._events.append(('set_map', new_map))
+
+    def process_events(self, delegate):
+        for c, a in self._events:
+            if c == 'brain':
+                delegate.set_brain(a)
+            elif c == 'quit':
+                delegate.request_quit()
+            elif c == 'reset':
+                delegate.reset_game()
+            elif c == 'startpause':
+                delegate.start_or_pause()
+            elif c == 'set_map':
+                delegate.game.current_map = a
+
+        self._events[:] = []
+
+    def update_state_from_game(self, game):
+        self._update_startpause(game)
+        duck_input = game.get_duck_input()
+
+        self.thoughtlabel.configure(text=repr(duck_input.duck_state))
+        self.northlabel.configure(text=duck_input.north)
+        self.eastlabel.configure(text=duck_input.east)
+        self.southlabel.configure(text=duck_input.south)
+        self.westlabel.configure(text=duck_input.west)
+
+    def _gamecontrols_configure(self, state):
+        self.reloadbrain.configure(state=state)
+        self.resetduck.configure(state=state)
+        self.loadmap.configure(state=state)
+
+    def _update_startpause(self, game):
+        if game.duck_game_state != self.duck_state:
+            if not game.duck_game_state.is_complete and \
+               game.duck_game_state != DuckState.ALIVE:
+                self.startpause.configure(text="Start Duck")
+                self._gamecontrols_configure(state="normal")
+            elif game.duck_game_state == DuckState.ALIVE:
+                self.startpause.configure(text="Stop Duck")
+                self._gamecontrols_configure(state="disabled")
+            elif game.duck_game_state == DuckState.COMPLETE:
+                self.startpause.configure(text="Complete!")
+                self._gamecontrols_configure(state="normal")
+            else:
+                self.startpause.configure(text="Duck Dead")
+                self._gamecontrols_configure(state="normal")
+            self.duck_state = game.duck_game_state
 
     def _glresized(self, i):
         self._glsize = (self.glarea.winfo_width(), self.glarea.winfo_height())
@@ -1611,6 +1845,11 @@ class TkRenderer(BrainRenderer):
             vx -= 1
         if self.dirkeys.get('Right'):
             vx += 1
+
+        if self.dirkeys.get('Shift_R') or self.dirkeys.get('Shift_L'):
+            vx *= 5
+            vy *= 5
+
         return (vx * MOVE_VELOCITY, vy * MOVE_VELOCITY)
 
 
@@ -1811,6 +2050,7 @@ def launch_tkgl(brain_file, tileset_file, map_file):
     brain = Brain(brain_file)
     tileset = Tileset(tileset_file)
     game = Game(brain=brain, tileset=tileset, first_map=Map(map_file))
+    print("FINAL STATE", GameRunner(game)().find_unreachable())
     tk_renderer = TkRenderer(use_opengl=True)
     backend = GlBackend(game, tk_renderer)
     renderer = GameRenderer(game, backend)
