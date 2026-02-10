@@ -46,7 +46,7 @@ jobs:
              latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build book.tex
              cd ..
              WEEKS_DAT=Book/build/book.weeks.dat mkdocs build -f www/mkdocs.yml -d site
-             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf Book/build/book.pdf
+             gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=www/site/book.pdf Book/build/book.pdf
           '
 
       - name: Upload PDF artifact
@@ -54,7 +54,7 @@ jobs:
         with:
           name: artifacts
           path: |
-            site/book.pdf
+            www/site/
           # Upload entire repository
 
       - name: Upload static site
