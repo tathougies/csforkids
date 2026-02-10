@@ -76,10 +76,12 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
+        mkdocsPkgs = p: [p.mkdocs p.mkdocs-gen-files p.mkdocs-literate-nav (p.callPackage ./nix/mkdocs-bootswatch.nix {}) ];
         dependencies = [ pkgs.ispell tex pkgs.imagemagick pkgs.ghostscript pkgs.inkscape pkgs.caddy pkgs.ninja
-                         (pkgs.python3.withPackages (p:  [ p.mkdocs p.mkdocs-gen-files p.tkinter p.pyopengl p.mkdocs-literate-nav
+                         (pkgs.python3.withPackages (p: mkdocsPkgs p ++ [
+                                                           p.tkinter p.pyopengl
                                                            p.tkinter-gl p.pyglm p.pillow p.glfw  p.pygame p.pyx p.sounddevice
-                                                           p.mido p.numba p.matplotlib (p.callPackage ./nix/mkdocs-bootswatch.nix {}) ])) ] ++ fonts;
+                                                           p.mido p.numba p.matplotlib ])) ] ++ fonts;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -88,7 +90,7 @@
           FONTCONFIG_FILE = fontsConf;
         };
         devShells.texOnly = pkgs.mkShell {
-          packages = [ tex pkgs.ghostscript pkgs.mkdocs ];
+          packages = [ tex pkgs.ghostscript (pkgs.python3.withPackages mkdocsPkgs) ];
           # Make fonts visible to XeTeX in the shell
           FONTCONFIG_FILE = fontsConf;
         };
