@@ -45,6 +45,7 @@ jobs:
              cd Book
              latexmk -interaction=nonstopmode -halt-on-error -pdf -outdir=build book.tex
              cd ..
+             WEEKS_DAT=Book/build/book.weeks.dat mkdocs build -f www/mkdocs.yml -d site
              gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile=site/book.pdf Book/build/book.pdf
           '
 

@@ -16,6 +16,8 @@ import json
 DUCK_SPRITE_FILENAME = 'duckweek/assets/duck.png'
 SCALE_FACTOR = 2
 
+SCROLL_INCREMENT = 32 # MUst scroll 32 pixels to scroll by 1
+
 # Default window starting size
 START_W = 800
 START_H = 800
@@ -702,10 +704,11 @@ class BrainRenderer(Protocol):
         pass
 
 class PygameBackend(GameBackend):
-    def __init__(self, game: Game, source_renderer: BrainRenderer, show_info_bar = True):
+    def __init__(self, game: Game, source_renderer: BrainRenderer, show_info_bar=True, use_touch=True):
         import pygame
         self.pygame = pygame
         self.show_info_bar = show_info_bar
+        self.use_touch = use_touch
         self.info_bar_height = INFO_BAR_HEIGHT if show_info_bar else 0
         pygame.init()
         pygame.display.set_caption('DuckBot!')
@@ -735,6 +738,8 @@ class PygameBackend(GameBackend):
 
         self.dirkeysdown = { pygame.K_UP: False, pygame.K_DOWN: False,
                              pygame.K_LEFT: False, pygame.K_RIGHT: False }
+
+        self.mouse_move_start = None
 
     def get_brain_renderer(self):
         return self.brain_renderer
@@ -771,28 +776,55 @@ class PygameBackend(GameBackend):
                  event.key in self.dirkeysdown:
                 self.dirkeysdown[event.key] = event.type == self.pygame.KEYDOWN
             elif event.type == self.pygame.MOUSEBUTTONUP:
-                x, y = self.pygame.mouse.get_pos()
-                w, h = self.screen.get_size()
+                if self.is_moving_by_mouse:
+                    self.end_mouse_move()
+                else:
+                    x, y = self.pygame.mouse.get_pos()
+                    w, h = self.screen.get_size()
 
-                y = y - h + self.info_bar_height
-                if hits_sdl_rect((x, y), self.show_brain_rect):
-                    if self.brain_renderer.is_shown():
-                        self.brain_renderer.hide()
-                    else:
-                        self.brain_renderer.show()
+                    y = y - h + self.info_bar_height
+                    if hits_sdl_rect((x, y), self.show_brain_rect):
+                        if self.brain_renderer.is_shown():
+                            self.brain_renderer.hide()
+                        else:
+                            self.brain_renderer.show()
+            elif self.use_touch and event.type == self.pygame.MULTIGESTURE:
+                print(event)
+            elif self.use_touch and event.type == self.pygame.MOUSEBUTTONDOWN:
+                self.start_mouse_move(self.pygame.mouse.get_pos(), renderer.camera_position)
+            elif self.use_touch and event.type == self.pygame.MOUSEMOTION and self.is_moving_by_mouse:
+                (sx, sy), (camrow, camcol) = self.mouse_move_start
+                x, y = self.pygame.mouse.get_pos()
+                camcol -= (x - sx)
+                camrow -= (y - sy)
+                renderer.set_camera_position(camrow, camcol)
+            elif self.use_touch and event.type == self.pygame.MOUSEWHEEL:
+                self.set_scale(self.scale + event.y / SCROLL_INCREMENT)
 
         self.brain_renderer.process_events(self)
 
         # Calc velocity
-        dcx, dcy = self.get_camera_velocity()
-        tile_size = self.game.tile_size
-        renderer.set_camera_position(renderer.camera_position[0] + dcy * tile_size * dt,
-                                     renderer.camera_position[1] + dcx * tile_size * dt)
+        if not self.is_moving_by_mouse:
+            dcx, dcy = self.get_camera_velocity()
+            tile_size = self.game.tile_size
+            renderer.set_camera_position(renderer.camera_position[0] + dcy * tile_size * dt,
+                                         renderer.camera_position[1] + dcx * tile_size * dt)
+
+    def start_mouse_move(self, pos, campos):
+        self.mouse_move_start = (pos, campos)
+
+    def end_mouse_move(self):
+        self.mouse_move_start = None
+
+    @property
+    def is_moving_by_mouse(self):
+        return self.mouse_move_start is not None
 
     def set_scale(self, scale_factor):
-        self.scale = scale_factor
+        self.scale = min(8.0, max(1.0, scale_factor))
         self.atlas = self._scale(self.unscaled_atlas)
         self.duck_sprites = self._scale(self.unscaled_duck_sprites)
+        self.recalc_sizes()
 
     def _scale(self, surface):
         w, h = surface.get_size()
@@ -2037,6 +2069,7 @@ class TkBrainRenderer(BrainRenderer):
         del self.process
 
 async def launch_html(brain_file, tileset_file, map_file, api):
+    import pyodide.ffi
     brain = Brain(brain_file)
     tileset = Tileset(tileset_file)
     game = Game(brain=brain, tileset=tileset, first_map=Map(map_file))
@@ -2044,13 +2077,26 @@ async def launch_html(brain_file, tileset_file, map_file, api):
     wasm_renderer = WasmBrainRenderer(api)
     backend = PygameBackend(game, wasm_renderer, show_info_bar=False)
     renderer = GameRenderer(game, backend)
+    def start_stop_game():
+        if game.duck_game_state == DuckState.STOPPED:
+            game.duck_game_state = DuckState.ALIVE
+        elif game.duck_game_state == DuckState.ALIVE:
+            game.duck_game_state = DuckState.STOPPED
+    def reset_game():
+        game.reset_game(randomize_starting_position=True)
+    def reset_to_initial():
+        game.reset_game()
+    api.setCallbacks(pyodide.ffi.create_proxy({
+        'startStopGame': start_stop_game,
+        'resetGame': reset_game,
+        'resetToInitial': reset_to_initial,
+    }))
     await renderer.async_game_loop(10)
 
 def launch_tkgl(brain_file, tileset_file, map_file):
     brain = Brain(brain_file)
     tileset = Tileset(tileset_file)
     game = Game(brain=brain, tileset=tileset, first_map=Map(map_file))
-    print("FINAL STATE", GameRunner(game)().find_unreachable())
     tk_renderer = TkRenderer(use_opengl=True)
     backend = GlBackend(game, tk_renderer)
     renderer = GameRenderer(game, backend)

@@ -1,6 +1,6 @@
 % -*- mode: latex -*-
 
-\week{Data}
+\week[description={This week we learn more about information. In particular, we start to understand that even things that seem complicated and intratable can be described by breaking them down into things that we do understand. Information is the basic building block of computation.}]{Data}
 
 Get out a piece of paper and draw a duck. It can be any kind of duck you want, in whatever pose.
 
@@ -619,7 +619,7 @@ And there's two squares!
   \fixfigure
   \begin{tabular}{p{0.24\linewidth}p{0.76\linewidth}}
     \toprule
-    Rule & What it does\\\midrule
+    \headercol{Rule} & \headercol{What it does} \\\midrule
     \code{draw.goto(x, y)} & Move the pen to the particular \code{x} and \code{y} coordinate.\\
     \code{draw.forward(x)} & Move forward \code{x} units in the current direction of the pen.\\
     \code{draw.circle(r)} & Draw a complete circle with the given radius \code{r}. \\
@@ -985,8 +985,8 @@ Now, take these arguments and use it to change your duck's body and eye color us
 Now, rerun the example above:
 
 \begin{replbox}
-from week2.examples import *<ENTER>
-lake_of(duck)
+>>> from week2.examples import *<ENTER>
+>>> lake_of(duck)
 \end{replbox}
 
 Much better!

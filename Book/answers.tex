@@ -71,18 +71,23 @@
 \newcommand{\Exercises}{%
   \needspace{10em} % Need to be able to typeset at least 10 lines
   \section*{Exercises}%
-  \answers\expandafter{%
-    \the\answers
-    \noexpand\AnswerHeading{Week \theweek}%
-  }%
+  {
+    \edef\cweek{\theweek}
+    \answers=\expandafter{%
+      \the\answers
+
+      \noexpand\AnswerHeading{Week \cweek}%
+    }%
+  }
 }
 
 % Store an answer for the current item / subitem / task
 % IMPORTANT: \unexpanded keeps answer text intact (no fragile expansion)
 \newcommand{\answer}[1]{%
-  \answers\expandafter{%
+  \answers=\expandafter{%
     \the\answers
-    \noexpand\AnswerItem{\CurrentExerciseLabel}{\unexpanded{#1}}%
+
+    \noexpand\AnswerItem{\CurrentExerciseLabel}<{\unexpanded{#1}}%
   }%
 }
 

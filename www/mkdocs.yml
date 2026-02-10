@@ -1,0 +1,13 @@
+site_name: Thinking with Computers
+theme: lumen
+nav:
+  - Home: index.md
+  - About: about.md
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - genweeks.py
+  - literate-nav:
+      nav_file: SUMMARY.md

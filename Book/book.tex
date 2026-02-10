@@ -18,7 +18,7 @@
 \usepackage{forest}
 \usepackage{amsmath}
 %\usepackage{caption}
-\usepackage[caption=false]{subfig}
+% \usepackage[caption=false]{subfig}
 \usepackage{xparse}
 \usepackage{prettyref}
 \usepackage{tabularx}
@@ -29,7 +29,7 @@
 \usepackage{fmtcount}
 
 \makeatletter
-\patchcmd{\@caption}{: \ignorespaces}{ \ignorespaces}{}{}
+\patchcmd{\@caption}{: \ignorespaces}{\; \ignorespaces}{}{}
 \makeatother
 \makeatletter
 \AtBeginDocument{\typeout{MAKECAPTION=\meaning\@makecaption}}
@@ -37,7 +37,7 @@
 \def\giturl{https://github.com/tathougies/csforkids}
 
 \newcommand{\prettypageref}[1]{\ifnum\getpagerefnumber{#1}=\value{page}~on this page\else~on page~\pageref{#1}\fi}
-\newrefformat{subfig}{Figure~\ref{#1}\subref{#1}}
+\newrefformat{subfig}{Figure~\ref{#1}\prettypageref{#1}}
 \newrefformat{fig}{Figure~\ref{#1}\prettypageref{#1}}
 \newrefformat{sec}{{\bfseries \nameref{#1}}\prettypageref{#1}}
 \newrefformat{deepdive}{the Deep Dive Box~\prettypageref{#1}}
@@ -62,7 +62,33 @@
   /tcb/code note/.style={enhanced jigsaw, width=4cm, colback=white, opacityback=0.4, boxrule=0.6pt, colframe=black, drop shadow southeast, fontupper={\footnotesize\sffamily}}
 }
 
+\pgfkeys{
+  /week/.is family, /week,
+  description/.initial={}
+}
+
 \makeatletter
+\pgfkeys{
+  /resource/.is family, /resource,
+  description/.initial={},
+  kind/.initial={},
+  is url/.style={
+    text={\resource@url}
+  },
+  text/.initial={},
+  site text/.initial={},
+  qrcode/.style={includeqr=1},
+  includeqr/.initial=0,
+  default/.style={
+    description={},
+    kind={Resource},
+    text={},
+    site text={\resource@name},
+    includeqr=0
+  }
+}
+
+
 \newcommand{\CheckTikzPictureSide}{
   \checkoddpage
   \ifoddpage
@@ -377,10 +403,48 @@
 \renewcommand{\theexerciseno}{W\theweek-\arabic{exerciseno}}
 \newcounter{week}
 
-\newcommand{\week}[1]{%
-  \refstepcounter{week}%
-  \chapter{Week \theweek: #1}%
+\makeatletter
+\newwrite\weeks@dat
+\openout\weeks@dat=\jobname.weeks.dat
+\newcommand{\@tag}[1]{\string<#1\string>}
+\newcommand{\resource}[2][]{
+  \pgfkeys{/resource, default, #1}
+  \def\resource@kind{\pgfkeysvalueof{/resource/kind}}
+  \def\resource@url{#2}
+  \def\resource@name{\pgfkeysvalueof{/resource/text}}
+  \def\resource@sitename{\pgfkeysvalueof{/resource/site text}}
+  \def\resource@includeqr{\pgfkeysvalueof{/resource/includeqr}}
+  \def\resource@description{\pgfkeysvalueof{/resource/description}}
+  \begingroup
+    \protected@edef\resource@line{%
+      RESOURCE \thepage\space
+      \resource@kind\space
+      \@tag{a href="\resource@url"}%
+      \resource@sitename%
+      \@tag{/a}%
+      \space\detokenize{&mdash;}\space
+      \resource@description%
+    }%
+    \immediate\write\weeks@dat{\resource@line}%
+  \endgroup
+  \href{\resource@name}{\resource@url}
+  \ifnum\resource@includeqr=1
+  \\
+  \begin{center}
+    \qrcode{#2}
+  \end{center}
+  \fi
 }
+\newcommand{\week}[2][]{%
+  \pgfkeys{/week, description={}}
+  \pgfkeys{/week, #1}
+  \def\week@description{\pgfkeysvalueof{/week/description}}
+  \refstepcounter{week}%
+  \chapter{Week \theweek: #2}%
+  \write\weeks@dat{NAME Week \theweek: #2}
+  \write\weeks@dat{DESCRIPTION \week@description}m
+}
+\makeatother
 
 \newlist{exercises}{enumerate}{1}
 \setlist[exercises,1]{%
@@ -465,8 +529,27 @@
       {\sffamily\large\bfseries \textcolor{TermSage}{#1}}\par
       \vspace{0.4\baselineskip}
 }
+
+\makeatletter
+\newcounter{subfigure}[figure]
+\renewcommand\thesubfigure{\thefigure(\alph{subfigure})}
+\newcommand{\subcaption}[1]{
+  \vspace{0.5em}
+
+  \refstepcounter{subfigure}
+  \edef\@currentlabel{\thefigure(\alph{subfigure})}
+  \sffamily \footnotesize
+  \textbf{\textcolor{CaptionLabelSlate}{(\alph{subfigure})}} #1
+
+  \vspace{0.5em}
+}
+\newenvironment{subfigure}[1]{
+  \begin{minipage}{#1}
+}{\end{minipage}}
+\makeatother
+
 % ---------- Document ----------
-\title{How Computers Think}
+\title{Classical Computer Science}
 \author{Travis Athougies}
 \date{}
 
@@ -478,7 +561,8 @@
 \mainmatter
 \input{../week1/chapter.tex}
 \input{../week2/chapter.tex}
-%\input{../week3/chapter.tex}
+\input{../week3/chapter.tex}
+\input{../week4/chapter.tex}
 %\input{../week4/chapter.tex}
 
 \appendix
