@@ -1,4 +1,9 @@
-site/
+.~*
+/www/site
+/venv
+/build
+*.weeks.dat
+/site/
 .\#*
 \#*
 __pycache__

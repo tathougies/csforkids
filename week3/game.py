@@ -13,7 +13,7 @@ import math
 import pathlib
 import json
 
-DUCK_SPRITE_FILENAME = 'duckweek/assets/duck.png'
+DUCK_SPRITE_FILENAME = 'week3/assets/duck.png'
 SCALE_FACTOR = 2
 
 SCROLL_INCREMENT = 32 # MUst scroll 32 pixels to scroll by 1
@@ -704,7 +704,8 @@ class BrainRenderer(Protocol):
         pass
 
 class PygameBackend(GameBackend):
-    def __init__(self, game: Game, source_renderer: BrainRenderer, show_info_bar=True, use_touch=True):
+    def __init__(self, game: Game, source_renderer: BrainRenderer,
+                 duck_sprite=DUCK_SPRITE_FILENAME, show_info_bar=True, use_touch=True):
         import pygame
         self.pygame = pygame
         self.show_info_bar = show_info_bar
@@ -731,7 +732,7 @@ class PygameBackend(GameBackend):
         self.show_brain_rect = (0, 0, 0, 0)
 
         self.unscaled_atlas = pygame.image.load(self.game.tileset.image_file).convert_alpha()
-        self.unscaled_duck_sprites = pygame.image.load(DUCK_SPRITE_FILENAME).convert_alpha() # TODO
+        self.unscaled_duck_sprites = pygame.image.load(duck_sprite).convert_alpha() # TODO
 
         self.set_scale(SCALE_FACTOR)
         self.recalc_sizes()
@@ -984,11 +985,13 @@ class PygameBackend(GameBackend):
         self.draw_info_surface()
 
 class GlBackend(GameBackend):
-    def __init__(self, game: Game, source_renderer: 'TkRenderer'):
+    def __init__(self, game: Game, source_renderer: 'TkRenderer', duck_sprite_file=DUCK_SPRITE_FILENAME):
         from OpenGL import GL
         self.gl = GL
         self.game = game
         self.tk_renderer = source_renderer
+
+        self.duck_sprite_file = duck_sprite_file
 
         if self.tk_renderer is not None:
             self.tk_renderer.set_brain(self.game.brain)
@@ -1041,7 +1044,7 @@ class GlBackend(GameBackend):
         # Create the textures
         self.lake_texture, self.duck_texture = gl.glGenTextures(2)
         self._load_texture(self.lake_texture, self.game.tileset.image_file)
-        self._load_texture(self.duck_texture, DUCK_SPRITE_FILENAME)
+        self._load_texture(self.duck_texture, self.duck_sprite_file)
 
         # Create shader
         self.vertex_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
@@ -2068,14 +2071,14 @@ class TkBrainRenderer(BrainRenderer):
         self.process.join()
         del self.process
 
-async def launch_html(brain_file, tileset_file, map_file, api):
+async def launch_html(brain_file, tileset_file, map_file, duck_sprite_file, api):
     import pyodide.ffi
     brain = Brain(brain_file)
     tileset = Tileset(tileset_file)
     game = Game(brain=brain, tileset=tileset, first_map=Map(map_file))
     game.delegate = JsInfoUpdater(api, game)
     wasm_renderer = WasmBrainRenderer(api)
-    backend = PygameBackend(game, wasm_renderer, show_info_bar=False)
+    backend = PygameBackend(game, wasm_renderer, show_info_bar=False, duck_sprite=duck_sprite_file)
     renderer = GameRenderer(game, backend)
     def start_stop_game():
         if game.duck_game_state == DuckState.STOPPED:
@@ -2113,5 +2116,5 @@ def launch_pygame_tk(brain_file, tileset_file, map_file):
 
 # This checks to see if this is being run as a game
 if __name__ == '__main__':
-    launch_tkgl('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
-#    launch_pygame_tk('duckweek/sample_brain.py', 'duckweek/assets/tileset.json', 'duckweek/assets/maps/level1.json')
+    launch_tkgl('week3/sample_brain.py', 'week3/assets/tileset.json', 'week3/assets/maps/level1.json')
+#    launch_pygame_tk('week3/sample_brain.py', 'week3/assets/tileset.json', 'week3/assets/maps/level1.json')

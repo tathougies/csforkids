@@ -1,0 +1,24 @@
+{% extends 'www/templates/raw.html' %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+{% endblock %}
+
+{% block body %}
+<script type="module">
+  async function main(){
+    {% block pyodide_prep %}{% endblock %}
+    let pyodide = await loadPyodide();
+    pyodide._api._skip_unwind_fatal_error = true;
+    {%block pyodide_pkgs %}{%endblock%}
+
+    const archive = await fetch("{%block pyodide_archive%}{%endblock%}");
+    const archiveBuf = await archive.arrayBuffer();
+    await pyodide.unpackArchive(archiveBuf, "tgz", { "extractDir": "." });
+
+    {% block pyodide_launch %}{% endblock %}
+  }
+  main()
+</script>
+{% endblock %}

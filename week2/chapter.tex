@@ -630,6 +630,8 @@ And there's two squares!
     \code{draw.pensize(s)} & Change the size of the tip of the pen.\\
     \code{draw.fill(c, pic)} & Draw \code{pic} and fill in all enclosed areas with color \code{c}.\\
     \code{draw.turn(angle)} & Turn by the given angle, which can be an angle (in degrees), or \code{``left''} or \code{``right''}. \\
+    \code{draw.darken(col)} / \code{draw.lighten(col)} & Take a \code{col} and give a new color that is slightly darker or lighter than the original color. \\
+    \code{draw.blend(col1, col2)} & Blend \code{col1} and \code{col2} together to form a new color between the two. \\
     \code{draw.wait(s)} & Wait \code{s} seconds before proceeding. Let's you see how the drawing progresses. \\
     \code{draw.pause(prompt)} & Pause the drawing and display the word \code{prompt} until the user hits \enterkey \\
     \bottomrule
@@ -716,13 +718,14 @@ second square appears on top of the first square, instead of in the same positio
 
 \section{Errors with Data}
 
-When we originally wrote \code{square\_shape()}, Python did not make a fuss. However
-\code{square\_shape()} did not work the way we expected it to. When our expectation of how things
-work does not match what actually happens, we call it a \term{bug}.\didyouknow{The first computers
+\didyouknow{The first computers
   stored data using vacuum tubes, which were like lightbulbs that could either be switched on or
   off. Vacuum tubes were large and unwieldy and not as reliable as the computers we use today. The
   warm and bright tubes attracted insects, and these insects would sometimes cause the tubes to
   short-circuit. This is the origin of the word \term{bug}! Yuck!}
+When we originally wrote \code{square\_shape()}, Python did not make a fuss. However
+\code{square\_shape()} did not work the way we expected it to. When our expectation of how things
+work does not match what actually happens, we call it a \term{bug}.
 
 The squares appearing atop each other instead of in the same spot is another example of a bug.
 

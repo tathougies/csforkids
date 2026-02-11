@@ -1,4 +1,4 @@
-site_name: Thinking with Computers
+site_name: Classical Computer Science
 theme: lumen
 nav:
   - Home: index.md

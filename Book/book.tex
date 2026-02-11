@@ -69,9 +69,22 @@
 
 \makeatletter
 \pgfkeys{
+  /resourcegen/.is family, /resourcegen,
+  name/.initial={},
+  from/.initial={},
+  type/.initial={},
+  default/.style={
+    name={},
+    from={},
+    type={}
+  }
+}
+\pgfkeys{
   /resource/.is family, /resource,
   description/.initial={},
   kind/.initial={},
+  silence/.initial=0,
+  silent/.style={silence=1},
   is url/.style={
     text={\resource@url}
   },
@@ -79,12 +92,15 @@
   site text/.initial={},
   qrcode/.style={includeqr=1},
   includeqr/.initial=0,
+  files/.initial={},
   default/.style={
     description={},
     kind={Resource},
     text={},
     site text={\resource@name},
-    includeqr=0
+    includeqr=0,
+    silence=0,
+    files={}
   }
 }
 
@@ -407,6 +423,18 @@
 \newwrite\weeks@dat
 \openout\weeks@dat=\jobname.weeks.dat
 \newcommand{\@tag}[1]{\string<#1\string>}
+\newcommand{\resourcegen}[1]{\
+  \pgfkeys{/resourcegen, default, #1}
+  \begingroup
+  \protected@edef\resource@line{%
+    GEN \theweek\space\thepage\space
+    \pgfkeysvalueof{/resourcegen/name}\space
+    \pgfkeysvalueof{/resourcegen/type}\space
+    \pgfkeysvalueof{/resourcegen/from}\space
+  }
+  \immediate\write\weeks@dat{\resource@line}
+  \endgroup
+}
 \newcommand{\resource}[2][]{
   \pgfkeys{/resource, default, #1}
   \def\resource@kind{\pgfkeysvalueof{/resource/kind}}
@@ -415,24 +443,35 @@
   \def\resource@sitename{\pgfkeysvalueof{/resource/site text}}
   \def\resource@includeqr{\pgfkeysvalueof{/resource/includeqr}}
   \def\resource@description{\pgfkeysvalueof{/resource/description}}
+  \def\resource@silence{\pgfkeysvalueof{/resource/silence}}
+  \def\resource@files{\pgfkeysvalueof{/resource/files}}
+  \def\tempa{}
   \begingroup
-    \protected@edef\resource@line{%
-      RESOURCE \thepage\space
-      \resource@kind\space
-      \@tag{a href="\resource@url"}%
-      \resource@sitename%
-      \@tag{/a}%
-      \space\detokenize{&mdash;}\space
-      \resource@description%
+  \protected@edef\resource@line{%
+    RESOURCE \theweek\space\thepage\space
+    \resource@kind\space
+    \@tag{a href="\resource@url"}%
+    \resource@sitename%
+    \@tag{/a}%
+    \space\detokenize{&mdash;}\space
+    \resource@description%
     }%
-    \immediate\write\weeks@dat{\resource@line}%
+  \immediate\write\weeks@dat{\resource@line}%
+  \ifx\tempa\resource@files
+  % Empty files
+  \else
+  \immediate\write\weeks@dat{FILES \resource@files}
+  \fi
   \endgroup
+
+  \ifnum\resource@silence=0
   \href{\resource@name}{\resource@url}
   \ifnum\resource@includeqr=1
   \\
   \begin{center}
     \qrcode{#2}
   \end{center}
+  \fi
   \fi
 }
 \newcommand{\week}[2][]{%
@@ -442,7 +481,7 @@
   \refstepcounter{week}%
   \chapter{Week \theweek: #2}%
   \write\weeks@dat{NAME Week \theweek: #2}
-  \write\weeks@dat{DESCRIPTION \week@description}m
+  \write\weeks@dat{DESCRIPTION \week@description}
 }
 \makeatother
 
