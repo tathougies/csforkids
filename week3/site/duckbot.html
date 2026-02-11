@@ -135,7 +135,7 @@ window.editorView = new EditorView({
 {{ super() }}
 {% endblock %}
 
-{% block pyodide_archive %}/week3/data/duckbot.tar.gz{% endblock %}
+{% block pyodide_archive %}../data/duckbot.tar.gz{% endblock %}
 
 {% block pyodide_pkgs %}await pyodide.loadPackage("pygame-ce");{% endblock %}
 
