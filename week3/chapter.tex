@@ -4,6 +4,81 @@
 \resourcegen{name=data/duckbot.tar.gz, type={archive}, from={week3 game.py sample_brain.py assets/tileset.json assets/maps/level1.json assets/duck.png assets/terrain_atlas.png}}
 \resourcegen{name=demos/duckbot.html, from=week3/site/duckbot.html, type={jinja}}
 
+The ancient Greek polymath Eratosthenes regularly traveled between the Egyptian cities of Syene and
+Alexandria (see \prettyref{fig:alexandria}). He was a very observant scientist, and -- like many
+ancient polymaths -- was interested in astronomy. He noticed that, on the summer solstice, the
+following things were true (see \prettyref{fig:eratosthenes}):
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/syene-alexandria.jpg}
+
+  \caption{The distance between the Egyptian cities of Alexandria and Syene is 5000 stadia or approximately 787.5 kilometers apart.}
+  \label{fig:alexandria}
+\end{marginfigure}
+
+\begin{enumerate}
+\item In Syene, which was south of Alexandria, on the summer solstice, the sun shone straight down. If he looked at the bottom of a deep well, there were no shadows at all. If you planted a stick in the ground, the stick would cast no shadow, because the sun was directly overhead.
+\item In Alexandria, to the north, on the same day at the same time, if you planted a stick in the ground, there was a shadow.
+\end{enumerate}
+
+What can be deduced based off these two observations?
+
+Here's some more details: the straight-line distance between the two cities is approximately 787.5
+kilometers apart. Also, the angle of the shadow cast on the ground in Alexandria was $7.5^{\circ}$.
+
+Eratosthenes did the following calculation:
+
+\[
+\underbrace{787.5\;\text{kilometers}}_{\text{distance between the two cities}} \times \frac{360^{\circ}}{7.5^{\circ}} \approx 40,000\;\text{kilometers}
+\]
+
+\begin{figure}
+  \centering
+
+  \begin{tikzpicture}[scale=0.5,font={\sffamily}]
+    \node at (0, 10) {Sun};
+    \draw (0, 10) circle (1);
+    \draw (-2, 0) -- (10, 0) node[midway, anchor=north, yshift=-0.1em] {Ground};
+
+    \draw (0,0) -- (0, 4);
+
+    \coordinate (alexandria bottom) at (6, 0);
+    \coordinate (alexandria stick) at (6, 4);
+
+    \path[name path=ray] (alexandria stick) -- ++(-82.5:100);
+    \path[name path=x axis] (-10, 0) -- (10, 0);
+    \fill[name intersections={of=ray and x axis, by=B}, dashed, fill=lightgray]
+      (alexandria bottom) -- (alexandria stick) -- (B);
+    \draw (alexandria bottom) -- (alexandria stick);
+    \draw[dashed] (alexandria stick) -- (B);
+    \draw[ultra thick] (B) -- (alexandria bottom);
+
+  \end{tikzpicture}
+
+  \caption{Eratosthenes noticed that on the summer solstice the shadows cast by the Sun at noon appeared different in two cities. In Syene, there was no shadow, which meant the Sun was directly overhead. In Alexandria, there was a shadow.}
+  \label{fig:eratosthenes}
+\end{figure}
+
+\didyouknow{
+Albert Einstein famously came up with his theory of special relativity by simply thinking about it!
+If you ever study physics in depth, you'll discover that the entirety of special relativity falls
+out of two simple facts:
+\begin{enumerate}
+\item The speed of light is the same for everyone.
+\item The relationship between the sides of the triangle: $c^2 = a^2 + b^2$.
+\end{enumerate}
+Einstein used these simple facts to show that light actually travels less distance in moving
+reference frames, leading to one of the most surprising facts about our universe: fast things become
+shorter.  }
+\begin{BigIdeaBox}
+As humans, we only see our part of the world and our part of the universe. The consistent
+application of precise rules lets us reason about things larger than what we can directly perceive.
+
+Despite having no possible way to observe the entirety of the planet. Eratosthenes used simple rules
+of logic and simple observations to deduce a global truth.
+\end{BigIdeaBox}
+
+
 \section{Numbers All the Way Down}
 
 Last week, we discussed how computers store numbers using switches that are either on or

@@ -232,11 +232,17 @@ class Brain:
         ast.parse(code, 'exec')
 
 class Tileset:
-    def __init__(self, filename):
-        with open(filename, 'rt') as f:
-            self.data = json.load(f)
+    def __init__(self, filename=None, source=None, asset_dir=None):
+        assert filename is None or source is None, "Only one of filename or source ought to be specified"
+        assert source is None or asset_dir is not None, "Must specify asset_dir if given source"
+        if filename is not None:
+            with open(filename, 'rt') as f:
+                self.data = json.load(f)
 
-        self.asset_dir = pathlib.Path(filename).parent
+            self.asset_dir = pathlib.Path(filename).parent
+        else:
+            self.data = json.loads(source)
+            self.asset_dir = asset_dir
 
         self.tiles_per_row = self.data['imagewidth'] // self.data['tilewidth']
 
@@ -317,9 +323,13 @@ class MapLayer:
         return self.data['data'][y * self.map.cols + x]
 
 class Map:
-    def __init__(self, map_file):
-        with open(map_file, 'rt') as f:
-            self.data = json.load(f)
+    def __init__(self, map_file=None, source=None):
+        assert map_file is None or source is None, "Only one of map_file or source ought to be specified"
+        if map_file is not None:
+            with open(map_file, 'rt') as f:
+                self.data = json.load(f)
+        else:
+            self.data = json.loads(source)
 
         self.layers = [MapLayer(self, d) for d in self.data['layers']]
 
@@ -762,10 +772,12 @@ class PygameBackend(GameBackend):
             # There was an error loading the Python
             if self.brain_renderer is not None:
                 self.brain_renderer.report_syntax_error(e)
+            return False
         else:
             self.game.reload_brain(brain)
             if self.brain_renderer is not None:
                 self.set_brain(brain)
+            return True
 
     def process_events(self, renderer, dt):
         for event in self.pygame.event.get():
@@ -1622,7 +1634,7 @@ class WasmBrainRenderer(BrainRenderer):
         pass
 
     def report_syntax_error(self, err):
-        pass
+        self.api.reportSyntaxError(err.msg, err.lineno, err.offset, err.end_lineno, err.end_offset)
 
     def is_shown(self):
         return True
@@ -2089,10 +2101,23 @@ async def launch_html(brain_file, tileset_file, map_file, duck_sprite_file, api)
         game.reset_game(randomize_starting_position=True)
     def reset_to_initial():
         game.reset_game()
+    def set_brain(src):
+        return backend.set_brain(src)
+    def load_map_json(src):
+        try:
+            m = Map(source=src)
+        except:
+            import traceback
+            traceback.print_exc()
+            return False
+        else:
+            game.current_map = m
     api.setCallbacks(pyodide.ffi.create_proxy({
         'startStopGame': start_stop_game,
         'resetGame': reset_game,
         'resetToInitial': reset_to_initial,
+        'setBrain': set_brain,
+        'loadMap': load_map_json
     }))
     await renderer.async_game_loop(10)
 

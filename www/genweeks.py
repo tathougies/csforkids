@@ -4,12 +4,44 @@ import mkdocs_gen_files
 from pathlib import Path
 import os
 import tarfile
+import subprocess
 import io
 from jinja2 import Environment, FileSystemLoader
+from jinja2_simple_tags import StandaloneTag
+import hashlib
+
+class WebpackTag(StandaloneTag):
+    safe_output = True
+    tags = {"webpack"}
+
+    def render(self, path):
+        path = str(Path(path).expanduser().resolve())
+
+        print("Running npm install / npx webpack...")
+        p = subprocess.run(
+            ["npm", "install"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
+        )
+        assert p.returncode == 0, "Could not install modules"
+        p = subprocess.run(
+            ["npx", "webpack"], cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL
+        )
+        assert p.returncode == 0, "Could not run webpack"
+
+        bundle_path = Path(path) / "dist" / "bundle.js"
+        with open(bundle_path, "rb") as file:
+            d = file.read()
+        sha256_hash = hashlib.sha256(d).hexdigest()
+        outpath = f"resources/{sha256_hash}/bundle.js"
+
+        with mkdocs_gen_files.open(outpath, "wb") as f:
+            f.write(d)
+
+        return f"<script type=\"text/javascript\" lang=\"javascript\" src=\"{self.context['rootdir']}{outpath}\"></script>"
 
 jinja = Environment(
     loader=FileSystemLoader(os.getcwd()),
     autoescape=False,  # set True for HTML safety if needed
+    extensions=[WebpackTag]
 )
 
 def gen_archive(week, name, files):
@@ -31,8 +63,10 @@ def gen_jinja(week, name, files, extra_context={}):
     print("JINJA", files)
     template = jinja.get_template(files)
 
-    with mkdocs_gen_files.open(f'week{week}/{name}', 'wt') as out:
-        out.write(template.render(**extra_context))
+    nm = f'week{week}/{name}'
+    with mkdocs_gen_files.open(nm, 'wt') as out:
+        rootdir = '../' * len(Path(nm).parts)
+        out.write(template.render(dict(weekdir=f'week{week}', rootdir=rootdir, **extra_context)))
 
 def do_gen(week, page, name, ty, files):
     print(f"Generating {name}")

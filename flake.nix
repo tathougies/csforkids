@@ -76,7 +76,7 @@
         ];
 
         fontsConf = pkgs.makeFontsConf { fontDirectories = fonts; };
-        mkdocsPkgs = p: [p.mkdocs p.mkdocs-gen-files p.mkdocs-literate-nav (p.callPackage ./nix/mkdocs-bootswatch.nix {}) p.jinja2 ];
+        mkdocsPkgs = p: [p.mkdocs p.mkdocs-gen-files p.mkdocs-literate-nav (p.callPackage ./nix/mkdocs-bootswatch.nix {}) p.jinja2 (p.callPackage ./nix/jinja2-simple-tags.nix {}) ];
         dependencies = [ pkgs.ispell tex pkgs.imagemagick pkgs.ghostscript pkgs.inkscape pkgs.caddy pkgs.ninja pkgs.nodejs
                          (pkgs.python3.withPackages (p: mkdocsPkgs p ++ [
                                                            p.tkinter p.pyopengl

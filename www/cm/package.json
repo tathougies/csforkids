@@ -1,0 +1,22 @@
+{
+  "name": "cm",
+  "version": "1.0.0",
+  "description": "CodeMirror bundler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "sideEffects": [
+    "*.css"
+  ],
+  "dependencies": {
+    "@codemirror/lang-python": "^6.2.1",
+    "@codemirror/lint": "^6.9.4",
+    "codemirror": "^6.0.2",
+    "terser-webpack-plugin": "^5.3.16",
+    "webpack": "^5.105.1",
+    "webpack-cli": "^6.0.1"
+  }
+}
