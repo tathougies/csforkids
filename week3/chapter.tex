@@ -78,6 +78,106 @@ Despite having no possible way to observe the entirety of the planet. Eratosthen
 of logic and simple observations to deduce a global truth.
 \end{BigIdeaBox}
 
+\section{Week 2 Review}
+
+Last week, we discussed breaking down large drawings and objects into
+smaller elements. Doing so let us build large drawings from simple
+drawings we could combine together. Even though the set of simple
+or \term{primitive} drawings were small, we could draw quite a bit
+with them.
+
+\section{Understanding Big Things}
+
+The Turtle cursor we saw last week simply knew what was around it. We
+gave it commands based on its \emph{immediate} environment and based
+on those, it simply followed what we told it. It was up to us to give
+it the set of rules necessary to make the drawings we wanted.
+
+We can use a similar idea to understand large things. It's impossible
+to build a system large enough to be able to ``see'' the entire set of
+things we'd ever want to talk about. Just like Eratosthenes, we are
+limited in what we are able to perceive. Similarly, computers can only
+perceive a few things directly, yet we are able to build very complex
+systems with them.
+
+How can we use small rules to understand large things? Once again, we have to be clear about our
+language. We have to understand what we can see and what we can do with that information. When our
+rules are designed to ingest and understand information, we call that
+an \term{algorithm}. \didyouknow{The word \emph{algorithm} comes from the name of the Persian
+polymath and mathematician al-Khw\={a}rizm\={i} who introduced the idea of algorithms to the West
+via his book \emph{kit\={a}b al-\d{h}is\={a}b al-hind\={i}} (``Book of Indian Computation''). This
+book was translated into Latin by Robert Chester in 1145, and was the principal mathematics textbook
+used in many universities for almost four centuries. Many of our modern methods of addition,
+subtraction, division, and multiplication come from his translations!
+\vspace{1em}
+\begin{center}
+  \includegraphics[width=0.6\marginparwidth]{../week3/figures/al-kwharizmi.jpg}
+\end{center}}
+
+In order to learn and understand algorithms, we are going to play a simple game. But be
+warned... this is not like any game you've played before!
+
+\section{Introducing DuckBot!}
+
+Meet DuckBot! DuckBot has been put in change of a group of three very sneaky little ducklings while
+Mother Duck has gone away. But those sneaky little ducklings have fried DuckBot's brain and have run
+off. They are now hiding in some corner of the pond. DuckBot needs to find the ducklings before
+Mother Duck gets back.
+
+Your job is to give DuckBot a new brain so that it can find the ducklings!
+
+Oh and one more thing: if DuckBot runs into any obstacle, like a rock, a plant, or the ground,
+DuckBot dies and will never be able to make it to the ducklings. Your brain has to make sure he only
+ever swims in water.
+
+The DuckBot game window (see \prettyref{fig:duckbot}) has four parts:
+\begin{enumerate}
+\item This shows you where DuckBot is in the pond. You can change your view of the pond by using the
+  arrow keys or dragging around with your mouse. You can zoom in or out using the mouse wheel or the
+  \litkey{+} and \litkey{-} keys. But remember, whatever you can see doesn't matter, because DuckBot
+  can only see what's immediately around it.
+
+\item The brain pane shows you the current Python code in DuckBot's brain. DuckBot runs this code
+  each time it moves a square in the pond, in order to decide what to do next. You can edit the code
+  here to make DuckBot do what you want.
+
+\item The bottom pane shows you what DuckBot sees. DuckBot can see obstacles in all four cardinal
+  directions.
+
+\item The controls pane lets you control DuckBot. You can make DuckBot go or stop by clicking the ``Start Duck'' and ``Stop Duck'' buttons. You can reset the game by clicking the ``Reset Game'' button.\hint{You'll need to stop the duck before resetting the game or reloading DuckBot's brain} When you've made changes to your brain, you have to tell DuckBot to switch to the new brain by clicking the ``Reload Brain'' button.
+
+\end{enumerate}
+
+\subsection{Programming DuckBot}
+
+DuckBot is programmed in Python. The goal of the game is to write a program so that DuckBot swims
+over \emph{every} portion of the pond it can reach. The ducklings are \emph{very} sneaky and always
+stay in the spot in which DuckBot is least likely to find them. Thus, DuckBot really must visit
+every single portion of the pond.
+
+The pond is arranged in a grid. DuckBot moves one square at a time. Once a square on the grid has
+been swam over it turns darker, but DuckBot cannot see if it's already swam over a particular
+square. It only sees what's around it and responds.
+
+Every time DuckBot moves to a new square, the brain code is run again. The brain decides two things:
+
+\begin{enumerate}
+
+\item The \textbf{direction} that DuckBot ought to go in next.
+
+\item The \textbf{thought} that DuckBot ought to think.
+
+\end{enumerate}
+
+\subsection{DuckBot's memory}
+
+As we said before, DuckBot's brain is totally fried and so is its memory. DuckBot can only remember
+the last thing you told it. This is called its \emph{thought}.\curious{DuckBot's thought is an
+  example of \term{state}.} DuckBot can see what's around it in the current square. Based off of
+this knowledge \emph{and} its previous thought, DuckBot has to decide the next direction and its
+next thought.
+
+You can see DuckBot's current thought in the information pane beneath the pond. When you first start DuckBot, its thought is the number $0$.
 
 \section{Numbers All the Way Down}
 

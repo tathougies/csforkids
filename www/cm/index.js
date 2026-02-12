@@ -1,6 +1,6 @@
 import { basicSetup } from 'codemirror';
-import { EditorState, StateField } from '@codemirror/state';
-import { EditorView, Decoration, keymap } from '@codemirror/view';
+import { EditorState, StateField, StateEffect } from '@codemirror/state';
+import { EditorView, Decoration, keymap, showTooltip } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
 import { python } from '@codemirror/lang-python';
 import { linter, setDiagnostics } from "@codemirror/lint";
@@ -26,6 +26,54 @@ const errorLineDeco = Decoration.line({
   attributes: { class: "cm-error-line" }
 });
 
+const setErrorLine = StateEffect.define();
+const setErrorTooltip = StateEffect.define()
+const errorLineField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decos, tr) {
+    const newErrors = tr.effects.filter((e) => e.is(setErrorLine));
+    if ( newErrors )
+      return Decoration.set(newErrors.map((e) => errorLineDeco.range(e.value)));
+    else if ( tr.docChanged )
+      return decos.map(tr.changes);
+    else
+      return decos;
+  },
+  provide: f => EditorView.decorations.from(f)
+});
+
+const errorTooltipField = StateField.define({
+  create() {
+    return [];
+  },
+
+  update(decos, tr) {
+    return tr.effects.filter((e) => e.is(setErrorTooltip)).map((e) => {
+      console.log("MAKE TOOLTIP", e.value);
+      const message = e.value.msg;
+      return {
+        pos: e.value.from,
+        to: e.value.to,
+        above: true,
+        strictSide: true,
+        arrow: true,
+        create: () => {
+          const dom = document.createElement("div");
+          dom.className = "cm-error-tooltip";
+          dom.textContent = message;
+          return { dom };
+        }
+      }
+    });
+  },
+
+  provide(f) {
+    return showTooltip.computeN([f], state => state.field(f))
+  }
+});
+
 window.newCodeMirror = function newCodeMirror(parent) {
   // Define the editor state with extensions
   let startState = EditorState.create({
@@ -35,7 +83,8 @@ window.newCodeMirror = function newCodeMirror(parent) {
       keymap.of(defaultKeymap),
       python(), // Enable JavaScript language support and syntax highlighting
       pythonSyntaxLint,
-//      EditorView.lineNumbers(), // Add line numbers
+      errorLineField,
+      errorTooltipField,
     ],
   });
 
@@ -85,7 +134,8 @@ window.editorUtil = {
     view.dispatch(setDiagnostics(view.state, []));
   },
   showSyntaxError: (view, pyErr) => {
-  const { from, to } = pythonLocToRange(view, pyErr);
+    const { from, to } = pythonLocToRange(view, pyErr);
+    const line = view.state.doc.lineAt(from);
 
     const diag = [{
       from,
@@ -96,6 +146,12 @@ window.editorUtil = {
       // actions: [{ name: "Fix", apply(view, from, to) { ... } }]
     }];
 
-    view.dispatch(setDiagnostics(view.state, diag));
+    view.dispatch({
+      annotations: setDiagnostics(view.state, diag),
+      effects: [
+        setErrorLine.of(line.from),
+        setErrorTooltip.of({ from, to, msg: pyErr.msg || "SyntaxEror"})
+      ]
+    });
   }
 };
