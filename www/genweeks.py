@@ -33,6 +33,7 @@ class WebpackTag(StandaloneTag):
         sha256_hash = hashlib.sha256(d).hexdigest()
         outpath = f"resources/{sha256_hash}/bundle.js"
 
+        print(f"Write {outpath}")
         with mkdocs_gen_files.open(outpath, "wb") as f:
             f.write(d)
 

@@ -1,3 +1,5 @@
+% -*- mode: latex -*-
+
 \week[description={Last week we discussed information. This week we start to understand that combining information with decision making is the foundation on which we can build complex behaviors.}]{Making Decisions}
 
 \resource[silent,files={motherduck.html},description={Play the DuckBot game online},text={DuckBot}]{demos/duckbot.html}
@@ -169,15 +171,396 @@ Every time DuckBot moves to a new square, the brain code is run again. The brain
 
 \end{enumerate}
 
-\subsection{DuckBot's memory}
+\subsection{The Brain}
+
+DuckBot's brain is written as a function.
+
+% TODO figure showing the function declaration
+\begin{minipage}{\textwidth}
+  \tikzforeground{
+    \node[anchor=south] (brain function note) at ([yshift=2em]brain function name.north) {
+      \begin{tcolorbox}[code note, width=2cm]
+        Your function should be named \code{brain}.
+      \end{tcolorbox}
+    };
+  }
+
+  \Large \ttfamily
+  \begin{tcolorbox}[sharp corners]
+    \kw{def} \tikzmarknode{brain function name}{brain}(\tikzmarknode{north arg}{north}, \tikzmarknode{east arg}{east}, \tikzmarknode{south arg}{south}, \tikzmarknode{west arg}{west}, \tikzmarknode{thought arg}{thought}):
+  \end{tcolorbox}
+\end{minipage}
+
+\termheading{How DuckBot Perceives the World}
+
+DuckBot can sense the four squares immediately to the North, South, East, and West of its current
+location.\hint{Remember that Python requires us to surround letters and words in quotation marks.} A
+blocked square is signified by the letter \code{'x'}. A free square is signified by the
+letter \code{'*'}. This is illustrated in \prettyref{fig:duckbot-directions}.
+
+\termheading{DuckBot's Memory}
 
 As we said before, DuckBot's brain is totally fried and so is its memory. DuckBot can only remember
 the last thing you told it. This is called its \emph{thought}.\curious{DuckBot's thought is an
-  example of \term{state}.} DuckBot can see what's around it in the current square. Based off of
-this knowledge \emph{and} its previous thought, DuckBot has to decide the next direction and its
-next thought.
+example of \term{state}.} DuckBot can see what's around it in the current square. Based off of this
+knowledge \emph{and} its previous thought, DuckBot has to decide the next direction and its next
+thought.
 
-You can see DuckBot's current thought in the information pane beneath the pond. When you first start DuckBot, its thought is the number $0$.
+You can see DuckBot's current thought in the information pane beneath the pond. When you first start
+DuckBot, its thought is the number $0$.
+
+\termheading{Deciding What to do Next}
+
+In order to make DuckBot \emph{do} something, you have to give it instructions. Just like we saw
+last week, to send data out of a function we use \kw{return}.
+
+\begin{minipage}{\textwidth}
+  \Large \ttfamily
+  \tikzforeground{
+    \node[anchor=south](return comma note) at ([xshift=1cm,yshift=1em]return comma.north) {
+      \begin{tcolorbox}[code note, width=4cm]
+        The \code{,} (comma) tells \kw{return} that we are going to send back more than one piece of data.
+      \end{tcolorbox}
+    };
+
+    \draw[->] (return comma note.south) -- ([yshift=0.1em]return comma.north);
+  }
+  \begin{tcolorbox}[sharp corners]
+    \tikzmarknode{return dir}{\kw{return}} \tikzmarknode{return direction}{'N'}\tikzmarknode{return comma}{,} \tikzmarknode{return next thought}{'next\_thought'}
+  \end{tcolorbox}
+\end{minipage}
+
+This time, instead of just returning one thing, we're returning two
+things. The first thing we return is which direction we want DuckBot
+to go in. This can be:
+
+\begin{itemize}
+\item \code{'N'} to go north
+\item \code{'E'} to go east
+\item \code{'S'} to go south
+\item \code{'W'} to go west
+\item \code{None} to stay in the same place\hint{\code{None} is a
+  special Python value indicating the absence of any data. You don't
+  need to put it in quotes. If you did, then you would get the string
+  \code{'None'} instead of the special \code{None} value}
+\end{itemize}
+
+The second thing we return is DuckBot's next thought. The thought can
+be anything: a number or a string or even the \code{None}
+value.\hint{You'll probably want your thoughts to mostly be
+  strings. This will make your code easier to understand.} You get to
+decide!
+
+\subsection{Playing the Game}
+
+When you open DuckBot, load a new level or press the ``Reset Game'' button, the pond is cleared and
+DuckBot and the ducklings end up in random parts of the pond.\curious{Actually, the ducklings end up
+  in the pond you're least likely to end up in. That's why it's so important DuckBot hits the whole
+  pond!}
+
+\section{An Example DuckBot Level}
+
+To make things clearer, let's try working through a single DuckBot level. The first level looks like
+this:
+
+% TODO duckbot level 1
+
+DuckBot is placed at a random location. DuckBot's brain is the simple function:
+
+\begin{lstlisting}
+def brain(north, east, south, west, thought):
+  return None, thought
+\end{lstlisting}
+
+What will happen if we start DuckBot with this brain? Let's try it. Click the ``Start Duck'' button
+in the control pane (see \prettyref{fig:duckbot}). \hint{Remember, always try to \emph{predict} what
+  is going to happen before we do anything on the computer.}
+
+Hmm... that's no good. We want DuckBot to do something. Let's make DuckBot go east.
+
+\hint{Remember to click the ``Reload Brain'' button to make DuckBot use the new brain.}
+\begin{TryThisBox}
+  Change DuckBot's brain to this:
+  \begin{lstlisting}
+    def brain(north, east, south, west, thought):
+      @@return 'E', thought@@
+  \end{lstlisting}
+\end{TryThisBox}
+
+If you go ahead and run this, DuckBot will head all the way east until it hits the shore. Remember,
+DuckBot is very fragile and does exactly what you tell it. If it hits land, it dies, which is what
+happens here. We need to detect when there is an obstacle to the east and send DuckBot in a
+different direction.
+
+But, in order to do that, we need to figure out how to make our function \kw{return} one thing if
+there is something to the east and \kw{return} another thing if not.
+
+\subsection{Using \kw{if}}
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/grace-hopper.jpg}
+  \caption{Rear Admiral Grace Hopper was a famous computer scientist who invented a programming
+    language called \term{COBOL} (\textbf{CO}mmon \textbf{B}usiness-\textbf{O}riented
+    \textbf{L}anguage) which was one of the first to usewords like \kw{if} to define how programs
+    ran. Before her innovation, computer programs were written using difficult machine code and
+    obtuse mathematics. For her fundamental contributions to computer science, she was awarded the
+    Presidential Medal of Freedom in 2016.}
+  \label{fig:grace-hopper}
+\end{marginfigure}
+
+Python comes with a special word that does exactly what we want. This is called \kw{if}, and it works like this:
+
+We write \kw{if} followed by a condition, and then a colon. If the condition is true, then the code
+beneath the \kw{if} runs. If the condition is false, then all that code is skipped. This is
+illustrated in \prettyref{fig:if-statement}.
+
+To understand what it means to be ``beneath'' the \kw{if}, we have to understand how Python treats
+the \code{:}. As we learned last week, Python is sensitive to how things are spaced out. When we
+write \kw{def}, we have to put spaces to signify which code is part of our function. The same is
+true of \kw{if}. \curious{The error thrown is called \code{IndentationError}.}If we want some code
+to run when the condition is true, then all this code must be indented \emph{more} than the \kw{if}
+statement. Moreover, all the code has to line up. If you indent one line with six spaces, and the
+next line with ten, then Python will return an error.
+
+Let's try using \kw{if} to make DuckBot do something if we have an obstacle to the east.
+
+\hint{Note that it has \emph{two} equal signs. The double equal
+  signs compares values. A single equal sign has a different meaning, which we'll explore later.}
+\begin{TryThisBox}
+  Change DuckBot's brain to this:
+  \begin{lstlisting}
+    def brain(north, east, south, west, thought):
+      @@if east == 'x':
+        return 'N', thought@@
+      return 'E', thought
+  \end{lstlisting}
+\end{TryThisBox}
+
+Think about what's going to happen now. When you've decided what you think is going to happen to
+DuckBot, hit ``Reload Brain'' and start DuckBot.
+
+Uh-oh! DuckBot once again hit an obstacle, but this time it at least turned towards the north, once
+it hit an obstacle to the east.
+
+At this point, maybe it's a good idea to check if there's an obstacle to the north. But which
+direction to turn then? North was left of east. We could go west, which is left of north.
+
+Of course, if we did that, DuckBot would just go all the way to the west side of the pond, and hit
+the wall there. We'll have to handle the west case as well. And then, if we turn south, DuckBot will
+hit the bottom of the pond, so we have to turn back east.
+
+\hint{This is one of those changes where it's really important that you try to \emph{predict} what
+  is going to happen.}
+\begin{TryThisBox}
+  Change DuckBot's brain to this:
+  \begin{lstlisting}
+    def brain(north, east, south, west, thought):
+      if east == 'x':
+        return 'N', thought
+      @@if north == 'x':
+        return 'W', thought
+      if west == 'x':
+        return 'S', thought
+      if south == 'x':
+        return 'E', thought@@
+      return 'E', thought
+  \end{lstlisting}
+\end{TryThisBox}
+
+If you go ahead and try that, you'll find that poor DuckBot *still* hits the north shore. Clearly
+we've not quite figured out how to make this work.
+
+To understand what's going on, let's consider DuckBot at the northeast corner of the pond (see
+\prettyref{fig:duckbot-ne}). At this point, \code{north} and \code{east} are \code{'x'} and
+\code{south} and \code{west} are \code{'*'}. You can see this at the bottom left of the DuckBot
+interface, which displays the current state of what DuckBot sees.
+
+In the brain view, you'll also notice that some lines are highlighted. The lines highlighted in
+light gray represent the code that was used by DuckBot to make its decision. The lines highlighted
+in green represent points where decisions were made (i.e., places that used \kw{if}). Finaly, the
+line highlighted blue indicate where DuckBot made its decision.
+
+If we look at the interface, we'll see that lines 2 and 3 (see \prettyref{listing:duckbot-circle})
+are highlighted, indicating that these are what led to the decision DuckBot made. But that's not
+what we wanted. We wanted DuckBot to make the decision to turn West, which is on line 5. The \kw{if}
+of line 4 was supposed to check the condition that there was an obstacle to the north. But this line
+is not highlighted, indicating it was not used. Why?
+
+If you notice, the \kw{if} that checked the obstacle to the east was used, and then, Python saw that
+there was an obstacle to the east when DuckBot was in the northeast square. But, this \kw{if} has a
+\kw{return} under it. Because the condition in the \kw{if} was true, Python used the code underneath
+it, which told the function to immediately send back its decision to go north. This is not what we
+wanted. We have to make sure that there's also no obstacle to the north.
+
+\section{Booleans}
+
+In the above code examples, we skipped over how we wrote the \kw{if} conditions, but it's worth
+considering them in more detail right now. How does Python know whether a condition is true or not?
+This is important to understand when Python is going to run code.
+
+Try this in your Python prompt:
+
+\begin{replbox}
+>>> True
+True
+>>> False
+False
+\end{replbox}
+
+These values are two special values used by Python to indicate -- as you'd expect -- whether
+something is true or false. The collective term for these kinds of values is \term{booleans}.
+
+Booleans can be combined using symbols, similar to addition and multiplication of numbers. For
+example, the symbol \kw{and} checks if both sides are \kw{True}, and returns \kw{True} if they
+are.
+
+\begin{replbox}
+>>> True and False
+False
+>>> True and True
+True
+>>> False and False
+False
+>>> False and True
+False
+\end{replbox}
+
+The symbol \kw{or} checks if only one side is \kw{True}.
+
+\begin{replbox}
+>>> True or False
+True
+>>> True or True
+True
+>>> False or False
+False
+>>> False or True
+True
+\end{replbox}
+
+There are only two possibilities for the values on each side of a \kw{and} or \kw{or}. Thus, there
+are four possible combinations of values that can go into these symbols. We can write out the entire
+set of inputs and outputs as a four-row table. These are called \term{truth tables}. The tables for
+\kw{and} and \kw{or} are given in \prettyref{fig:and-or-truth-tables}.
+
+\begin{figure}
+  \begin{minipage}{0.45\textwidth}
+    \begin{center}
+      \begin{tabular}{cc|c}
+        \multicolumn{3}{c}{\texttt{x}\;\kw{and}\;\texttt{y}} \\\hline
+        \texttt{x} & \texttt{y} & \\\hline
+        \kw{True} & \kw{True} & \kw{True} \\
+        \kw{True} & \kw{False} & \kw{False} \\
+        \kw{False} & \kw{True} & \kw{False} \\
+        \kw{False} & \kw{False} & \kw{False} \\\hline
+      \end{tabular}
+    \end{center}
+  \end{minipage}
+  \begin{minipage}{0.45\textwidth}
+    \begin{center}
+      \begin{tabular}{cc|c}
+        \multicolumn{3}{c}{\texttt{x}\;\kw{or}\;\texttt{y}} \\\hline
+        \texttt{x} & \texttt{y} & \\\hline
+        \kw{True} & \kw{True} & \kw{True} \\
+        \kw{True} & \kw{False} & \kw{True} \\
+        \kw{False} & \kw{True} & \kw{True} \\
+        \kw{False} & \kw{False} & \kw{False} \\\hline
+      \end{tabular}
+    \end{center}
+  \end{minipage}
+
+  \caption{These are the truth tables for the \kw{and} and \kw{or} rules. The inputs are in the left two columns and the output is in the right. Try all of these in the Python prompt to verify that they work.}
+  \label{fig:and-or-truth-tables}
+\end{figure}
+
+\subsection{Inspecting data}
+
+The conditions that we've been using in our \code{brain} functions are an example of comparing
+values. Python has several rules and symbols to compare values. We've been using \code{==} which
+checks that two things are equal. There are other \term{operators} that check for other
+conditions. For a full summary see \prettyref{table:comparisons}.
+
+\begin{replbox}
+north == 'x'
+\end{replbox}
+
+\begin{table}
+  \centering
+  \begin{tabular}{lp{0.8\linewidth}}
+    \hline
+    \headercol{Operator} & \headercol{Explanation} \\\hline
+    \code{x == y} & Checks if \code{x} and \code{y} are equal. \\
+    \code{x != y} & Checks if \code{x} and \code{y} are not equal. \\
+    \code{x < y} & Checks if \code{x} is less than \code{y}. \\
+    \code{x > y} & Checks if \code{x} is greater than \code{y}. \\
+    \code{x <= y} & Checks if \code{x} is less than or equal to \code{y}. \\
+    \code{x >= y} & Checks if \code{x} is greater than or equal to \code{y}. \\
+    \code{x is None} & Checks if \code{x} is \kw{None} or empty. \\
+    \code{x is not None} & Checks if \code{x} is not \kw{None}. \\\hline
+  \end{tabular}
+  \caption{Some Python operators that can be used to inspect data that return booleans. Note that
+    for strings, \code{x < y} means that \code{x} comes before \code{y} in standard alphabetical
+    order.}
+  \label{table:comparisons}
+\end{table}
+
+These rules result in booleans. Let's try it.
+
+\begin{replbox}
+>>> 'x' == 'x'
+True
+>>> 'x' == 'y'
+False
+>>> 4 < 5
+True
+>>> 4 >= 5
+False
+\end{replbox}
+
+
+\subsection{Infinite Loops}
+
+Consider what's happening here: although DuckBot no longer breaks, it also is not fully
+working. \curious{DuckBot not breaking but also not being able to tell you that anything is wrong is
+  an example of a kind of behavior that's broken but that Python cannot report as an error: there is
+  no Python rule you are breaking. Python faithfully carries out exactly the rules you gave to it.}
+
+
+
+\begin{TryThisBox}
+  Try going through all the DuckBot levels. For hints, see the exercises at the end of the chapter.
+\end{TryThisBox}
+
+\section{Algorithms}
+
+An algorithm is characterized by its inputs and the exact sequence of steps you must follow to get
+some result. For example, a common algorithm we are familiar with involves adding two numbers. Then,
+the algorithm goes as follows:
+
+% TODO demonstrate
+
+\begin{enumerate}
+
+\item Place both numbers you want to add and align units, starting with the ones place.
+\item Proceed to add single digits starting with the ones place.
+\item If the sum of the single digits is greater than 9, place the digits from the tens place and beyond into the columns of the higher places.
+\item Proceed to the next place
+
+\end{enumerate}
+
+\curious{The first computers were literally implemented as a series of on-off switches. Engineers would manually connect large electronically-operated switches known as relays to create machines that could calculate automoatically. Pictured below is the Harvard Mark I which was one of the first electromechanical computers ever built.} Another way of thinking about an algorithm is a series of decisions. It may not seem like it right
+now, but everything we did above can be turned into a series of yes or no questions. The answers to
+these questions choose the next step that ought to be done. This becomes more clear if we re-state
+the addition procedure above over the binary numbers.
+
+% TODO demonstrate
+
+
+
+\section{Implementing an Algorithm}
+
+Once you've thought through what the algorithm ought to do. 
 
 \section{Numbers All the Way Down}
 

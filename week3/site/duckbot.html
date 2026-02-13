@@ -15,12 +15,11 @@
   max-width: 400px;
 }
 
-      body { padding: 0; margin: 0; }
+      body { padding: 0; margin: 0; background-color: #888; }
       /* basic styling */
       #canvas {
         min-width: 400px;
         width: 100%;
-        height: 100%;
         flex: 1;
       }
 
@@ -29,7 +28,7 @@
           height: 400px;
       }
 
-      #file { width: 0px; height: 0px; opacity: 100%; }
+      input.file { width: 0px; height: 0px; opacity: 100%; }
 
       .main {
         width: 100vw;
@@ -37,6 +36,10 @@
         display: flex;
         flex-direction: row
       }
+
+      .duckbot-executed-line { background-color: #aaa !important; }
+      .duckbot-decision-line { background-color: #E8F1FF !important; }
+      .duckbot-final-line { background-color: #EAF7EE !important; }
 
       .brain {
         margin-left: 1em;
@@ -48,6 +51,7 @@
       }
 
       .srcarea {
+        background-color: white;
         border: 1px solid #ccc;
         flex: 1;
       }
@@ -129,7 +133,9 @@
           <button class="btn btn-secondary" id="reloadbrain">Reload Brain</button>
           <button class="btn btn-secondary" id="resetduck">Reset Duck</button>
           <button class="btn btn-secondary" id="loadmap">Load Map</button>
-          <input type="file" id="file"></input>
+          <button class="btn btn-secondary" id="openbrain">Open Brain...</button>
+          <input class="file" type="file" id="mapfile"></input>
+          <input class="file" type="file" id="brainfile"></input>
         </div>
       </div>
 </div>
@@ -155,12 +161,13 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.startStopDuck = document.getElementById('startstopduck');
             this.resetDuck = document.getElementById('resetduck');
             this.loadMap = document.getElementById('loadmap');
+            this.loadBrain = document.getElementById('openbrain');
             this.reloadBrain = document.getElementById('reloadbrain');
             this.cbs = {};
 
             const self = this;
-            const fileInput = document.getElementById('file');
-            fileInput.addEventListener('change', function(event) {
+            const mapFileInput = document.getElementById('mapfile');
+            mapFileInput.addEventListener('change', function(event) {
               var file = event.target.files[0];
               if (file && file.size <= 65536) { // 64 KB = 65536 bytes
                   var reader = new FileReader();
@@ -176,6 +183,26 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                   console.error('File is either not selected or exceeds 64 KB in size');
               }
             });
+            const brainFileInput = document.getElementById('brainfile');
+            brainFileInput.addEventListener('change', function(event) {
+              var file = event.target.files[0];
+              if ( file && file.size <= 65536 ) {
+                var reader = new FileReader();
+
+                window.editorView.dispatch({
+                  changes: { from: 0, to: window.editorView.state.doc.length, insert: '' }
+                });
+
+                reader.addEventListener('load', function(e) {
+                  window.editorView.dispatch({
+                    changes: { from: window.editorView.state.doc.length, to: window.editorView.state.doc.length, insert: e.target.result }
+                  });
+                });
+                reader.readAsText(file);
+              } else {
+                console.error("This brain.py file is too large");
+              }
+            });
             this.startStopDuck.addEventListener('click', function() {
               if ( self.cbs ) self.cbs.startStopGame();
             })
@@ -183,7 +210,10 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
               if ( self.cbs ) self.cbs.resetGame();
             });
             this.loadMap.addEventListener('click', function() {
-              if ( self.cbs ) fileInput.click();
+              if ( self.cbs ) mapFileInput.click();
+            });
+            this.loadBrain.addEventListener('click', function() {
+              if ( self.cbs ) brainFileInput.click();
             });
             this.reloadBrain.addEventListener('click', function() {
                 if ( self.cbs ) {
@@ -255,5 +285,15 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                                 eastBox.innerHTML = input.east;
 
                                 controls.setGameState(i.game_state);
+
+                                const curThought = i.cur_thought ? i.cur_thought[1].toJs() : null;
+                                if ( curThought ) {
+                                  const finals = [];
+                                  if ( curThought.next_name_stored_at )
+                                    finals.push(curThought.next_name_stored_at);
+                                  if ( curThought.next_direction_stored_at )
+                                    finals.push(curThought.next_direction_stored_at);
+                                  window.editorUtil.setThoughtPath(window.editorView, [], curThought.branches_at.toJs(), finals);
+                                }
                             }});
 {% endblock %}

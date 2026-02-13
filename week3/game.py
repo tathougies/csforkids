@@ -3,6 +3,7 @@ from typing import Optional, Any, Protocol
 from enum import Enum
 
 import asyncio
+import ctypes
 import dis
 import functools
 import sys
@@ -42,16 +43,20 @@ COND_BRANCH_OPS = set(['POP_JUMP_FORWARD_IF_FALSE', 'POP_JUMP_FORWARD_IF_TRUE',
 # GL stuff
 GL_VERTEX_SHADER_SRC = '''
 attribute vec2 a_position;
-uniform vec4 pos;
+attribute vec4 pos;
+attribute float darken;
+
 uniform vec4 lakeOffset;
 uniform vec2 sourceTileSize;
-uniform int darken;
 
 varying vec2 textureOffset;
+
+varying float v_darken;
 
 void main() {
   vec2 sourcePos = pos.zw;
   vec2 tileSize = lakeOffset.zw;
+
   vec2 tilePos = pos.xy * tileSize;
 
   // tilePos is 0 -> 1 screen position
@@ -74,18 +79,19 @@ void main() {
   textureOffset = vec2(sourcePos.x + a_position.x * sourceTileSize.x,
                        1.0 - (sourcePos.y + a_position.y * sourceTileSize.y));
 //  textureOffset = a_position;
+  v_darken = darken;
   gl_Position = vec4(tilePos, 0.0, 1.0);
 }
 '''
 GL_FRAGMENT_SHADER_SRC = '''
 varying vec2 textureOffset;
+varying float v_darken;
 
-uniform int darken;
 uniform sampler2D atlas;
 
 void main() {
   vec4 c = texture2D(atlas, textureOffset);
-  c *= 1.0 - float(darken) * 0.4;
+  c *= 1.0 - v_darken * 0.4;
   gl_FragColor = c;
 }
 '''
@@ -179,6 +185,10 @@ class ThoughtPath:
     next_direction_stored_at: Optional[int] = None
     branches_at: list[int] = field(default_factory=list)
 
+    @property
+    def last_line(self):
+        return self.next_direction_stored_at or self.next_name_stored_at or 0
+
 class ThoughtTracker:
     '''Track how a thought was made'''
     def __init__(self, brain):
@@ -205,7 +215,8 @@ class ThoughtTracker:
                 elif i.argval == 'next_direction':
                     self.thought_path.next_direction_stored_at = i.positions.lineno
             elif i.opname in COND_BRANCH_OPS:
-                self.thought_path.branches_at.append(i.positions.lineno)
+                if i.positions.lineno is not None:
+                    self.thought_path.branches_at.append(i.positions.lineno)
 
 
 class Brain:
@@ -312,6 +323,7 @@ class MapLayer:
     def __init__(self, map, data):
         self.map = map
         self.data = data
+        self.tiledata = data['data']
         self.draw_duck_after = False
 
         props = self.data.get('properties')
@@ -324,7 +336,7 @@ class MapLayer:
         y, x = c
         if x < 0 or x >= self.map.cols or y < 0 or y >= self.map.rows:
             return 0
-        return self.data['data'][y * self.map.cols + x]
+        return self.tiledata[y * self.map.cols + x]
 
 class Map:
     def __init__(self, map_file=None, source=None):
@@ -625,8 +637,14 @@ class GameBackend(Protocol):
         '''Clear the lake surface'''
         pass
 
-    def start_lake_draw(self, lake_off: tuple[float, float]):
+    def start_lake_draw(self, lake_off: tuple[float, float], lake_dim: tuple[int, int]):
         '''Signal that we're going to start drawing the lake'''
+        pass
+
+    def start_lake_layer(self):
+        pass
+
+    def end_lake_layer(self):
         pass
 
     def draw_lake_sprite(self, tile_source: tuple[int, int], tile_pos: tuple[float, float], is_dark:bool = False):
@@ -937,8 +955,14 @@ class PygameBackend(GameBackend):
     def clear_lake(self):
         self.lakesurface.fill((0,0,0))
 
-    def start_lake_draw(self, lakeoff):
+    def start_lake_draw(self, lakeoff, lakedims):
         pass # Not needed here
+
+    def start_lake_layer(self):
+        pass
+
+    def end_lake_layer(self):
+        pass
 
     def draw_lake_sprite(self, tile_source, tile_pos, is_dark=False):
         tile_size = self.game.tile_size * self.scale
@@ -1028,6 +1052,12 @@ class PygameBackend(GameBackend):
         self.draw_info_surface()
 
 class GlBackend(GameBackend):
+    __slots__ = ('gl', 'game', 'tk_renderer', 'duck_sprite_file', 'scale',
+                 'cur_texture', 'initialized', 'mesg_array', 'sprite_array',
+                 'cur_layer_sprites', 'cur_layer_sprite_count',
+                 'lake_texture', 'duck_texture', 'fragment_shader',
+                 'shader_program', 'pos_uniform', 'lake_off_uniform', 'source_tile_size_uniform',
+                 'darken_uniform')
     def __init__(self, game: Game, source_renderer: 'TkRenderer', duck_sprite_file=DUCK_SPRITE_FILENAME):
         from OpenGL import GL
         self.gl = GL
@@ -1073,19 +1103,21 @@ class GlBackend(GameBackend):
 
     def _init_opengl(self):
         import numpy as np
-        import ctypes
         self.tk_renderer.make_current()
 
         gl = self.gl
 
         # Create the mesh
-        self.mesh_array = gl.glGenBuffers(1)
+        self.mesh_array, self.sprite_array = gl.glGenBuffers(2)
         mesh = np.array([[0,0],
                          [1,0],
                          [0,1],
                          [1,1]], dtype=np.float32)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.mesh_array)
         gl.glBufferData(gl.GL_ARRAY_BUFFER, mesh.nbytes, mesh, gl.GL_STATIC_DRAW)
+
+        self.cur_layer_sprites = np.zeros((1024, 5), dtype=np.float32)
+        self.cur_layer_sprite_count = 0
 
         # Create the textures
         self.lake_texture, self.duck_texture = gl.glGenTextures(2)
@@ -1108,15 +1140,20 @@ class GlBackend(GameBackend):
             log = gl.GetProgramInfoLog(self.shader_program)
             raise RuntimeError(f'Program link error:\n{log.decode()}')
 
-        self.pos_uniform = gl.glGetUniformLocation(self.shader_program, b'pos')
         self.lake_off_uniform = gl.glGetUniformLocation(self.shader_program, b'lakeOffset')
         self.source_tile_size_uniform = gl.glGetUniformLocation(self.shader_program, b'sourceTileSize')
-        self.darken_uniform = gl.glGetUniformLocation(self.shader_program, b'darken')
+
+        #        self.pos_uniform = gl.glGetUniformLocation(self.shader_program, b'pos')
+        #        self.darken_uniform = gl.glGetUniformLocation(self.shader_program, b'darken')
+
+        self.pos_attrib = gl.glGetAttribLocation(self.shader_program, b'pos')
+        self.darken_attrib = gl.glGetAttribLocation(self.shader_program, b'darken')
 
         gl.glUseProgram(self.shader_program)
         a_position = gl.glGetAttribLocation(self.shader_program, 'a_position')
         gl.glVertexAttribPointer(a_position, 2, gl.GL_FLOAT, gl.GL_FALSE, 8, ctypes.c_void_p(0))
         gl.glEnableVertexAttribArray(a_position)
+        gl.glVertexAttribDivisor(a_position, 0)
 
         # Bind sampler to texture 0
         gl.glActiveTexture(gl.GL_TEXTURE0)
@@ -1166,7 +1203,7 @@ class GlBackend(GameBackend):
         gl.glClearColor(0,0,0,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-    def start_lake_draw(self, lake_off):
+    def start_lake_draw(self, lake_off, lake_dim):
         if not self.initialized:
             self._init_opengl()
             self.initialized = True
@@ -1200,27 +1237,53 @@ class GlBackend(GameBackend):
         self.cur_texture = tex
 
     def draw_lake_sprite(self, tile_pos, tile_source, is_dark=False):
-        self.gl.glUniform4f(self.pos_uniform,
-                            float(tile_pos[0]),
-                            float(tile_pos[1]),
-                            float(tile_source[0] / self.game.tileset.tile_width),
-                            float(tile_source[1] / self.game.tileset.tile_height))
-        self.gl.glUniform1i(self.darken_uniform, 1 if is_dark else 0)
-        self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
+        self.cur_layer_sprites[self.cur_layer_sprite_count, :] = \
+            (float(tile_pos[0]), float(tile_pos[1]),
+             float(tile_source[0] / self.game.tileset.tile_width),
+             float(tile_source[1] / self.game.tileset.tile_height),
+             1.0 if is_dark else 0.0)
+        self.cur_layer_sprite_count += 1
+        self._flush()
 
     def draw_duck(self, tile_pos, tile_source):
+        self._flush(force=True) # Force out all the duck sprites
+
         self._switch_texture(self.duck_texture, 1/4, 1/5)
-        self.gl.glUniform4f(self.pos_uniform,
-                            float(tile_pos[0]),
-                            float(tile_pos[1]),
-                            float(tile_source[0] / 4),
-                            float(tile_source[1] / 5))
-        self.gl.glUniform1i(self.darken_uniform, 0)
-        self.gl.glDrawArrays(self.gl.GL_TRIANGLE_STRIP, 0, 4)
+
+        self.cur_layer_sprites[0, :] = \
+            (float(tile_pos[0]), float(tile_pos[1]),
+             float(tile_source[0]/4), float(tile_source[1]/5), 0)
+        self.cur_layer_sprite_count = 1
+
+        self._flush(force=True)
+
         self._switch_to_lake_texture()
 
     def complete_frame(self, lake_off):
+        self._flush(force=True)
         pass
+
+    def _flush(self, force=False):
+        if force or \
+           self.cur_layer_sprite_count >= self.cur_layer_sprites.shape[0]:
+            gl = self.gl
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.sprite_array)
+            gl.glBufferData(gl.GL_ARRAY_BUFFER, 0, None, gl.GL_DYNAMIC_DRAW)
+
+            sprites = self.cur_layer_sprites[0:self.cur_layer_sprite_count,:]
+            gl.glBufferData(gl.GL_ARRAY_BUFFER, sprites.nbytes, sprites, gl.GL_DYNAMIC_DRAW) # Upload data
+
+            gl.glVertexAttribPointer(self.pos_attrib, 4, gl.GL_FLOAT, gl.GL_FALSE,
+                                     self.cur_layer_sprites[0,:].nbytes, ctypes.c_void_p(0))
+            gl.glVertexAttribPointer(self.darken_attrib, 1, gl.GL_FLOAT, gl.GL_FALSE,
+                                     self.cur_layer_sprites[0,:].nbytes, ctypes.c_void_p(16))
+            gl.glEnableVertexAttribArray(self.pos_attrib)
+            gl.glEnableVertexAttribArray(self.darken_attrib)
+            gl.glVertexAttribDivisor(self.pos_attrib, 1)
+            gl.glVertexAttribDivisor(self.darken_attrib, 1)
+
+            gl.glDrawArraysInstanced(gl.GL_TRIANGLE_STRIP, 0, 4, self.cur_layer_sprite_count)
+            self.cur_layer_sprite_count  = 0
 
     def process_events(self, renderer, dt):
         # Update camera position
@@ -1340,10 +1403,11 @@ class GameRenderer:
         duck_y_off = (next_duck_row - duck_row) * frame_progress
         duck_x_off = (next_duck_col - duck_col) * frame_progress
 
-        self.backend.start_lake_draw(lake_off)
+        self.backend.start_lake_draw(lake_off, (tile_width, tile_height))
 
         if self.view_mode == ViewMode.FULL:
             for layer_ix, layer in enumerate(self.game.current_map.layers):
+                self.backend.start_lake_layer()
                 for x in range(tile_width):
                     for y in range(tile_height):
                         tile = layer[top_tile_y + y, left_tile_x + x]
@@ -1358,6 +1422,7 @@ class GameRenderer:
                            self.game.duck_tracker[self.game.current_map.get_index((top_tile_y + y, left_tile_x + x))]:
                             is_dark = True
                         self.backend.draw_lake_sprite((x,  y), (sprite_x, sprite_y), is_dark=is_dark)
+                self.backend.end_lake_layer()
                 if layer.draw_duck_after:
                     if duck_col_off is not None and duck_row_off is not None:
                         dir_to_row = {'N': 0, 'E': 1, 'S': 2, 'W': 3}
@@ -1661,7 +1726,7 @@ class JsInfoUpdater:
     def __init__(self, api, game):
         self.api = api
         self.game = game
-        self.cur_thought = None
+        self.cur_thought = self.last_thought = None
 
     def set_camera_bounds(self, tl, br):
         pass
@@ -1678,10 +1743,13 @@ class JsInfoUpdater:
         self._update()
 
     def _update(self):
-        self.api.updateGameInfo({'game_state': str(self.game.duck_game_state),
-                                 'input': self.game.get_duck_input().make_globals(),
-                                 'duck_pos': self.game.duck_pos,
-                                 'cur_thought': self.cur_thought})
+        d = {'game_state': str(self.game.duck_game_state),
+             'input': self.game.get_duck_input().make_globals(),
+             'duck_pos': self.game.duck_pos }
+        if self.cur_thought is not self.last_thought:
+            self.last_thought = self.cur_thought
+            d['cur_thought'] = self.cur_thought
+        self.api.updateGameInfo(d)
 
 class WasmBrainRenderer(BrainRenderer):
     def __init__(self, api):
@@ -1747,6 +1815,11 @@ class TkRenderer(BrainRenderer):
 
         self.source_code = ScrolledText(root, wrap="none")
         self.source_code.grid(row=0, column=sourcearea, columnspan=2, sticky="nsew", padx=8, pady=4)
+
+        # Configure tags
+        self.source_code.tag_config("condition line", background="light gray")
+        self.source_code.tag_config("decision line", background="light blue")
+        self.source_marks = []
 
         self.controls = tkinter.Frame(self.root)
         self.controls.grid(row=1, column=sourcearea, sticky="nsew", padx=8, pady=4)
@@ -1833,6 +1906,14 @@ class TkRenderer(BrainRenderer):
         self.westlabel = tkinter.Label(self.stateframe, text="")
         self.westlabel.grid(row=2, column=3)
 
+        self.lastlinelabel = tkinter.Label(self.stateframe, text="")
+        self.lastlinelabel.grid(row=0,column=4)
+
+        tkinter.Label(self.stateframe, text="Duck Speed").grid(row=1, column=4, sticky="ns", padx=8, pady=4)
+        self.speed_slider = tkinter.Scale(self.stateframe, from_=0.5, to=INITIAL_DUCK_VELOCITY*6,
+                                          orient=tkinter.HORIZONTAL, command=self._on_speed_change)
+        self.speed_slider.grid(row=2, column=4, stick="nsew", padx=8, pady=4)
+
     def _reload_brain(self):
         brainsrc = self.source_code.get("1.0", self.tk.END)
         self._events.append(('brain', brainsrc))
@@ -1863,6 +1944,20 @@ class TkRenderer(BrainRenderer):
 
         self.root.focus_set()
 
+    def _mark_lines(self, lines: list[tuple[int, str]]):
+        self._clear_marks()
+
+        for line_num, tag in lines:
+            start = self.source_code.index(f'{line_num}.0')
+            end = self.source_code.index(f'{line_num}.end')
+            self.source_code.tag_add(tag, start, end)
+            self.source_marks.append((tag, start, end))
+
+    def _clear_marks(self):
+        for tag, start, end in self.source_marks:
+            self.source_code.tag_remove(tag, start, end)
+        self.source_marks = []
+
     def process_events(self, delegate):
         for c, a in self._events:
             if c == 'brain':
@@ -1877,9 +1972,15 @@ class TkRenderer(BrainRenderer):
                 delegate.game.current_map = a
             elif c == 'change_scale':
                 delegate.set_scale(delegate.scale + a)
+            elif c == 'change_velocity':
+                delegate.game.delegate.duck_velocity = a
 
         if len(self._events) > 0:
             self._events = []
+
+        if not hasattr(self, "_duck_velocity") or \
+           self._duck_velocity != delegate.game.delegate.duck_velocity:
+            self.speed_slider.set(delegate.game.delegate.duck_velocity)
 
     def update_state_from_game(self, game):
         self._update_startpause(game)
@@ -1890,6 +1991,23 @@ class TkRenderer(BrainRenderer):
         self.eastlabel.configure(text=duck_input.east)
         self.southlabel.configure(text=duck_input.south)
         self.westlabel.configure(text=duck_input.west)
+
+        if not hasattr(self, "_last_thought") or \
+           self._last_thought is not game.thought_path[-1]:
+            self._last_thought = game.thought_path[-1]
+
+            thought = self._last_thought[1]
+            self.lastlinelabel.configure(text=f'Last decision made at line {thought.last_line}')
+
+            decisions = []
+            if thought.next_name_stored_at is not None:
+                decisions.append((thought.next_name_stored_at, 'decision line'))
+
+            if thought.next_direction_stored_at is not None:
+                decisions.append((thought.next_direction_stored_at, 'decision line'))
+
+            self._mark_lines(decisions +
+                             [(l, 'condition line') for l in thought.branches_at])
 
     def _gamecontrols_configure(self, state):
         self.reloadbrain.configure(state=state)
@@ -1939,6 +2057,12 @@ class TkRenderer(BrainRenderer):
         else:                   # Windows / macOS
             delta = e.delta // 120
         self._events.append(('change_scale', delta / SCROLL_INCREMENT))
+
+    def _on_speed_change(self, e):
+        s = float(e)
+
+        self._duck_velocity = s
+        self._events.append(('change_velocity', s))
 
     def glcanvas_size(self):
         return self._glsize
@@ -2214,7 +2338,7 @@ def launch_tkgl(brain_file, tileset_file, map_file):
     tk_renderer = TkRenderer(use_opengl=True)
     backend = GlBackend(game, tk_renderer)
     renderer = GameRenderer(game, backend)
-    tk_renderer.run(renderer, fps=10)
+    tk_renderer.run(renderer, fps=25)
 
 def launch_pygame_tk(brain_file, tileset_file, map_file):
     brain = Brain(brain_file)

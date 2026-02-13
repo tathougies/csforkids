@@ -15,12 +15,6 @@ const pythonSyntaxLint = [
   linter(view => view.state.field(diagnosticsField))
 ];
 
-const decisionLineDeco = Decoration.line({
-  attributes: { class: "duckbot-decision-line" }
-});
-const finalLineDeco = Decoration.line({
-  attributes: { class: "duckbot-final-line" }
-});
 
 const errorLineDeco = Decoration.line({
   attributes: { class: "cm-error-line" }
@@ -34,9 +28,46 @@ const errorLineField = StateField.define({
   },
   update(decos, tr) {
     const newErrors = tr.effects.filter((e) => e.is(setErrorLine));
-    if ( newErrors )
+    if ( newErrors.length > 0 )
       return Decoration.set(newErrors.map((e) => errorLineDeco.range(e.value)));
     else if ( tr.docChanged )
+      return decos.map(tr.changes);
+    else
+      return decos;
+  },
+  provide: f => EditorView.decorations.from(f)
+});
+
+const decisionLineDeco = Decoration.line({
+  attributes: { class: "duckbot-decision-line" }
+});
+const finalLineDeco = Decoration.line({
+  attributes: { class: "duckbot-final-line" }
+});
+const executedLineDeco = Decoration.line({
+  attributes: { class: "duckbot-executed-line" }
+})
+const setExecutedLine = StateEffect.define();
+const executionLineField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decos, tr) {
+    const newErrors = tr.effects.filter((e) => e.is(setExecutedLine));
+    if ( newErrors.length > 0 ) {
+      return Decoration.set(newErrors.map((e) => {
+        console.log("GOT", e.value)
+        switch (e.value.type) {
+        case 'EXECUTED':
+          return executedLineDeco.range(e.value.range);
+        case 'DECISION':
+          return decisionLineDeco.range(e.value.range);
+        default:
+        case 'FINAL':
+          return finalLineDeco.range(e.value.range);
+        }
+      }));
+    } else if ( tr.docChanged )
       return decos.map(tr.changes);
     else
       return decos;
@@ -85,6 +116,7 @@ window.newCodeMirror = function newCodeMirror(parent) {
       pythonSyntaxLint,
       errorLineField,
       errorTooltipField,
+      executionLineField
     ],
   });
 
@@ -132,6 +164,16 @@ window.editorUtil = {
   pythonLocToRange,
   clearSyntaxErrors: (view) => {
     view.dispatch(setDiagnostics(view.state, []));
+  },
+  setThoughtPath: (view, executed, decisions, finals) => {
+    const doc = view.state.doc;
+    console.log("THOUGHT", executed, decisions, finals);
+    const executedEffects = executed.map((e) => setExecutedLine.of({ type: 'EXECUTED', range: doc.line(e).from}));
+    const decisionEffects = decisions.map((e) => setExecutedLine.of({ type: 'DECISION', range: doc.line(e).from}));
+    const finalEffects = finals.map((e) => setExecutedLine.of({ type: 'FINAL', range: doc.line(e).from}));
+    const effects = [ ...executedEffects, ...decisionEffects, ...finalEffects ];
+    console.log(effects);
+    view.dispatch({effects});
   },
   showSyntaxError: (view, pyErr) => {
     const { from, to } = pythonLocToRange(view, pyErr);

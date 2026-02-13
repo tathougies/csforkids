@@ -7,9 +7,9 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
-//  mode: "production",
+  mode: "production",
   optimization: {
-    minimize: false, // true,
+    minimize: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
