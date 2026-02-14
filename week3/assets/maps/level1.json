@@ -177,13 +177,24 @@
  "nextlayerid":9,
  "nextobjectid":1,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"name",
+         "type":"string",
+         "value":"Simple Pond"
+        }, 
+        {
+         "name":"order",
+         "type":"int",
+         "value":1
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":32,
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/Terrain.tsx"
+         "source":"..\/..\/..\/duckweek\/assets\/Terrain.tsx"
         }],
  "tilewidth":32,
  "type":"map",

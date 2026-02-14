@@ -246,6 +246,17 @@
  "nextlayerid":6,
  "nextobjectid":1,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"name",
+         "type":"string",
+         "value":"Desert Diamond"
+        }, 
+        {
+         "name":"order",
+         "type":"int",
+         "value":3
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":32,

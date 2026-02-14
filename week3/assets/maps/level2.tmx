@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="1">
  <editorsettings>
-  <export target="level2.json" format="json"/>
+  <export target="../../../duckweek/assets/maps/level2.json" format="json"/>
  </editorsettings>
- <tileset firstgid="1" source="../Terrain.tsx"/>
+ <properties>
+  <property name="name" value="Pond Maze"/>
+  <property name="order" type="int" value="2"/>
+ </properties>
+ <tileset firstgid="1" source="../../../duckweek/assets/Terrain.tsx"/>
  <layer id="1" name="Passable" width="36" height="36" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

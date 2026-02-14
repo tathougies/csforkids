@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Any, Protocol
 from enum import Enum
 
+import os
 import asyncio
 import ctypes
 import dis
@@ -351,6 +352,14 @@ class Map:
 
         if all(not l.draw_duck_after for l in self.layers):
             self.layers[0].draw_duck_after = True # If no layer is specified as 'draw_duck_after', then draw after layer 0
+
+        self.name = "Map"
+        self.order = 100
+        for prop in self.data.get('properties', []):
+            if prop.get('name') == 'name' and prop.get('type') == 'string' and 'value' in prop and isinstance(prop['value'], str):
+                self.name = prop['value']
+            elif prop.get('name') == 'order' and prop.get('type') == 'int' and 'value' in prop and isinstance(prop['value'], int):
+                self.order = prop['value']
 
     def make_tracker(self, x=None):
         return [x] * (self.rows * self.cols)
@@ -783,12 +792,16 @@ class PygameBackend(GameBackend):
             pygame.RESIZABLE | pygame.DOUBLEBUF
         )
         self.lakesurface = None
+        self.lake_tile_size = None
+        self.lake_sprites = []
+        self.dark_sprites = set()
         self.infosurface = None
         self.font = pygame.font.Font(None, 24)
         self.interned_text = {}
         self.running = True
 
         self.show_brain_rect = (0, 0, 0, 0)
+        self.start_game_rect = (0, 0, 0, 0)
 
         self.unscaled_atlas = pygame.image.load(self.game.tileset.image_file).convert_alpha()
         self.unscaled_duck_sprites = pygame.image.load(duck_sprite).convert_alpha() # TODO
@@ -840,16 +853,24 @@ class PygameBackend(GameBackend):
             elif event.type == self.pygame.MOUSEBUTTONUP:
                 if self.is_moving_by_mouse:
                     self.end_mouse_move()
-                else:
-                    x, y = self.pygame.mouse.get_pos()
-                    w, h = self.screen.get_size()
 
-                    y = y - h + self.info_bar_height
-                    if hits_sdl_rect((x, y), self.show_brain_rect):
-                        if self.brain_renderer.is_shown():
-                            self.brain_renderer.hide()
-                        else:
-                            self.brain_renderer.show()
+                x, y = self.pygame.mouse.get_pos()
+                w, h = self.screen.get_size()
+
+                y = y - h + self.info_bar_height
+                if hits_sdl_rect((x, y), self.show_brain_rect):
+                    if self.brain_renderer.is_shown():
+                        self.brain_renderer.hide()
+                    else:
+                        self.brain_renderer.show()
+                elif hits_sdl_rect((x, y), self.start_game_rect):
+                    if self.game.duck_game_state == DuckState.ALIVE:
+                        self.game.duck_game_state = DuckState.STOPPED
+                    elif self.game.duck_game_state == DuckState.STOPPED:
+                        self.game.duck_game_state = DuckState.ALIVE
+                    else:
+                        self.game.reset_game(randomize_starting_position=True)
+                        self.game.duck_game_state = DuckState.STOPPED
             elif self.use_touch and event.type == self.pygame.MULTIGESTURE:
                 print(event)
             elif self.use_touch and event.type == self.pygame.MOUSEBUTTONDOWN:
@@ -908,16 +929,25 @@ class PygameBackend(GameBackend):
 
     def recalc_sizes(self):
         screen_w, screen_h = self.screen.get_size()
-        print("SCREEN SIZE", screen_w, screen_h)
         logical_h = screen_h - self.info_bar_height
         new_infosize = (screen_w, self.info_bar_height)
 
         tile_size = self.screen_tile_size()
         new_lakesize = (screen_w + tile_size, screen_h + tile_size)
 
+        clear_sprites = False
         if self.lakesurface is None or\
            self.lakesurface.get_size() != new_lakesize:
             self.lakesurface = self.pygame.Surface(new_lakesize, self.pygame.SRCALPHA | self.pygame.HWACCEL)
+            clear_sprites = True
+
+        new_lake_tile_size = ( math.ceil((screen_w + tile_size) / tile_size) + 1,
+                               math.ceil((screen_h + tile_size) / tile_size) + 1)
+        if self.lake_tile_size is None or \
+           self.lake_tile_size != new_lake_tile_size or \
+            clear_sprites:
+            self.lake_tile_size = new_lake_tile_size
+            self.lake_sprites = [{} for w in range(self.lake_tile_size[0]) for h in range(self.lake_tile_size[1])]
 
         if (self.infosurface is None or \
             self.infosurface.get_size() != new_infosize) and \
@@ -954,30 +984,61 @@ class PygameBackend(GameBackend):
         pass
 
     def clear_lake(self):
-        self.lakesurface.fill((0,0,0))
+#        self.lakesurface.fill((0,0,0))
+
+        self.lake_layer_count = 0
+        self.dirty_sprites = set()
+        self.dark_sprites = set()
+        self.duck_pos = []
 
     def start_lake_draw(self, lakeoff, lakedims):
         pass # Not needed here
 
     def start_lake_layer(self):
-        pass
+        self.lake_layer_count += 1
+        self.layer_sprites = set()
 
     def end_lake_layer(self):
-        pass
+        for i, sprite_info in enumerate(self.lake_sprites):
+            if self.lake_layer_count in sprite_info and i not in self.layer_sprites:
+                del sprite_info[self.lake_layer_count]
+                self.dirty_sprites.add((i // self.lake_tile_size[1], i % self.lake_tile_size[1]))
+
+    def _layer_sprite_index(self, tile_source):
+        return tile_source[0] * self.lake_tile_size[1] + tile_source[1]
 
     def draw_lake_sprite(self, tile_source, tile_pos, is_dark=False):
-        tile_size = self.game.tile_size * self.scale
-        tile_source_x, tile_source_y = tile_source
-        self.lakesurface.blit(self.atlas, (tile_source_x * tile_size, tile_source_y * tile_size),
-                              (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))
+        sprite_index = self._layer_sprite_index(tile_source)
+        tile_sprite_info = self.lake_sprites[sprite_index] if sprite_index < len(self.lake_sprites) else {}
+        if sprite_index >= len(self.lake_sprites):
+            print("BAD INDEX", tile_source, self.lake_tile_size, len(self.lake_sprites), sprite_index)
+
         if is_dark:
-            self.lakesurface.fill((180,180,180,255), (tile_source[0] * tile_size, tile_source[1] * tile_size, tile_size, tile_size),
-                                  special_flags=self.pygame.BLEND_RGBA_MULT)
+            self.dark_sprites.add(tile_source)
+
+        self.layer_sprites.add(sprite_index)
+
+        if self.lake_layer_count in tile_sprite_info and \
+           tile_sprite_info[self.lake_layer_count] == (tile_pos, is_dark):
+            return
+
+        self.dirty_sprites.add(tile_source)
+        tile_sprite_info[self.lake_layer_count] = (tile_pos, is_dark)
+
+#        tile_size = self.game.tile_size * self.scale
+#        tile_source_x, tile_source_y = tile_source
+
+#        self.lakesurface.blit(self.atlas, (tile_source_x * tile_size, tile_source_y * tile_size),
+#                              (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))
+#        if is_dark:
+#            self.lakesurface.fill((180,180,180,255), (tile_source[0] * tile_size, tile_source[1] * tile_size, tile_size, tile_size),
+#                                  special_flags=self.pygame.BLEND_RGBA_MULT)
 
     def draw_duck(self, tile_source, tile_pos):
-        tile_size = self.game.tile_size * self.scale
-        self.lakesurface.blit(self.duck_sprites, (tile_source[0] * tile_size, tile_source[1] * tile_size),
-                              (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))
+#        tile_size = self.game.tile_size * self.scale
+        self.duck_pos.append((tile_source, tile_pos))
+#        self.lakesurface.blit(self.duck_sprites, (tile_source[0] * tile_size, tile_source[1] * tile_size),
+#                              (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))
 
     def screen_size(self):
         return self.screen.get_size()
@@ -987,8 +1048,40 @@ class PygameBackend(GameBackend):
         info_bar_y = screen_h - self.info_bar_height
 
         self.screen.fill((0,0,0))
+
+        tile_size = self.game.tile_size * self.scale
+        blits = []
+        for tile_source_x, tile_source_y in self.dirty_sprites:
+            sprite_index = self._layer_sprite_index((tile_source_x, tile_source_y))
+            if sprite_index >= len(self.lake_sprites):
+                continue
+            new_blits = []
+            for layer, (tile_pos, is_dark) in self.lake_sprites[sprite_index].items():
+                new_blits.append((layer, (self.atlas, (tile_source_x * tile_size, tile_source_y * tile_size), (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))))
+            new_blits.sort(key=lambda x: x[0])
+            blits.extend(b for _, b in new_blits)
+        self.lakesurface.blits(blits)
+
         self.screen.blit(self.lakesurface,
                          (0, 0), (lake_off[0], lake_off[1], screen_w, info_bar_y))
+        for tile_source_x, tile_source_y in self.dark_sprites:
+            x = tile_source_x * tile_size - lake_off[0]
+            y = tile_source_y * tile_size - lake_off[1]
+            w = tile_size
+            h = tile_size
+            if x < 0:
+                w += x
+                x = 0
+            if y < 0:
+                h += y
+                y = 0
+
+            self.screen.fill((180, 180, 180, 255), (x, y, w, h),
+                             special_flags = self.pygame.BLEND_RGBA_MULT)
+        for tile_source, tile_pos in self.duck_pos:
+            self.screen.blit(self.duck_sprites, (tile_source[0] * tile_size - lake_off[0], tile_source[1] * tile_size - lake_off[1]),
+                             (tile_pos[0] * tile_size, tile_pos[1] * tile_size, tile_size, tile_size))
+
         if self.show_info_bar:
             self.screen.blit(self.infosurface, (0, info_bar_y))
         self.pygame.display.flip()
@@ -1004,11 +1097,18 @@ class PygameBackend(GameBackend):
 
         text = PygameTextLayout(self.infosurface, y=10 + title.get_size()[1] + 10)
         text.place(self.intern_text("Current Status: "))
+        start_stop_text = "Start Duck"
         if self.game.duck_game_state == DuckState.ALIVE:
             text.place(self.intern_text("ALIVE", 'black', 'white'))
+            start_stop_text = "Stop Duck"
+        elif self.game.duck_game_state == DuckState.STOPPED:
+            text.place(self.intern_text("STOPPED", 'black', 'white'))
+            start_stop_text = "Start Duck"
         elif self.game.duck_game_state == DuckState.DEAD:
+            start_stop_text = "Reset Game"
             text.place(self.intern_text("DEAD", 'red', 'white'))
         else:
+            start_stop_text = "Reset Game"
             text.place(self.intern_text("COMPLETE", 'darkgreen', 'white'))
 
         text.newline(10)
@@ -1048,6 +1148,11 @@ class PygameBackend(GameBackend):
         if self.brain_renderer:
             self.center_text(self.infosurface, self.intern_text('Hide Brain' if self.brain_renderer.is_shown() else 'Show Brain'),
                              30, buttons_x, 140)
+
+
+        self.start_game_rect = (buttons_x, 80, 140, 60)
+        self.infosurface.fill((225, 225, 225), self.start_game_rect)
+        self.center_text(self.infosurface, self.intern_text(start_stop_text), 100, buttons_x, 140)
 
     def duck_input_changed(self, sender, duck_input, duck_dir, duck_pos):
         self.draw_info_surface()
@@ -2294,11 +2399,12 @@ class TkBrainRenderer(BrainRenderer):
         self.process.join()
         del self.process
 
-async def launch_html(brain_file, tileset_file, map_file, duck_sprite_file, api):
+async def launch_html(brain_file, tileset_file, map_dir, duck_sprite_file, api):
     import pyodide.ffi
+    maps = discover_maps(map_dir)
     brain = Brain(brain_file)
     tileset = Tileset(tileset_file)
-    game = Game(brain=brain, tileset=tileset, first_map=Map(map_file))
+    game = Game(brain=brain, tileset=tileset, first_map=maps[0])
     game.delegate = JsInfoUpdater(api, game)
     wasm_renderer = WasmBrainRenderer(api)
     backend = PygameBackend(game, wasm_renderer, show_info_bar=False, duck_sprite=duck_sprite_file)
@@ -2320,16 +2426,21 @@ async def launch_html(brain_file, tileset_file, map_file, duck_sprite_file, api)
         except:
             import traceback
             traceback.print_exc()
-            return False
+            return None
         else:
             game.current_map = m
+            return m
+    def set_map(m):
+        game.current_map = m
     api.setCallbacks(pyodide.ffi.create_proxy({
         'startStopGame': start_stop_game,
         'resetGame': reset_game,
         'resetToInitial': reset_to_initial,
         'setBrain': set_brain,
-        'loadMap': load_map_json
+        'loadMap': load_map_json,
+        'loadBuiltinMap': set_map
     }))
+    api.loaded(maps[0], maps)
     await renderer.async_game_loop(10)
 
 def launch_tkgl(brain_file, tileset_file, map_file):
@@ -2350,6 +2461,18 @@ def launch_pygame_tk(brain_file, tileset_file, map_file):
     renderer = GameRenderer(game, backend)
     renderer.game_loop()
 
+def discover_maps(path):
+    maps = []
+    for nm in os.listdir(path):
+        f = os.path.join(path, nm)
+        if os.path.isfile(f) and os.path.splitext(f)[1] == '.json':
+            try:
+                maps.append(Map(map_file=f))
+            except:
+                pass
+    maps.sort(key=lambda m: m.order)
+    return maps
+
 # This checks to see if this is being run as a game
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -2363,6 +2486,7 @@ if __name__ == '__main__':
     if opts.backend == 'gles':
         launch_tkgl(opts.brain, 'week3/assets/tileset.json', opts.level)
     elif opts.backend == 'pygame':
+        print("PID", os.getpid())
         launch_pygame_tk(opts.brain, 'week3/assets/tileset.json', opts.level)
     else:
         print(f"Invalid backend {opts.backend}: expected gles, pygame")

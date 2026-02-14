@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="36" height="36" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="1">
+ <editorsettings>
+  <export target="level3.json" format="json"/>
+ </editorsettings>
+ <properties>
+  <property name="name" value="Desert Diamond"/>
+  <property name="order" type="int" value="3"/>
+ </properties>
  <tileset firstgid="1" source="../../../duckweek/assets/Terrain.tsx"/>
  <layer id="1" name="Water" width="36" height="36">
   <properties>

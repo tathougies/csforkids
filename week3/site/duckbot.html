@@ -1,5 +1,11 @@
 {% extends 'www/templates/pyodide.html' %}
 
+{% block extrahead %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+{% endblock %}
 
 {% block extrastyle %}
    .cm-error-line {
@@ -15,7 +21,18 @@
   max-width: 400px;
 }
 
-      body { padding: 0; margin: 0; background-color: #888; }
+      body {
+        font-family: "JetBrains Mono", monospace;
+        padding: 0; margin: 0;
+        background-color: #0f172a;
+        width: 100vw; height: 100vh; overflow: hidden;
+      }
+      .properties .name {
+        margin-right: 0.8em;
+      }
+      .properties .value {
+        margin-left: 0.8em;
+      }
       /* basic styling */
       #canvas {
         min-width: 400px;
@@ -34,8 +51,18 @@
         width: 100vw;
         height: 100vh;
         display: flex;
-        flex-direction: row
+        flex-direction: column;
       }
+      .content {
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .header { height: 40px; display: flex; flex-direction: row; color: #e5e7eb; }
+      .header h1 { font-size: 18pt; width: 200px; }
+      .header .level-name { font-size: 12pt }
 
       .duckbot-executed-line { background-color: #aaa !important; }
       .duckbot-decision-line { background-color: #E8F1FF !important; }
@@ -51,6 +78,7 @@
       }
 
       .srcarea {
+        padding: 0.5em;
         background-color: white;
         border: 1px solid #ccc;
         flex: 1;
@@ -59,16 +87,23 @@
       .heading {
         font-weight: bold;
         font-size: 12pt;
+        color: white;
       }
 
       .controls {
         flex: 0;
+        padding: 0.5em;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
       }
 
       .canvas {
         flex: 2;
         display: flex;
         flex-direction: column;
+        min-height: 0;
+        min-width: 0;
       }
 
       #canvascontainer {
@@ -76,15 +111,106 @@
         width: 100%;
         height: 100%;
         overflow: visible;
+        min-width: 0;
+        min-height: 0;
       }
 
       .gameinfo {
         flex: 0;
+        padding: 1em;
+        color: white;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      #loader {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10000;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        background-color: #0f172a;
+      }
+      #loader.loaded { display: none; }
+
+      .loading-message {
+        color: #e5e7eb;
+      }
+
+      .loading-bars {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 3em;
+      }
+
+      .loading-bar:after {
+        content: " ";
+      }
+      .loading-bar {
+        background-color: #e5e7eb;
+        margin: 0.2em;
+        width: 1em;
+        height: 4em;
+        animation: grow;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+      }
+      .loading-bar-1 {
+        animation-delay: 0s;
+      }
+      .loading-bar-2 {
+        animation-delay: 0.3s;
+      }
+      .loading-bar-3 {
+        animation-delay: 0.6s;
+      }
+      @keyframes grow {
+        0% { transform: scaleY(1.0); }
+        5% { transform: scaleY(1.0618033988749895); }
+        10% { transform: scaleY(1.1175570504584946); }
+        15% { transform: scaleY(1.1618033988749894); }
+        20% { transform: scaleY(1.1902113032590307); }
+        25% { transform: scaleY(1.2); }
+        30% { transform: scaleY(1.1902113032590307); }
+        35% { transform: scaleY(1.1618033988749894); }
+        40% { transform: scaleY(1.1175570504584946); }
+        45% { transform: scaleY(1.0618033988749895); }
+        50% { transform: scaleY(1.0); }
+        55% { transform: scaleY(0.9381966011250105); }
+        60% { transform: scaleY(0.8824429495415054); }
+        65% { transform: scaleY(0.8381966011250105); }
+        70% { transform: scaleY(0.8097886967409693); }
+        75% { transform: scaleY(0.8); }
+        80% { transform: scaleY(0.8097886967409693); }
+        85% { transform: scaleY(0.8381966011250105); }
+        90% { transform: scaleY(0.8824429495415054); }
+        95% { transform: scaleY(0.9381966011250105); }
+        100% { transform: scaleY(1.0); }
       }
 {% endblock %}
 
 {% block body %}
+<div id="loader">
+<div class="loading-bars">
+<div class="loading-bar loading-bar-1"></div>
+<div class="loading-bar loading-bar-2"></div>
+<div class="loading-bar loading-bar-3"></div>
+</div>
+<div class="loading-message">Duckbot is loading</div>
+<div class="loading-message" id="loading-message">Initializing components...</div>
+</div>
 <div class="main">
+  <div class="header">
+    <h1>DuckBot</h1>
+    <div class="level-name" id="level-name"></div>
+  </div>
+  <div class="content">
       <div class="canvas">
         <div id="canvascontainer">
           <canvas tabindex="0" id="canvas" width="400" height="500"></canvas>
@@ -95,31 +221,31 @@
             <tr>
               <td class="name">thought</td>
               <td>=</td>
-              <td id="thought"></td>
+              <td class="value" id="thought"></td>
             </tr>
 
             <tr>
               <td class="name">north</td>
               <td>=</td>
-              <td id="north"></td>
+              <td class="value" id="north"></td>
             </tr>
 
             <tr>
               <td class="name">east</td>
               <td>=</td>
-              <td id="east"></td>
+              <td class="value" id="east"></td>
             </tr>
 
             <tr>
               <td class="name">south</td>
               <td>=</td>
-              <td id="south"></td>
+              <td class="value" id="south"></td>
             </tr>
 
             <tr>
               <td class="name">west</td>
               <td>=</td>
-              <td id="west"></td>
+              <td class="value" id="west"></td>
             </tr>
           </table>
         </div>
@@ -132,18 +258,33 @@
           <button class="btn btn-primary" id="startstopduck">Start Duck</button>
           <button class="btn btn-secondary" id="reloadbrain">Reload Brain</button>
           <button class="btn btn-secondary" id="resetduck">Reset Duck</button>
-          <button class="btn btn-secondary" id="loadmap">Load Map</button>
+          <div class="btn-group">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="loadmap" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Load Map</button>
+            <ul class="dropdown-menu" aria-labelledby="loadmap">
+              <li id="map-separator"><hr class="dropdown-divider"/></li>
+              <li><a class="dropdown-item" href="#" id="loadmapfile">From File...</a></li>
+            </ul>
+          </div>
           <button class="btn btn-secondary" id="openbrain">Open Brain...</button>
           <input class="file" type="file" id="mapfile"></input>
           <input class="file" type="file" id="brainfile"></input>
         </div>
       </div>
+  </div>
 </div>
+
+<script type="text/javascript" lang="javascript">
+  function setLoadingMessage(msg) {
+    document.getElementById('loading-message').innerHTML = msg;
+  }
+  setLoadingMessage("Initializing CodeMirror...");
+</script>
 
 {% webpack "www/cm" %}
 
 <script type="module">
   window.editorView = window.newCodeMirror(document.getElementById("srcarea"));
+  setLoadingMessage("Initialized CodeMirror...");
 </script>
 {{ super() }}
 {% endblock %}
@@ -151,20 +292,24 @@
 {% block pyodide_archive %}../data/duckbot.tar.gz{% endblock %}
 
 {% block pyodide_pkgs %}await pyodide.loadPackage("pygame-ce");{% endblock %}
-
+{% block pyodide_prep %}
+  setLoadingMessage("Loading Pyodide...");
+{% endblock %}
 {% block pyodide_launch %}
-function setCanvasSize(cssW, cssH) {
-  const dpr = window.devicePixelRatio || 1;
-  const canvas = document.getElementById('canvas');
-  canvas.style.height = cssH + 'px';
-  canvas.style.width = cssW + 'px';
-  canvas.width = Math.round(cssW * dpr);
-  canvas.height = Math.round(cssH * dpr);
-}
-window.addEventListener('resize', () => {
-  const r = document.getElementById('canvas').parentElement.getBoundingClientRect();
-  setCanvasSize(r.width, r.height);
-});
+  setLoadingMessage("Loading Game Components...");
+  function setCanvasSize(cssW, cssH) {
+    const dpr = window.devicePixelRatio || 1;
+    const canvas = document.getElementById('canvas');
+    canvas.style.height = cssH + 'px';
+    canvas.style.width = cssW + 'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+  }
+  function resetCanvasSize() {
+    const r = document.getElementById('canvas').parentElement.getBoundingClientRect();
+    setCanvasSize(r.width, r.height);
+  }
+  window.addEventListener('resize', resetCanvasSize);
 
 await pyodide.runPythonAsync(`import os
 os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
@@ -174,8 +319,11 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.startStopDuck = document.getElementById('startstopduck');
             this.resetDuck = document.getElementById('resetduck');
             this.loadMap = document.getElementById('loadmap');
+            this.loadMapFile = document.getElementById('loadmapfile');
             this.loadBrain = document.getElementById('openbrain');
             this.reloadBrain = document.getElementById('reloadbrain');
+            this.levelName = document.getElementById('level-name');
+            this.oldGameState = null;
             this.cbs = {};
 
             const self = this;
@@ -188,7 +336,8 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                   reader.addEventListener('load', function(e) {
                       var fileContent = e.target.result;
                       // You can now use the fileContent string as needed
-                      self.cbs.loadMap(fileContent);
+                      const map = self.cbs.loadMap(fileContent);
+                      if ( map ) { self.setMapInfo(map); }
                   });
 
                   reader.readAsText(file);
@@ -218,11 +367,11 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             });
             this.startStopDuck.addEventListener('click', function() {
               if ( self.cbs ) self.cbs.startStopGame();
-            })
+            });
             this.resetDuck.addEventListener('click', function() {
               if ( self.cbs ) self.cbs.resetGame();
             });
-            this.loadMap.addEventListener('click', function() {
+            this.loadMapFile.addEventListener('click', function() {
               if ( self.cbs ) mapFileInput.click();
             });
             this.loadBrain.addEventListener('click', function() {
@@ -236,10 +385,38 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             });
           }
 
+          setMapInfo(map) {
+            this.levelName.innerHTML = map.name;
+          }
+
+          setMaps(ms) {
+            document.querySelectorAll('.map-item').forEach((e) => e.remove());
+            const divider = document.getElementById('map-separator');
+            const self = this;
+            ms.map((m) => {
+              const li = document.createElement('li');
+              const a = document.createElement('a');
+              a.setAttribute('href', '#');
+              a.classList.add("dropdown-item");
+              a.classList.add("map-item");
+              a.appendChild(document.createTextNode(m.name));
+              li.appendChild(a);
+              divider.parentElement.insertBefore(li, divider);
+
+              a.addEventListener('click', () => {
+                 self.setMapInfo(m);
+                 self.cbs.loadBuiltinMap(m);
+              });
+            });
+          }
+
           setGameState(st) {
             this.loadMap.disabled = false;
             this.resetDuck.disabled = false;
             this.reloadBrain.disabled = false;
+            this.loadBrain.disabled = false;
+            if ( this.oldGameState == st ) return;
+            this.oldGameState = st;
             switch (st) {
               case 'DuckState.STOPPED':
                 this.startStopDuck.disabled = false;
@@ -252,6 +429,7 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                 this.reloadBrain.disabled = true;
                 this.loadMap.disabled = true;
                 this.resetDuck.disabled = true;
+                this.loadBrain.disabled = true;
                 break;
               default:
                 this.startStopDuck.disabled = true;
@@ -270,9 +448,14 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
           const westBox = document.getElementById("west");
           const controls = new WindowControls();
 
-          pkg.launch_html('sample_brain.py', 'assets/tileset.json', 'assets/maps/level1.json',
+          pkg.launch_html('sample_brain.py', 'assets/tileset.json', 'assets/maps',
                           'assets/duck.png',
                           {
+                              loaded: (map, maps) => {
+                                controls.setMaps(maps.toJs(1));
+                                controls.setMapInfo(map);
+                                document.getElementById('loader').classList.add("loaded");
+                              },
                               setBrain: (b) => {
                                   window.editorView.dispatch({
                                       changes: {
@@ -311,4 +494,6 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                                   window.editorUtil.setThoughtPath(window.editorView, [], curThought.branches_at.toJs(), finals);
                                 }
                             }});
+
+         resetCanvasSize();
 {% endblock %}

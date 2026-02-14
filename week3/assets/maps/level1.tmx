@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="1">
  <editorsettings>
-  <export target="level1.json" format="json"/>
+  <export target="../../../duckweek/assets/maps/level1.json" format="json"/>
  </editorsettings>
- <tileset firstgid="1" source="../Terrain.tsx"/>
+ <properties>
+  <property name="name" value="Simple Pond"/>
+  <property name="order" type="int" value="1"/>
+ </properties>
+ <tileset firstgid="1" source="../../../duckweek/assets/Terrain.tsx"/>
  <layer id="4" name="Landscape" width="32" height="32">
   <data encoding="csv">
 183,184,183,184,184,184,183,184,183,184,184,183,184,183,184,184,184,184,184,184,183,184,183,184,184,183,183,183,184,183,184,183,
