@@ -60,9 +60,9 @@
         flex-direction: row;
       }
 
-      .header { height: 40px; display: flex; flex-direction: row; color: #e5e7eb; }
+      .header { height: 40px; display: flex; flex-direction: row; color: #e5e7eb; margin: 0.4em; }
       .header h1 { font-size: 18pt; width: 200px; }
-      .header .level-name { font-size: 12pt }
+      .header .level-name { font-size: 12pt; }
 
       .duckbot-executed-line { background-color: #aaa !important; }
       .duckbot-decision-line { background-color: #E8F1FF !important; }
@@ -82,6 +82,7 @@
         background-color: white;
         border: 1px solid #ccc;
         flex: 1;
+        overflow: scroll;
       }
 
       .heading {
@@ -104,6 +105,7 @@
         flex-direction: column;
         min-height: 0;
         min-width: 0;
+        padding: 0.4em;
       }
 
       #canvascontainer {
@@ -208,7 +210,7 @@
 <div class="main">
   <div class="header">
     <h1>DuckBot</h1>
-    <div class="level-name" id="level-name"></div>
+    <div class="level-name">Level: <span id="level-name"></span></div>
   </div>
   <div class="content">
       <div class="canvas">
@@ -252,8 +254,7 @@
       </div>
       <div class="brain">
         <div class="heading">Brain Source</div>
-        <div class="srcarea" id="srcarea">
-        </div>
+        <div class="srcarea"><div id="srcarea"></div></div>
         <div class="controls">
           <button class="btn btn-primary" id="startstopduck">Start Duck</button>
           <button class="btn btn-secondary" id="reloadbrain">Reload Brain</button>
@@ -349,6 +350,7 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             brainFileInput.addEventListener('change', function(event) {
               var file = event.target.files[0];
               if ( file && file.size <= 65536 ) {
+                const self = this;
                 var reader = new FileReader();
 
                 window.editorView.dispatch({
@@ -359,6 +361,7 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                   window.editorView.dispatch({
                     changes: { from: window.editorView.state.doc.length, to: window.editorView.state.doc.length, insert: e.target.result }
                   });
+                  self.cbs.setBrain(e.target.result);
                 });
                 reader.readAsText(file);
               } else {
@@ -411,11 +414,11 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
           }
 
           setGameState(st) {
+            if ( this.oldGameState == st ) return;
             this.loadMap.disabled = false;
             this.resetDuck.disabled = false;
             this.reloadBrain.disabled = false;
             this.loadBrain.disabled = false;
-            if ( this.oldGameState == st ) return;
             this.oldGameState = st;
             switch (st) {
               case 'DuckState.STOPPED':

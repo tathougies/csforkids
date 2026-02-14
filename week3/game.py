@@ -581,6 +581,7 @@ class Game:
     @current_map.setter
     def current_map(self, new_map):
         self._current_map = new_map
+        self.duck_state = 0
         self.reset_game(randomize_starting_position=True)
 
     def _reconsider(self, duck_input=None):
@@ -2441,7 +2442,7 @@ async def launch_html(brain_file, tileset_file, map_dir, duck_sprite_file, api):
         'loadBuiltinMap': set_map
     }))
     api.loaded(maps[0], maps)
-    await renderer.async_game_loop(10)
+    await renderer.async_game_loop(25)
 
 def launch_tkgl(brain_file, tileset_file, map_file):
     brain = Brain(brain_file)
