@@ -66,7 +66,7 @@ def gen_jinja(week, name, files, extra_context={}):
 
     nm = f'week{week}/{name}'
     with mkdocs_gen_files.open(nm, 'wt') as out:
-        rootdir = '../' * len(Path(nm).parts)
+        rootdir = '../' * (len(Path(nm).parts) - 1)
         out.write(template.render(dict(weekdir=f'week{week}', rootdir=rootdir, **extra_context)))
 
 def do_gen(week, page, name, ty, files):

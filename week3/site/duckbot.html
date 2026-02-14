@@ -87,7 +87,7 @@
 <div class="main">
       <div class="canvas">
         <div id="canvascontainer">
-          <canvas tabindex="0" id="canvas"></canvas>
+          <canvas tabindex="0" id="canvas" width="400" height="500"></canvas>
         </div>
         <div class="gameinfo">
           <div class="state">State: <span id="state"></span></div>
@@ -153,6 +153,19 @@
 {% block pyodide_pkgs %}await pyodide.loadPackage("pygame-ce");{% endblock %}
 
 {% block pyodide_launch %}
+function setCanvasSize(cssW, cssH) {
+  const dpr = window.devicePixelRatio || 1;
+  const canvas = document.getElementById('canvas');
+  canvas.style.height = cssH + 'px';
+  canvas.style.width = cssW + 'px';
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+}
+window.addEventListener('resize', () => {
+  const r = document.getElementById('canvas').parentElement.getBoundingClientRect();
+  setCanvasSize(r.width, r.height);
+});
+
 await pyodide.runPythonAsync(`import os
 os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
 
@@ -289,10 +302,12 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                                 const curThought = i.cur_thought ? i.cur_thought[1].toJs() : null;
                                 if ( curThought ) {
                                   const finals = [];
-                                  if ( curThought.next_name_stored_at )
-                                    finals.push(curThought.next_name_stored_at);
-                                  if ( curThought.next_direction_stored_at )
-                                    finals.push(curThought.next_direction_stored_at);
+                                  const nextThought = curThought.next_name_stored_at;
+                                  const nextDirection = curThought.next_direction_stored_at;
+                                  if ( nextThought )
+                                    finals.push(nextThought);
+                                  if ( nextDirection )
+                                    finals.push(nextDirection);
                                   window.editorUtil.setThoughtPath(window.editorView, [], curThought.branches_at.toJs(), finals);
                                 }
                             }});

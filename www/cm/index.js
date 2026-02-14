@@ -56,7 +56,6 @@ const executionLineField = StateField.define({
     const newErrors = tr.effects.filter((e) => e.is(setExecutedLine));
     if ( newErrors.length > 0 ) {
       return Decoration.set(newErrors.map((e) => {
-        console.log("GOT", e.value)
         switch (e.value.type) {
         case 'EXECUTED':
           return executedLineDeco.range(e.value.range);
@@ -82,7 +81,6 @@ const errorTooltipField = StateField.define({
 
   update(decos, tr) {
     return tr.effects.filter((e) => e.is(setErrorTooltip)).map((e) => {
-      console.log("MAKE TOOLTIP", e.value);
       const message = e.value.msg;
       return {
         pos: e.value.from,
@@ -167,12 +165,15 @@ window.editorUtil = {
   },
   setThoughtPath: (view, executed, decisions, finals) => {
     const doc = view.state.doc;
-    console.log("THOUGHT", executed, decisions, finals);
     const executedEffects = executed.map((e) => setExecutedLine.of({ type: 'EXECUTED', range: doc.line(e).from}));
     const decisionEffects = decisions.map((e) => setExecutedLine.of({ type: 'DECISION', range: doc.line(e).from}));
     const finalEffects = finals.map((e) => setExecutedLine.of({ type: 'FINAL', range: doc.line(e).from}));
     const effects = [ ...executedEffects, ...decisionEffects, ...finalEffects ];
-    console.log(effects);
+    effects.sort((a, b) => {
+      if ( a.value.range < b.value.range ) return -1;
+      else if ( a.value.range == b.value.range ) return 0;
+      else return 1;
+    });
     view.dispatch({effects});
   },
   showSyntaxError: (view, pyErr) => {

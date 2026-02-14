@@ -908,6 +908,7 @@ class PygameBackend(GameBackend):
 
     def recalc_sizes(self):
         screen_w, screen_h = self.screen.get_size()
+        print("SCREEN SIZE", screen_w, screen_h)
         logical_h = screen_h - self.info_bar_height
         new_infosize = (screen_w, self.info_bar_height)
 
@@ -2355,8 +2356,13 @@ if __name__ == '__main__':
     args = ArgumentParser()
     args.add_argument('--brain', default='week3/sample_brain.py')
     args.add_argument('--level', default='week3/assets/maps/level1.json')
+    args.add_argument('--backend', default='gles')
 
     opts = args.parse_args()
 
-    launch_tkgl(opts.brain, 'week3/assets/tileset.json', opts.level)
-#    launch_pygame_tk('week3/sample_brain.py', 'week3/assets/tileset.json', 'week3/assets/maps/level1.json')
+    if opts.backend == 'gles':
+        launch_tkgl(opts.brain, 'week3/assets/tileset.json', opts.level)
+    elif opts.backend == 'pygame':
+        launch_pygame_tk(opts.brain, 'week3/assets/tileset.json', opts.level)
+    else:
+        print(f"Invalid backend {opts.backend}: expected gles, pygame")
