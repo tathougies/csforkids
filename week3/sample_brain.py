@@ -1,29 +1,30 @@
-# This is a sample duck brain
+# Welcome to DuckBot!
 
-# You are given:
+# DuckBot is a robot babysitter designed to care for ducklings.
+# Mother Duck has left DuckBot in charge of her ducklings while she's away.
+#
+# But these naughty ducklings have caused DuckBot to go haywire and forget its programming.
+#
+# Your job is to write an algorithm to help DuckBot find the naughty ducklings, but be warned...
+#
+# The ducklings are very sneaky
+
+# Your brain is written as a function named 'brain'
+# You are given as arguments
 #  - north: the obstacle to the north of DuckBot
 #  - south: the obstacle to the south of DuckBot
-#  - west: the obstacle to the west of DuckBot
 #  - east: the obstacle to the east of DuckBot
-#  - thought: the number or word DuckBot is remembering
+#  - west: the obstacle to the west of DuckBot
+#  - thought: the number or word DuckBot is remembering. Initially the number 0
+#
+#  The obstacle is either '*' if the square is free or 'x' if the square is an obstacle
 
-# You must set:
-#  - next_direction: the direction DuckBot should travel
-#  - next_thought: the number DuckBot should remember next
+# You return a direction and the next thought
+#
+# The direction can be one of 'N', 'E', 'S', 'W' for north, east, south, or west
+# You can also use None, in which case DuckBot does nothing for that turn
+#
+# If you hit a wall or return incorrect output, then DuckBot will die!
 
-if thought == 0:
-    if east == 'x':
-        next_thought = 'go_south'
-    else:
-        next_direction = 'E'
-elif thought == 'next_column':
-    if north == 'x':
-        next_direction = 'W'
-        next_thought = 'go_south'
-    else:
-        next_direction = 'N'
-elif thought == 'go_south':
-    if south == 'x':
-        next_thought = 'next_column'
-    else:
-        next_direction = 'S'
+def brain(north, south, east, west, thought):
+    return 'E'

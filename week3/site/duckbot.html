@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+<link rel="shortcut icon" href="../../assets/duckbot.ico"/>
 {% endblock %}
 
 {% block extrastyle %}
@@ -27,7 +28,18 @@
         background-color: #0f172a;
         width: 100vw; height: 100vh; overflow: hidden;
       }
+      .attribution {
+        color: #555;
+        font-size: 9pt;
+        margin-top: 5em;
+      }
+      .properties {
+         display: flex;
+         flex-direction: column;
+      }
+      .properties span { display: inline-block; }
       .properties .name {
+        min-width: 5em;
         margin-right: 0.8em;
       }
       .properties .value {
@@ -82,7 +94,31 @@
         background-color: white;
         border: 1px solid #ccc;
         flex: 1;
-        overflow: scroll;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+      }
+      .srcarea > .cm-editor {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      #console {
+         flex: 0.2;
+         min-height: 200px;
+         max-height: 500px;
+         overflow: auto;
+      }
+      #console.console-dim {
+        color: #888;
+      }
+      #console.console-error {
+        color: red;
+      }
+      #console.console-success {
+        color: green;
       }
 
       .heading {
@@ -117,11 +153,24 @@
         min-height: 0;
       }
 
-      .gameinfo {
+      .gamediag {
         flex: 0;
         padding: 1em;
         color: white;
         font-family: "JetBrains Mono", monospace;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .gameinfo {
+        flex: 4;
+      }
+
+      .gamedbg {
+         flex: 1;
+         display: flex;
+         flex-direction: column;
+         justify-content: space-evenly;
       }
 
       #loader {
@@ -217,44 +266,31 @@
         <div id="canvascontainer">
           <canvas tabindex="0" id="canvas" width="400" height="500"></canvas>
         </div>
-        <div class="gameinfo">
-          <div class="state">State: <span id="state"></span></div>
-          <table class="properties">
-            <tr>
-              <td class="name">thought</td>
-              <td>=</td>
-              <td class="value" id="thought"></td>
-            </tr>
-
-            <tr>
-              <td class="name">north</td>
-              <td>=</td>
-              <td class="value" id="north"></td>
-            </tr>
-
-            <tr>
-              <td class="name">east</td>
-              <td>=</td>
-              <td class="value" id="east"></td>
-            </tr>
-
-            <tr>
-              <td class="name">south</td>
-              <td>=</td>
-              <td class="value" id="south"></td>
-            </tr>
-
-            <tr>
-              <td class="name">west</td>
-              <td>=</td>
-              <td class="value" id="west"></td>
-            </tr>
-          </table>
+        <div class="gamediag">
+          <div class="gameinfo">
+            <div class="state">State: <span id="state"></span></div>
+            <div class="properties">
+              <div class="property"><span class="name">thought</span>=<span class="value" id="thought"></span></div>
+              <div class="property"><span class="name">north</span>=<span class="value" id="north"></span></div>
+              <div class="property"><span class="name">east</span>=<span class="value" id="east"></span></div>
+              <div class="property"><span class="name">south</span>=<span class="value" id="south"></span></div>
+              <div class="property"><span class="name">west</span>=<span class="value" id="west"></span></div>
+            </div>
+            <div class="attribution">Based on the venerable <a href="https://www.cs.hmc.edu/picobot/">HMC PicoBot</a></div>
+          </div>
+          <div class="gamedbg">
+            <button class="btn btn-success" id="step">Step</button>
+            <div class="form-group">
+              <label for="speed">Speed</label>
+              <input type="range" id="speed" value="4"/>
+            </div>
+          </div>
         </div>
       </div>
       <div class="brain">
         <div class="heading">Brain Source</div>
-        <div class="srcarea"><div id="srcarea"></div></div>
+        <div class="srcarea" id="srcarea"></div>
+        <div class="error" id="console"></div>
         <div class="controls">
           <button class="btn btn-primary" id="startstopduck">Start Duck</button>
           <button class="btn btn-secondary" id="reloadbrain">Reload Brain</button>
@@ -266,11 +302,41 @@
               <li><a class="dropdown-item" href="#" id="loadmapfile">From File...</a></li>
             </ul>
           </div>
-          <button class="btn btn-secondary" id="openbrain">Open Brain...</button>
+          <div class="btn-group">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="openbraindd" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Open Brain</button>
+            <ul class="dropdown-menu" aria-labeledby="openbraindd">
+              <li><a id="openbrainfromgh" class="dropdown-item" href="#">From GitHub...</a></li>
+              <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#fromurlmodal">From URL...</a></li>
+              <li><a id="openbrain" class="dropdown-item" href="#">From File...</a></li>
+            </ul>
+          </div>
           <input class="file" type="file" id="mapfile"></input>
           <input class="file" type="file" id="brainfile"></input>
         </div>
       </div>
+  </div>
+</div>
+
+<div id="fromurlmodal" aria-labelledby="fromurlmodal-title" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fromurlmodal-title">Open URL</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Enter the URL of the file you would like to load:
+        </p>
+        <input class="form-control" type="text" placeholder="http://...">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="openbrainfromurl">Load</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -322,13 +388,31 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.loadMap = document.getElementById('loadmap');
             this.loadMapFile = document.getElementById('loadmapfile');
             this.loadBrain = document.getElementById('openbrain');
+            this.loadBrainFromUrl = document.getElementById('openbrainfromurl');
+            this.loadBrainFromGithub = document.getElementById('openbrainfromgh');
             this.reloadBrain = document.getElementById('reloadbrain');
             this.levelName = document.getElementById('level-name');
+            this.console = document.getElementById('console');
+            this.stepBtn = document.getElementById('step');
+            this.speedRange = document.getElementById('speed');
+
+            this.stateBox = document.getElementById("state");
+            this.thoughtBox = document.getElementById("thought");
+            this.northBox = document.getElementById("north");
+            this.eastBox = document.getElementById("east");
+            this.southBox = document.getElementById("south");
+            this.westBox = document.getElementById("west");
+
             this.oldGameState = null;
             this.cbs = {};
 
+            this.setConsole("Errors will show here", "console-dim")
+
             const self = this;
             const mapFileInput = document.getElementById('mapfile');
+            this.speedRange.addEventListener('change', function(event) {
+              if ( self.cbs ) self.cbs.setSpeed(event.target.value);
+            });
             mapFileInput.addEventListener('change', function(event) {
               var file = event.target.files[0];
               if (file && file.size <= 65536) { // 64 KB = 65536 bytes
@@ -350,7 +434,6 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             brainFileInput.addEventListener('change', function(event) {
               var file = event.target.files[0];
               if ( file && file.size <= 65536 ) {
-                const self = this;
                 var reader = new FileReader();
 
                 window.editorView.dispatch({
@@ -372,13 +455,19 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
               if ( self.cbs ) self.cbs.startStopGame();
             });
             this.resetDuck.addEventListener('click', function() {
-              if ( self.cbs ) self.cbs.resetGame();
+              if ( self.cbs ) {
+                self.cbs.resetGame();
+                this.setConsole("Running", "console-dim");
+              }
             });
             this.loadMapFile.addEventListener('click', function() {
               if ( self.cbs ) mapFileInput.click();
             });
             this.loadBrain.addEventListener('click', function() {
               if ( self.cbs ) brainFileInput.click();
+            });
+            this.stepBtn.addEventListener('click', function() {
+              if ( self.cbs ) self.cbs.step();
             });
             this.reloadBrain.addEventListener('click', function() {
                 if ( self.cbs ) {
@@ -388,8 +477,28 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             });
           }
 
+          setConsole(msg, cls) {
+            this.console.innerHTML = "";
+            this.console.appendChild(document.createTextNode(msg));
+            this.console.setAttribute("class", cls);
+          }
+
           setMapInfo(map) {
             this.levelName.innerHTML = map.name;
+          }
+
+          setSpeedRange(min, max, cur) {
+            this.speedRange.setAttribute("min", min.toString());
+            this.speedRange.setAttribute("max", max.toString());
+            this.speedRange.value = cur;
+          }
+
+          setInput(input) {
+            this.thoughtBox.innerHTML = input.thought;
+            this.northBox.innerHTML = input.north;
+            this.southBox.innerHTML = input.south;
+            this.westBox.innerHTML = input.west;
+            this.eastBox.innerHTML = input.east;
           }
 
           setMaps(ms) {
@@ -420,35 +529,47 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.reloadBrain.disabled = false;
             this.loadBrain.disabled = false;
             this.oldGameState = st;
+
+            this.stateBox.innerHTML = '';
+            let stateText = st;
+
             switch (st) {
               case 'DuckState.STOPPED':
                 this.startStopDuck.disabled = false;
                 this.startStopDuck.innerHTML = 'Start Duck';
+                stateText = "Stopped 🛑";
                 break;
               case 'DuckState.ALIVE':
+              case 'DuckState.STEPPING':
                 this.startStopDuck.disabled = false;
                 this.startStopDuck.innerHTML = 'Stop Duck';
+                stateText = "Alive 🦆";
 
                 this.reloadBrain.disabled = true;
                 this.loadMap.disabled = true;
                 this.resetDuck.disabled = true;
                 this.loadBrain.disabled = true;
                 break;
+              case 'DuckState.COMPLETE':
+                stateText = "Complete! 🏆🎉🎉🎉";
+                this.setConsole("DuckBot has found the ducklings!", "console-success");
+                break;
+              case 'DuckState.DEAD':
+                stateText = "Dead ☠️";
+                this.setConsole("DuckBot has died. Press reset to try again.", "console-error");
+                this.startStopDuck.innerHTML = 'Duck Dead';
+                break;
               default:
                 this.startStopDuck.disabled = true;
                 break;
             }
+
+            this.stateBox.appendChild(document.createTextNode(stateText));
           }
         };
 
           pyodide.canvas.setCanvas2D(document.getElementById('canvas'));
           const pkg = pyodide.pyimport("game");
-          const stateBox = document.getElementById("state");
-          const thoughtBox = document.getElementById("thought");
-          const northBox = document.getElementById("north");
-          const eastBox = document.getElementById("east");
-          const southBox = document.getElementById("south");
-          const westBox = document.getElementById("west");
           const controls = new WindowControls();
 
           pkg.launch_html('sample_brain.py', 'assets/tileset.json', 'assets/maps',
@@ -473,27 +594,31 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                               },
                               reportSyntaxError: (msg, startline, startcol, endline, endcol) => {
                                 window.editorUtil.showSyntaxError(window.editorView, { msg, lineno: startline, offset: startcol, end_lineno: endline, end_offset: endcol });
+                                controls.setConsole(msg, "console-error")
+                              },
+                              reportGenericError: (msg, exc) => {
+                                if ( exc ) {
+                                  const errors = [];
+                                  if ( exc.lineno && !exc.end_lineno )
+                                    window.editorUtil.highlightErrors(window.editorView, exc.lineno, exc.lineno);
+                                  else
+                                    window.editorUtil.highlightErrors(window.editorView, exc.lineno, exc.end_lineno);
+                                }
+                                controls.setConsole(msg, "console-error")
+                              },
+                              setSpeedRange: function(min, max, cur) {
+                                controls.setSpeedRange(min, max, cur);
                               },
                               updateGameInfo: (i) => {
-                                const input = i.input;
-                                stateBox.innerHTML = i.game_state;
-                                thoughtBox.innerHTML = input.thought;
-                                northBox.innerHTML = input.north;
-                                southBox.innerHTML = input.south;
-                                westBox.innerHTML = input.west;
-                                eastBox.innerHTML = input.east;
-
+                                controls.setInput(i.input)
                                 controls.setGameState(i.game_state);
 
                                 const curThought = i.cur_thought ? i.cur_thought[1].toJs() : null;
                                 if ( curThought ) {
                                   const finals = [];
-                                  const nextThought = curThought.next_name_stored_at;
-                                  const nextDirection = curThought.next_direction_stored_at;
-                                  if ( nextThought )
-                                    finals.push(nextThought);
-                                  if ( nextDirection )
-                                    finals.push(nextDirection);
+                                  const decidedAt = curThought.decided_at;
+                                  if ( decidedAt )
+                                    finals.push(decidedAt);
                                   window.editorUtil.setThoughtPath(window.editorView, [], curThought.branches_at.toJs(), finals);
                                 }
                             }});

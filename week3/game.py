@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from typing import Optional, Any, Protocol
 from enum import Enum
 
+import types
+import inspect
 import os
 import asyncio
 import ctypes
@@ -157,6 +159,14 @@ class DuckInput:
                  'thought': self.duck_state,
                  'feather': self.feather }
 
+    def apply(self, fn):
+        g = self.make_globals()
+        s = inspect.signature(fn)
+        args = []
+        kwargs = {}
+
+
+
 class Disasmed:
     __slots__ = ('instructions', 'insnmap', 'linemap')
 
@@ -182,13 +192,12 @@ class Disasmed:
 DISASMED_CACHE = {}
 @dataclass
 class ThoughtPath:
-    next_name_stored_at: Optional[int] = None
-    next_direction_stored_at: Optional[int] = None
+    decided_at: Optional[int] = None
     branches_at: list[int] = field(default_factory=list)
 
     @property
     def last_line(self):
-        return self.next_direction_stored_at or self.next_name_stored_at or 0
+        return self.decided_at or 0
 
 class ThoughtTracker:
     '''Track how a thought was made'''
@@ -197,7 +206,7 @@ class ThoughtTracker:
         self.thought_path = ThoughtPath()
 
     def __call__(self, frame, event, arg):
-        if frame.f_code is self.brain.byte_code and event == 'call':
+        if (frame.f_code is self.brain.brain.__code__ or frame.f_back.f_trace_opcodes) and event == 'call':
             frame.f_trace_opcodes = True # Request opcode tracing
             return functools.partial(self.track_code, self._disasm(frame.f_code))
 
@@ -210,11 +219,8 @@ class ThoughtTracker:
     def track_code(self, asm, frame, event, arg):
         if event == 'opcode':
             i = asm[frame.f_lasti]
-            if i.opname == 'STORE_NAME':
-                if i.argval == 'next_thought':
-                    self.thought_path.next_name_stored_at = i.positions.lineno
-                elif i.argval == 'next_direction':
-                    self.thought_path.next_direction_stored_at = i.positions.lineno
+            if i.opname == 'RETURN_VALUE' or i.opname == 'RETURN_CONST':
+                self.thought_path.decided_at = i.positions.lineno
             elif i.opname in COND_BRANCH_OPS:
                 if i.positions.lineno is not None:
                     self.thought_path.branches_at.append(i.positions.lineno)
@@ -227,22 +233,70 @@ class Brain:
             self.source_code = pathlib.Path(brain_file).read_text()
         else:
             brain_file = "<reloaded>"
-            self.source_code = source
+            self.source_code = str(source)
         self.brain_file = brain_file
         self._validate_ast(self.source_code)
-        self.byte_code = compile(self.source_code, brain_file, "exec")
+        import traceback
+        traceback.print_stack()
+
+        byte_code = compile(self.source_code, brain_file, "exec")
+        gbls = {}
+        exec(byte_code, gbls)
+
+        def make_syntax_error(msg):
+            e = SyntaxError(msg)
+            e.lineno = 1
+            e.offset = 0
+            e.end_lineno = 2
+            e.end_offset = 0
+            return e
+
+        if 'brain' not in gbls or not isinstance(gbls['brain'], types.FunctionType):
+            raise make_syntax_error("No 'brain' function defined in brain")
+        else:
+            self.brain = gbls['brain']
+            sig = inspect.signature(self.brain)
+            if any(p.kind == inspect.Parameter.VAR_POSITIONAL for p in sig.parameters.values()) or \
+               any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+                raise make_syntax_error("brain function must accept exactly north, south, east, west as arguments")
+
+            exp_positional = ('north', 'south', 'east', 'west', 'thought', 'feather')
+            self.positional_args = []
+            if any(nm not in exp_positional for nm in sig.parameters.keys()):
+                raise make_syntax_error("brain function takes extra arguments. Must be just north, south, east, west and optionally thought and feather")
+            for nm, i in sig.parameters.items(): # IF we have positional arguments, they must match this
+                if i.kind == inspect.Parameter.POSITIONAL_ONLY or \
+                   i.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
+                    if nm != exp_positional[0]:
+                        raise make_syntax_error("brain function must accept north, south, east, west and optionally thought and feather in that order, unless using keyword arguments")
+                    else:
+                        self.positional_args.append(exp_positional[0])
+                        exp_positional = exp_positional[1:]
+
+            self.kw_args = [nm for nm in exp_positional if any(nm == n for n in sig.parameters.keys())]
+
+    def _apply(self, duck_input):
+        g = duck_input.make_globals()
+        args = [g[a] for a in self.positional_args]
+        kwargs = {a: g[a] for a in self.kw_args}
+        return self.brain(*args, **kwargs)
 
     def __call__(self, duck_input):
-        gbls = duck_input.make_globals()
         tracker = ThoughtTracker(self)
         try:
             sys.settrace(tracker)
-            exec(self.byte_code, gbls)
+            r = self._apply(duck_input)
         finally:
             sys.settrace(None)
-        if 'next_direction' not in gbls:
-            print("You didn't set 'next_direction'")
-        return gbls.get('next_direction'), gbls.get('next_thought', duck_input.duck_state), tracker.thought_path
+
+        if isinstance(r, tuple):
+            direction = r[0]
+            next_thought = r[1]
+        elif isinstance(r, str):
+            direction = r
+            next_thought = duck_input.duck_state
+
+        return direction, next_thought, tracker.thought_path
 
     def _validate_ast(self, code):
         ast.parse(code, 'exec')
@@ -425,6 +479,10 @@ class GameDelegate(Protocol):
         '''Set camera bounds'''
         pass
 
+    def report_error(self, message: str, exc=None):
+        '''Report an error message'''
+        pass
+
 @dataclass
 class GameResult:
     game: 'Game'
@@ -465,10 +523,12 @@ class GameRunner:
                           duck_tracker=game.duck_tracker)
 
 class Game:
+    '''Represents the state of the game'''
+
     __slots__ = ('brain', 'tileset', 'tile_size', '_current_map',
                  'duck_pos', 'duckling_pos', 'next_duck_pos', 'duck_state', 'initial_duck_pos',
                  'duck_game_state', 'duck_dir', 'duck_tracker', 'thought_path',
-                 'delegate')
+                 'delegate', 'last_error')
 
     def __init__(self, brain=None, tileset=None, first_map=None):
         assert tileset is not None, "Must supply a tileset"
@@ -485,6 +545,7 @@ class Game:
 
         self.duck_state = 0 # Duck's current memory
         self.duck_game_state = DuckState.STOPPED
+        self.last_error = None
         self.duck_dir = None
         self.duck_tracker = None
 
@@ -508,7 +569,7 @@ class Game:
 
     def reload_brain(self, brain: Brain):
         self.brain = brain
-        self.reset_game()
+        self.reset_game(randomize_starting_position=True)
 
     def set_duck_dir(self, nextdir):
         duckrow, duckcol = self.duck_pos
@@ -521,6 +582,22 @@ class Game:
             self.next_duck_pos = (duckrow + 1, duckcol)
         elif nextdir == 'W':
             self.next_duck_pos = (duckrow, duckcol - 1)
+        elif nextdir is None:
+            pass
+        else:
+            self.duck_game_state = DuckState.DEAD
+            if self.delegate is not None:
+                exc = None
+                if len(self.thought_path) > 0:
+                    exc = self.thought_path[-1].decided_at
+                    if exc is not None:
+                        exc = { 'lineno': exc,
+                                'offset': 0,
+                                'end_lineno': exc + 1,
+                                'end_offset': 0 }
+                self.delegate.report_error("Bad direction given", exc=exc)
+                self.delegate.duck_game_state_changed(self, self.duck_game_state)
+
 
     def complete_step(self):
         '''Moves the duck to the next position, and computes the next square to go to'''
@@ -546,11 +623,10 @@ class Game:
                 self.delegate.duck_game_state_changed(self, self.duck_game_state)
 
         duck_input = self.get_duck_input()
+
         if self.duck_game_state.is_alive:
-            nextdir, self.duck_state, thought_path = self.brain(duck_input)
-            self.add_thought_path(duck_input, thought_path)
-            self.set_duck_dir(nextdir)
-            self.duck_game_state = self.duck_game_state.next_state
+            self._reconsider()
+        self.duck_game_state = self.duck_game_state.next_state
 
         if self.delegate is not None:
             self.delegate.duck_input_changed(self, duck_input, self.duck_dir, self.duck_pos)
@@ -568,10 +644,10 @@ class Game:
         south_tile = self.current_map.baselayer[duckrow + 1, duckcol]
         west_tile  = self.current_map.baselayer[duckrow, duckcol - 1]
 
-        return DuckInput(north=' ' if self.tileset.is_water(north_tile) else 'x',
-                         east=' '  if self.tileset.is_water(east_tile) else 'x',
-                         south=' ' if self.tileset.is_water(south_tile) else 'x',
-                         west=' '  if self.tileset.is_water(west_tile) else 'x',
+        return DuckInput(north='*' if self.tileset.is_water(north_tile) else 'x',
+                         east='*'  if self.tileset.is_water(east_tile) else 'x',
+                         south='*' if self.tileset.is_water(south_tile) else 'x',
+                         west='*'  if self.tileset.is_water(west_tile) else 'x',
                          duck_state=self.duck_state)
 
     @property
@@ -587,14 +663,29 @@ class Game:
     def _reconsider(self, duck_input=None):
         if duck_input is None:
             duck_input = self.get_duck_input()
-        nextdir, self.duck_state, thought_path = self.brain(duck_input)
-        self.add_thought_path(duck_input, thought_path)
-        self.set_duck_dir(nextdir)
+
+        try:
+            nextdir, self.duck_state, thought_path = self.brain(duck_input)
+            self.add_thought_path(duck_input, thought_path)
+            self.set_duck_dir(nextdir)
+        except:
+            import traceback
+            err = f'Error while running brain:\n{traceback.format_exc()}'
+            tb = sys.exc_info()[1].__traceback__
+            while tb.tb_next is not None:
+                tb = tb.tb_next
+            exc = { 'lineno': tb.tb_lineno }
+            self.duck_game_state = DuckState.DEAD
+            self.last_error = err
+            if self.delegate is not None:
+                self.delegate.report_error(err, exc=exc)
+                self.delegate.duck_game_state_changed(self, self.duck_game_state)
 
     def reset_game(self, randomize_starting_position=False):
         '''Reset the game so the duck is in its old starting position.'''
 
         self.duck_game_state = DuckState.STOPPED
+        self.last_error = None
         self.duck_state = 0
         self.duck_tracker = self.current_map.make_tracker()
 
@@ -619,6 +710,8 @@ class Game:
             self.delegate.duck_input_changed(self, duck_input, self.duck_dir, self.duck_pos)
 
 class GameBackend(Protocol):
+    '''The protocol for a system that can render a game.'''
+
     def get_brain_renderer(self) -> Optional['BrainRenderer']:
         '''Get the brain renderer, if any'''
         pass
@@ -678,6 +771,8 @@ class GameBackend(Protocol):
         pass
 
 class PygameTextLayout:
+    '''Helper class for pygame text layouts.'''
+
     def __init__(self, surface, x = 20, y = 0):
         self.surface = surface
         self.y = y
@@ -773,6 +868,11 @@ class BrainRenderer(Protocol):
         pass
 
 class PygameBackend(GameBackend):
+    '''Backend that can render to a pygame surface and ingest pygame events.
+
+    Needs a separate BrainRenderer, since we do not have a multi-line text editor in PyGame.
+    '''
+
     def __init__(self, game: Game, source_renderer: BrainRenderer,
                  duck_sprite=DUCK_SPRITE_FILENAME, show_info_bar=True, use_touch=True):
         import pygame
@@ -836,10 +936,13 @@ class PygameBackend(GameBackend):
             if self.brain_renderer is not None:
                 self.brain_renderer.report_syntax_error(e)
             return False
+        except:
+            import traceback
+            self.brain_renderer.report_generic_error(traceback.format_exc())
         else:
             self.game.reload_brain(brain)
             if self.brain_renderer is not None:
-                self.set_brain(brain)
+                self.brain_renderer.set_brain(brain)
             return True
 
     def process_events(self, renderer, dt):
@@ -965,6 +1068,9 @@ class PygameBackend(GameBackend):
     def set_camera_bounds(self, topleft, bottomright):
         if self.game.delegate is not None:
             self.game.delegate.set_camera_bounds(topleft, bottomright)
+
+    def report_error(self, err, exc=None):
+        self.game_to_tk_queue.put(('error', (err, exc)))
 
     def intern_text(self, text, color='black', background=None):
         '''Render text and save it so we don't have to re-render it'''
@@ -1159,6 +1265,8 @@ class PygameBackend(GameBackend):
         self.draw_info_surface()
 
 class GlBackend(GameBackend):
+    '''Backend that can render quickly to an opengl surface.'''
+
     __slots__ = ('gl', 'game', 'tk_renderer', 'duck_sprite_file', 'scale',
                  'cur_texture', 'initialized', 'mesg_array', 'sprite_array',
                  'cur_layer_sprites', 'cur_layer_sprite_count',
@@ -1170,6 +1278,7 @@ class GlBackend(GameBackend):
         self.gl = GL
         self.game = game
         self.tk_renderer = source_renderer
+        self.swap_buffers = None
 
         self.duck_sprite_file = duck_sprite_file
 
@@ -1182,8 +1291,12 @@ class GlBackend(GameBackend):
 
     def duck_input_changed(self, *args):
         self.tk_renderer.update_state_from_game(self.game)
+
     def duck_game_state_changed(self, *args):
         self.tk_renderer.update_state_from_game(self.game)
+
+    def report_error(self, err, exc=None):
+        self.tk_renderer.report_error(err, exc=exc)
 
     def get_brain_renderer(self):
         return self.tk_renderer
@@ -1194,11 +1307,18 @@ class GlBackend(GameBackend):
         elif self.game.duck_game_state == DuckState.ALIVE:
             self.game.duck_game_state = DuckState.STOPPED
 
+    def step(self):
+        self.game.duck_game_state = DuckState.STEPPING
+
     def set_brain(self, brain_src):
         try:
             brain = Brain(source=brain_src)
         except SyntaxError as e:
             self.tk_renderer.report_syntax_error(e)
+        except:
+            import traceback
+            s = traceback.format_exc()
+            self.tk_renderer.report_generic_error(traceback.format_exc())
         else:
             self.game.reload_brain(brain)
 
@@ -1368,7 +1488,8 @@ class GlBackend(GameBackend):
 
     def complete_frame(self, lake_off):
         self._flush(force=True)
-        pass
+        if self.swap_buffers is not None:
+            self.swap_buffers()
 
     def _flush(self, force=False):
         if force or \
@@ -1405,7 +1526,7 @@ class GlBackend(GameBackend):
         return True # Not needed
 
 class GameRenderer:
-    '''Generic renderer for a game.'''
+    '''Backend-agnostic rendering state for a game.'''
 
     def __init__(self, game: Game, backend: GameBackend):
         self.game = game
@@ -1460,6 +1581,12 @@ class GameRenderer:
             self.backend.duck_game_state_changed(sender, duck_game_state)
         if self.delegate is not None:
             self.delegate.duck_game_state_changed(sender, duck_game_state)
+
+    def report_error(self, err, exc=None):
+        if hasattr(self.backend, 'report_error'):
+            self.backend.report_error(err, exc=exc)
+        if self.delegate is not None:
+            self.delegate.report_error(err, exc=exc)
 
     def redraw_lake(self, tile_anim_frame: int, lake_off: tuple[float, float]):
         '''Redraw the lake with the given tile anim frame'''
@@ -1809,6 +1936,8 @@ def _tk_index(line, off):
     return f'{line + 1}.{off}'
 
 class TkTextAnnotator:
+    '''Helper class for custom annotations in a Tkinter ScrolledText.'''
+
     def __init__(self, text):
         import tkinter
 
@@ -1830,6 +1959,11 @@ class TkTextAnnotator:
         self.text.tag_configure(tag, underline=True)
 
 class JsInfoUpdater:
+    '''Delegate adapter that intercepts delegate calls and sends them to JavaScript.
+
+    Used to implement game diagnostics and state tracking in the HTML/JS/Pyodide frontend.
+    '''
+
     def __init__(self, api, game):
         self.api = api
         self.game = game
@@ -1843,6 +1977,9 @@ class JsInfoUpdater:
 
     def duck_input_changed(self, sender, new_input, duck_dir, duck_pos):
         self._update()
+
+    def report_error(self, err, exc=None):
+        self.api.reportGenericError(err, exc)
 
     def thought_path_changed(self, sender):
         if len(sender.thought_path) > 0:
@@ -1859,6 +1996,11 @@ class JsInfoUpdater:
         self.api.updateGameInfo(d)
 
 class WasmBrainRenderer(BrainRenderer):
+    '''BrainRenderer that sends events into JavaScript via the Pyodide API
+
+    Used to communicate with the CodeMirror editor.
+    '''
+
     def __init__(self, api):
         self.api = api
 
@@ -1867,6 +2009,9 @@ class WasmBrainRenderer(BrainRenderer):
 
     def report_syntax_error(self, err):
         self.api.reportSyntaxError(err.msg, err.lineno, err.offset, err.end_lineno, err.end_offset)
+
+    def report_generic_error(self, err):
+        self.api.reportGenericError(err)
 
     def is_shown(self):
         return True
@@ -1920,13 +2065,34 @@ class TkRenderer(BrainRenderer):
         root.grid_rowconfigure(0, weight=1)
         root.grid_rowconfigure((1,2), weight=0)
 
-        self.source_code = ScrolledText(root, wrap="none")
-        self.source_code.grid(row=0, column=sourcearea, columnspan=2, sticky="nsew", padx=8, pady=4)
+        self.source_frame = tkinter.Frame(root)
+        self.source_frame.grid(row=0, column=sourcearea, columnspan=2, sticky="nsew", padx=8, pady=4)
+        self.source_frame.grid_rowconfigure(0, weight=0)
+        self.source_frame.grid_rowconfigure(1, weight=1)
+        self.source_frame.grid_rowconfigure(2, weight=0)
+        self.source_frame.grid_columnconfigure((0,1), weight=1)
+
+        self.source_code = ScrolledText(self.source_frame, wrap="none")
+        self.source_code.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=8, pady=4)
+
+        console_frame = tkinter.Frame(self.source_frame, height=100)
+        console_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", padx=8, pady=4)
+        console_frame.grid_propagate(False)
+        console_frame.pack_propagate(False)
+
+        self.console = ScrolledText(console_frame, wrap="none")
+        self.console.pack(fill="both", expand=True)
+        self._clear_console()
+
+        tkinter.Button(self.source_frame, text="Open Brain...",
+                       command=self._open_brain).grid(row=0, column=0, sticky="ew")
+        tkinter.Button(self.source_frame, text="Save Brain...",
+                       command=self._save_brain).grid(row=0, column=1, sticky="ew")
 
         # Configure tags
         self.source_code.tag_config("condition line", background="light gray")
         self.source_code.tag_config("decision line", background="light blue")
-        self.source_marks = []
+        self.source_code.tag_config("error", background="red")
 
         self.controls = tkinter.Frame(self.root)
         self.controls.grid(row=1, column=sourcearea, sticky="nsew", padx=8, pady=4)
@@ -1951,6 +2117,11 @@ class TkRenderer(BrainRenderer):
 
         owner = self
         class MyGlCanvas(GLCanvas):
+            '''We need to adapt the GLCanvas class to override draw().
+
+            OpenGL drawing calls cannot be made outside of this function.
+            '''
+
             def __init__(self):
                 super().__init__(root)
                 self.cont = None
@@ -1961,7 +2132,6 @@ class TkRenderer(BrainRenderer):
                 self.make_current()
                 if self.cont is not None:
                     self.cont.send(None)
-                    self.swap_buffers()
 
         if use_opengl:
             self.glarea = MyGlCanvas()
@@ -1970,7 +2140,7 @@ class TkRenderer(BrainRenderer):
             self.glarea.bind("<Configure>", self._glresized)
 
             self.stateframe = tkinter.Frame(self.root);
-            self.stateframe.grid(row=1, column=glarea)
+            self.stateframe.grid(row=1, column=glarea, sticky="nsew")
 
             self.root.bind_all("<KeyPress>", functools.partial(self._onglkey, True))
             self.root.bind_all("<KeyRelease>", functools.partial(self._onglkey, False))
@@ -2016,10 +2186,16 @@ class TkRenderer(BrainRenderer):
         self.lastlinelabel = tkinter.Label(self.stateframe, text="")
         self.lastlinelabel.grid(row=0,column=4)
 
-        tkinter.Label(self.stateframe, text="Duck Speed").grid(row=1, column=4, sticky="ns", padx=8, pady=4)
-        self.speed_slider = tkinter.Scale(self.stateframe, from_=0.5, to=INITIAL_DUCK_VELOCITY*6,
+        self.singlestep = tkinter.Button(self.stateframe, text="Step", command=self._step)
+        self.singlestep.grid(row=1, column=4, sticky="ew")
+
+        speedframe = tkinter.Frame(self.stateframe)
+        speedframe.grid(row=2, column=4, sticky="nsew")
+
+        self.speed_slider = tkinter.Scale(speedframe, from_=0.5, to=INITIAL_DUCK_VELOCITY*6,
                                           orient=tkinter.HORIZONTAL, command=self._on_speed_change)
-        self.speed_slider.grid(row=2, column=4, stick="nsew", padx=8, pady=4)
+        self.speed_slider.pack()
+        tkinter.Label(speedframe, text="Duck Speed").pack()
 
     def _reload_brain(self):
         brainsrc = self.source_code.get("1.0", self.tk.END)
@@ -2030,6 +2206,9 @@ class TkRenderer(BrainRenderer):
 
     def _startpause_brain(self):
         self._events.append(('startpause', ()))
+
+    def _step(self):
+        self._events.append(('step', ()))
 
     def _load_map(self):
         from tkinter import filedialog, messagebox
@@ -2046,10 +2225,38 @@ class TkRenderer(BrainRenderer):
                 self._events.append(('set_map', new_map))
 
     def _defocus_src(self, e):
-        if isinstance(e.widget, (self.tk.Entry, self.tk.Text)):
+        if isinstance(e.widget, (self.tk.Entry, self.tk.Text, str)):
+            return
+
+        if e.widget.winfo_toplevel() is not self.root:
             return
 
         self.root.focus_set()
+
+    def _open_brain(self):
+        from tkinter import filedialog, messagebox
+        selected = filedialog.askopenfilename(title="Select a .py file",
+                                              filetypes=[("Duckbot brain", "*.py")])
+        if selected is not None and selected != "":
+            try:
+                with open(selected, "rt") as f:
+                    b = f.read()
+                    self._set_brain_src(b)
+                    self._events.append(('brain', b))
+            except:
+                import traceback
+                traceback.print_exc()
+                messagebox.showwarning(title="Ooops", message="Could not load .py file")
+
+    def _save_brain(self):
+        from tkinter import filedialog, messagebox
+        import shutil
+        selected = filedialog.asksaveasfilename(title="Select a .py file",
+                                              filetypes=[("Duckbot brain", "*.py")])
+        if selected is not None and selected != "":
+            shutil.copyfile(selected, f'{selected}~')
+            with open(selected, "wt") as f:
+                f.write(self.source_code.get("1.0", self.tk.END))
 
     def _mark_lines(self, lines: list[tuple[int, str]]):
         self._clear_marks()
@@ -2058,16 +2265,27 @@ class TkRenderer(BrainRenderer):
             start = self.source_code.index(f'{line_num}.0')
             end = self.source_code.index(f'{line_num}.end')
             self.source_code.tag_add(tag, start, end)
-            self.source_marks.append((tag, start, end))
 
     def _clear_marks(self):
-        for tag, start, end in self.source_marks:
-            self.source_code.tag_remove(tag, start, end)
-        self.source_marks = []
+        for tag in self.source_code.tag_names():
+            self.source_code.tag_remove(tag, "1.0", "end")
+
+    def _clear_console(self):
+        self._set_console("Errors appear here...")
+
+    def _set_console(self, msg):
+        self.console.configure(state=self.tk.NORMAL)
+        self.console.delete("1.0", "end")
+        self.console.insert("1.0", msg)
+        self.console.configure(state=self.tk.DISABLED)
+
+    def report_error(self, err, exc=None):
+        self._events.append(('error', (err, exc)))
 
     def process_events(self, delegate):
         for c, a in self._events:
             if c == 'brain':
+                self._set_console("Brain loaded okay!...")
                 delegate.set_brain(a)
             elif c == 'quit':
                 delegate.request_quit()
@@ -2075,12 +2293,26 @@ class TkRenderer(BrainRenderer):
                 delegate.reset_game()
             elif c == 'startpause':
                 delegate.start_or_pause()
+            elif c == 'step':
+                delegate.step()
             elif c == 'set_map':
                 delegate.game.current_map = a
             elif c == 'change_scale':
                 delegate.set_scale(delegate.scale + a)
             elif c == 'change_velocity':
                 delegate.game.delegate.duck_velocity = a
+            elif c == 'syntax':
+                self._clear_marks()
+                self._mark_lines([(i, 'error') for i in range(a.lineno, a.end_lineno + 1)])
+                self._set_console(str(a))
+            elif c == 'error':
+                err, exc = a
+                self._clear_marks()
+                if exc is not None:
+                    start = exc['lineno']
+                    end = exc.get('end_lineno', start)
+                    self._mark_lines([(i, 'error') for i in range(start, end + 1)])
+                self._set_console(err)
 
         if len(self._events) > 0:
             self._events = []
@@ -2088,6 +2320,9 @@ class TkRenderer(BrainRenderer):
         if not hasattr(self, "_duck_velocity") or \
            self._duck_velocity != delegate.game.delegate.duck_velocity:
             self.speed_slider.set(delegate.game.delegate.duck_velocity)
+
+        if delegate.swap_buffers is None:
+            delegate.swap_buffers = self.glarea.swap_buffers
 
     def update_state_from_game(self, game):
         self._update_startpause(game)
@@ -2100,18 +2335,15 @@ class TkRenderer(BrainRenderer):
         self.westlabel.configure(text=duck_input.west)
 
         if not hasattr(self, "_last_thought") or \
-           self._last_thought is not game.thought_path[-1]:
+           (len(game.thought_path) > 0 and self._last_thought is not game.thought_path[-1]):
             self._last_thought = game.thought_path[-1]
 
             thought = self._last_thought[1]
             self.lastlinelabel.configure(text=f'Last decision made at line {thought.last_line}')
 
             decisions = []
-            if thought.next_name_stored_at is not None:
-                decisions.append((thought.next_name_stored_at, 'decision line'))
-
-            if thought.next_direction_stored_at is not None:
-                decisions.append((thought.next_direction_stored_at, 'decision line'))
+            if thought.decided_at is not None:
+                decisions.append((thought.decided_at, 'decision line'))
 
             self._mark_lines(decisions +
                              [(l, 'condition line') for l in thought.branches_at])
@@ -2120,11 +2352,12 @@ class TkRenderer(BrainRenderer):
         self.reloadbrain.configure(state=state)
         self.resetduck.configure(state=state)
         self.loadmap.configure(state=state)
+        self.singlestep.configure(state=state)
 
     def _update_startpause(self, game):
         if game.duck_game_state != self.duck_state:
             if not game.duck_game_state.is_complete and \
-               game.duck_game_state != DuckState.ALIVE:
+               not game.duck_game_state.is_alive:
                 self.startpause.configure(text="Start Duck")
                 self._gamecontrols_configure(state="normal")
             elif game.duck_game_state == DuckState.ALIVE:
@@ -2132,6 +2365,7 @@ class TkRenderer(BrainRenderer):
                 self._gamecontrols_configure(state="disabled")
             elif game.duck_game_state == DuckState.COMPLETE:
                 self.startpause.configure(text="Complete!")
+                self._set_console("DuckBot has found the ducklings!")
                 self._gamecontrols_configure(state="normal")
             else:
                 self.startpause.configure(text="Duck Dead")
@@ -2179,7 +2413,10 @@ class TkRenderer(BrainRenderer):
             self.glarea.make_current()
 
     def report_syntax_error(self, err: SyntaxError):
-        print("TODO: report_syntax_error")
+        self._events.append(('syntax', err))
+
+    def report_generic_error(self, err):
+        self._events.append(('error', (err, None)))
 
     def is_shown(self):
         return True
@@ -2191,8 +2428,12 @@ class TkRenderer(BrainRenderer):
         pass
 
     def set_brain(self, brain):
+        self._clear_marks()
+        self._set_brain_src(brain.source_code)
+
+    def _set_brain_src(self, brainsrc):
         self.source_code.delete("1.0", "end")
-        self.source_code.insert("1.0", brain.source_code)
+        self.source_code.insert("1.0", brainsrc)
 
     def show(self):
         self.root.deiconify()
@@ -2321,6 +2562,11 @@ class TkBrainRenderer(BrainRenderer):
         def annotate_syntax_error(start_line, start_off, end_line, end_off, msg):
             editing_anns.annotate(start_line, start_off, end_line, end_off, msg)
 
+        def annotate_line_error(start_line, msg):
+            line = self.source_code.get(f"{n}.0", f"{n}.end")
+            linelen = len(line)
+            annotate_syntax_error(start_line, 0, start_line, linelen, msg)
+
         tkinter.Button(btns, text="Reset Brain",
                        command=reset_brain) \
                .grid(row=0, column=0, sticky="ew", padx=4)
@@ -2353,6 +2599,12 @@ class TkBrainRenderer(BrainRenderer):
                         root.withdraw()
                     elif cmd == 'syntax':
                         annotate_syntax_error(*args)
+                    elif cmd == 'error':
+                        msg, pos = args
+                        if pos is not None:
+                            annotate_line_error(pos['lineno'], msg)
+                        else:
+                            print("TK ERROR", msg)
             except queue.Empty:
                 pass
             root.after(30, poll_queue)
@@ -2415,6 +2667,11 @@ async def launch_html(brain_file, tileset_file, map_dir, duck_sprite_file, api):
             game.duck_game_state = DuckState.ALIVE
         elif game.duck_game_state == DuckState.ALIVE:
             game.duck_game_state = DuckState.STOPPED
+    def step():
+        if game.duck_game_state == DuckState.STOPPED:
+            game.duck_game_state = DuckState.STEPPING
+    def set_speed(v):
+        renderer.duck_velocity = float(v)
     def reset_game():
         game.reset_game(randomize_starting_position=True)
     def reset_to_initial():
@@ -2439,8 +2696,11 @@ async def launch_html(brain_file, tileset_file, map_dir, duck_sprite_file, api):
         'resetToInitial': reset_to_initial,
         'setBrain': set_brain,
         'loadMap': load_map_json,
-        'loadBuiltinMap': set_map
+        'loadBuiltinMap': set_map,
+        'step': step,
+        'setSpeed': set_speed
     }))
+    api.setSpeedRange(0.5, INITIAL_DUCK_VELOCITY*6, renderer.duck_velocity)
     api.loaded(maps[0], maps)
     await renderer.async_game_loop(25)
 
@@ -2451,7 +2711,7 @@ def launch_tkgl(brain_file, tileset_file, map_file):
     tk_renderer = TkRenderer(use_opengl=True)
     backend = GlBackend(game, tk_renderer)
     renderer = GameRenderer(game, backend)
-    tk_renderer.run(renderer, fps=25)
+    tk_renderer.run(renderer, fps=10)
 
 def launch_pygame_tk(brain_file, tileset_file, map_file):
     brain = Brain(brain_file)
@@ -2487,7 +2747,6 @@ if __name__ == '__main__':
     if opts.backend == 'gles':
         launch_tkgl(opts.brain, 'week3/assets/tileset.json', opts.level)
     elif opts.backend == 'pygame':
-        print("PID", os.getpid())
         launch_pygame_tk(opts.brain, 'week3/assets/tileset.json', opts.level)
     else:
         print(f"Invalid backend {opts.backend}: expected gles, pygame")

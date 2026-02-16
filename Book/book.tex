@@ -108,11 +108,19 @@
 \newcommand{\CheckTikzPictureSide}{
   \checkoddpage
   \ifoddpage
+  \def\tikztuftetowardsmargin{1}
   \def\tikztufteouter{east}
-  \def\tikztufteinne{west}
+  \def\tikztufteinner{west}
+
+  \def\tikztuftemain{east}
+  \def\tikztuftemarg{west}
   \else
+  \def\tikztuftetowardsmargin{-1}
   \def\tikztufteouter{west}
   \def\tikztufteinner{east}
+
+  \def\tikztuftemain{west}
+  \def\tikztuftemarg{east}
   \fi
 }
 \makeatother
@@ -391,6 +399,7 @@
   \AtBeginEnvironment{table}{\fixfigure}
 \newcommand{\mTrackBox}[2]{\marginbox{Track: #1}{TrackOrange}{#2}}
 \newcommand{\marginbox}[3]{\marginnote{\textsf{\textbf{\textcolor{#2}{#1}}}\\{\sffamily #3}}}
+\newcommand{\codefamily}{\ttfamily\addfontfeatures{Ligatures=NoCommon,Contextuals=NoAlternate}}
 
 \definecolor{CodeBackground}{HTML}{F2F2F2}
 \definecolor{CodeBorder}{HTML}{555555}
@@ -406,7 +415,7 @@
   boxsep=1pt,
   top=0pt,
   bottom=0pt,
-  fontupper=\ttfamily\footnotesize,
+  fontupper=\codefamily\footnotesize,
   nobeforeafter
 }
 
@@ -518,7 +527,7 @@
 
 \lstdefinestyle{kidcode}{
   backgroundcolor=\color{SoftGray},
-  basicstyle=\ttfamily\small,
+  basicstyle=\codefamily\small,
   frame=single,
   rulecolor=\color{black!25},
   breaklines=true,
@@ -537,7 +546,7 @@
   keywordstyle=\color{CodeKeyword}\bfseries,
   commentstyle=\color{CodeComment}\itshape,
   stringstyle=\color{CodeString},
-  basicstyle=\ttfamily\small,
+  basicstyle=\codefamily\small,
   showstringspaces=false,
   moredelim=**[is][\itshape]{@@}{@@}
 }

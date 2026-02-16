@@ -82,39 +82,52 @@ of logic and simple observations to deduce a global truth.
 
 \section{Week 2 Review}
 
-Last week, we discussed breaking down large drawings and objects into
-smaller elements. Doing so let us build large drawings from simple
-drawings we could combine together. Even though the set of simple
-or \term{primitive} drawings were small, we could draw quite a bit
-with them.
+Last week, we discussed breaking down large drawings and objects into smaller elements. Doing so let
+us build large drawings from simple drawings we could combine together. Even though the set of
+simple or \term{primitive} drawings were small, we could draw quite a bit with them.
 
 \section{Understanding Big Things}
 
-The Turtle cursor we saw last week simply knew what was around it. We
-gave it commands based on its \emph{immediate} environment and based
-on those, it simply followed what we told it. It was up to us to give
-it the set of rules necessary to make the drawings we wanted.
+The Turtle cursor we saw last week simply knew what was around it. We gave it commands based on its
+\emph{immediate} environment and based on those, it simply followed what we told it. It was up to us
+to give it the set of rules necessary to make the drawings we wanted. On its own, it was unable to
+decide what to do.
 
-We can use a similar idea to understand large things. It's impossible
-to build a system large enough to be able to ``see'' the entire set of
-things we'd ever want to talk about. Just like Eratosthenes, we are
-limited in what we are able to perceive. Similarly, computers can only
-perceive a few things directly, yet we are able to build very complex
-systems with them.
+When we programmed Turtle, we would run a function, draw it, and see what it looked like and where
+the cursor ended up. Based on that, we would add another line or circle to our drawing. This process
+involves a human (you) deciding what to do after each step.
 
-How can we use small rules to understand large things? Once again, we have to be clear about our
-language. We have to understand what we can see and what we can do with that information. When our
-rules are designed to ingest and understand information, we call that
-an \term{algorithm}. \didyouknow{The word \emph{algorithm} comes from the name of the Persian
-polymath and mathematician al-Khw\={a}rizm\={i} who introduced the idea of algorithms to the West
-via his book \emph{kit\={a}b al-\d{h}is\={a}b al-hind\={i}} (``Book of Indian Computation''). This
-book was translated into Latin by Robert Chester in 1145, and was the principal mathematics textbook
-used in many universities for almost four centuries. Many of our modern methods of addition,
-subtraction, division, and multiplication come from his translations!
+Of course, in real life, computers do not wait for human input for every decision. Rather, they make
+them on their own using long sets of rules that computer programmers assemble for the
+computer. These rules have to be very detailed so that the computer knows what to do in every
+possible situation it may encounter. Unlike with Turtle, there's no one around to change course if
+the cursor ends up in the wrong spot or in the wrong orientation. Lists of rules that computers
+follow on their own without human input is called an \term{algorithm}.  \didyouknow{The word
+  \emph{algorithm} comes from the name of the Persian polymath and mathematician
+  al-Khw\={a}rizm\={i} who introduced the idea of algorithms to the West via his book
+  \emph{kit\={a}b al-\d{h}is\={a}b al-hind\={i}} (``Book of Indian Computation''). This book was
+  translated into Latin by Robert Chester in 1145, and was the principal mathematics textbook used
+  in many universities for almost four centuries. Many of our modern methods of addition,
+  subtraction, division, and multiplication come from his translations!
 \vspace{1em}
 \begin{center}
   \includegraphics[width=0.6\marginparwidth]{../week3/figures/al-kwharizmi.jpg}
 \end{center}}
+
+
+\section{Algorithms}
+
+You're probably familiar with several types of algorithms already. For example, there's an algorithm
+for adding and subtracting numbers. Similarly, there are strict sets of rules to follow for
+multiplying numbers. Beyond mathematics, even everyday situations involve algorithms. Consider a
+complicated intersection. Cars go based off of whether the lights are red or green. The lights
+operate on their own according to pre-set instructions; there's no human involvement. The system
+requires every car to follow the rules. Otherwise, the cars literally crash.
+
+Our Turtle drawings from last weeks are also examples of simple algorithms. These algorithms
+followed a sequence of rules in order to do something -- in our case, to draw a duck. But
+oftentimes, algorithms have to decide to do something based off data. These are the kinds of
+algorithms we will explore this week.
 
 In order to learn and understand algorithms, we are going to play a simple game. But be
 warned... this is not like any game you've played before!
@@ -150,6 +163,13 @@ The DuckBot game window (see \prettyref{fig:duckbot}) has four parts:
 
 \end{enumerate}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.9\linewidth]{../week3/figures/duckbot.jpg}
+  \caption{The DuckBot interface has five main components: (1) the pond, (2) the brain source code, (3) the error window, (4) the controls, and (5) the state window}
+  \label{fig:duckbot}
+\end{figure}
+
 \subsection{Programming DuckBot}
 
 DuckBot is programmed in Python. The goal of the game is to write a program so that DuckBot swims
@@ -171,45 +191,47 @@ Every time DuckBot moves to a new square, the brain code is run again. The brain
 
 \end{enumerate}
 
-\subsection{The Brain}
-
 DuckBot's brain is written as a function.
 
 % TODO figure showing the function declaration
 \begin{minipage}{\textwidth}
   \tikzforeground{
-    \node[anchor=south] (brain function note) at ([yshift=2em]brain function name.north) {
-      \begin{tcolorbox}[code note, width=2cm]
+    \CheckTikzPictureSide
+    \node[anchor=east] (brain function note) at ([yshift=0.5em, xshift={\tikztuftetowardsmargin * 1em}]current page text area.\tikztuftemain|-brain function name.north) {
+      \begin{tcolorbox}[code note, width=4cm]
         Your function should be named \code{brain}.
       \end{tcolorbox}
     };
+    \draw[->] (brain function note.east) to[out=0,in=90,looseness=0.8] ([yshift=1em]brain function name.north);
   }
-
   \Large \ttfamily
+  \vspace{0.5cm}
   \begin{tcolorbox}[sharp corners]
-    \kw{def} \tikzmarknode{brain function name}{brain}(\tikzmarknode{north arg}{north}, \tikzmarknode{east arg}{east}, \tikzmarknode{south arg}{south}, \tikzmarknode{west arg}{west}, \tikzmarknode{thought arg}{thought}):
+    \kw{def} \tikzmarknode{brain function name}{brain}(\tikzmarknode{north arg}{north}, \tikzmarknode{south arg}{south}, \tikzmarknode{east arg}{east}, \tikzmarknode{west arg}{west},\\
+    \hspace{5em}\tikzmarknode{thought arg}{thought}):
   \end{tcolorbox}
 \end{minipage}
 
-\termheading{How DuckBot Perceives the World}
+\subsection{How DuckBot Perceives the World}
 
-DuckBot can sense the four squares immediately to the North, South, East, and West of its current
+DuckBot can sense the four squares immediately to the north, south, east, and west of its current
 location.\hint{Remember that Python requires us to surround letters and words in quotation marks.} A
 blocked square is signified by the letter \code{'x'}. A free square is signified by the
 letter \code{'*'}. This is illustrated in \prettyref{fig:duckbot-directions}.
 
-\termheading{DuckBot's Memory}
+DuckBot's brain is totally fried and so is its memory. DuckBot can only remember the last thing you
+told it. This is called its \emph{thought}.\curious{DuckBot's thought is an example of
+  \term{state}.} DuckBot can see what's around it in the current square. Based off of this knowledge
+\emph{and} its previous thought, DuckBot has to decide the next direction and its next thought.
 
-As we said before, DuckBot's brain is totally fried and so is its memory. DuckBot can only remember
-the last thing you told it. This is called its \emph{thought}.\curious{DuckBot's thought is an
-example of \term{state}.} DuckBot can see what's around it in the current square. Based off of this
-knowledge \emph{and} its previous thought, DuckBot has to decide the next direction and its next
-thought.
-
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.8\marginparwidth]{../week3/figures/duckbot-directions.pdf}
+  \caption{In this situation, DuckBot senses two free squares to the north (N) and west (W), and two blocked cells to the south (S) and east (E).}
+  \label{fig:duckbot-directions}
+\end{marginfigure}
 You can see DuckBot's current thought in the information pane beneath the pond. When you first start
 DuckBot, its thought is the number $0$.
-
-\termheading{Deciding What to do Next}
 
 In order to make DuckBot \emph{do} something, you have to give it instructions. Just like we saw
 last week, to send data out of a function we use \kw{return}.
@@ -217,14 +239,15 @@ last week, to send data out of a function we use \kw{return}.
 \begin{minipage}{\textwidth}
   \Large \ttfamily
   \tikzforeground{
-    \node[anchor=south](return comma note) at ([xshift=1cm,yshift=1em]return comma.north) {
+    \node[anchor=\tikztuftemarg](return comma note) at ([xshift={\tikztuftetowardsmargin * 0.5cm},yshift=2cm]current page text area.\tikztuftemain|-return comma.north) {
       \begin{tcolorbox}[code note, width=4cm]
         The \code{,} (comma) tells \kw{return} that we are going to send back more than one piece of data.
       \end{tcolorbox}
     };
 
-    \draw[->] (return comma note.south) -- ([yshift=0.1em]return comma.north);
+    \draw[->] (return comma note.\tikztuftemarg) to[out={acos(\tikztuftetowardsmargin)}, in=90] ([yshift=0.5em,xshift=0.5em]return comma.north);
   }
+  \vspace{0.5cm}
   \begin{tcolorbox}[sharp corners]
     \tikzmarknode{return dir}{\kw{return}} \tikzmarknode{return direction}{'N'}\tikzmarknode{return comma}{,} \tikzmarknode{return next thought}{'next\_thought'}
   \end{tcolorbox}
@@ -239,17 +262,15 @@ to go in. This can be:
 \item \code{'E'} to go east
 \item \code{'S'} to go south
 \item \code{'W'} to go west
-\item \code{None} to stay in the same place\hint{\code{None} is a
+\item \code{\kw{None}} to stay in the same place\hint{\kw{None} is a
   special Python value indicating the absence of any data. You don't
   need to put it in quotes. If you did, then you would get the string
   \code{'None'} instead of the special \code{None} value}
 \end{itemize}
 
-The second thing we return is DuckBot's next thought. The thought can
-be anything: a number or a string or even the \code{None}
-value.\hint{You'll probably want your thoughts to mostly be
-  strings. This will make your code easier to understand.} You get to
-decide!
+The second thing we return is DuckBot's next thought. The thought can be anything: a number or a
+string or even the \code{None} value.\hint{You'll probably want your thoughts to mostly be
+  strings. This will make your code easier to understand.} You get to decide!
 
 \subsection{Playing the Game}
 
@@ -268,7 +289,7 @@ this:
 DuckBot is placed at a random location. DuckBot's brain is the simple function:
 
 \begin{lstlisting}
-def brain(north, east, south, west, thought):
+def brain(north, south, east, west, thought):
   return None, thought
 \end{lstlisting}
 
@@ -282,8 +303,8 @@ Hmm... that's no good. We want DuckBot to do something. Let's make DuckBot go ea
 \begin{TryThisBox}
   Change DuckBot's brain to this:
   \begin{lstlisting}
-    def brain(north, east, south, west, thought):
-      @@return 'E', thought@@
+def brain(north, south, east, west, thought):
+  @@return 'E', thought@@
   \end{lstlisting}
 \end{TryThisBox}
 
@@ -330,10 +351,10 @@ Let's try using \kw{if} to make DuckBot do something if we have an obstacle to t
 \begin{TryThisBox}
   Change DuckBot's brain to this:
   \begin{lstlisting}
-    def brain(north, east, south, west, thought):
-      @@if east == 'x':
-        return 'N', thought@@
-      return 'E', thought
+def brain(north, south, east, west, thought):
+  @@if east == 'x':
+    return 'N', thought@@
+  return 'E', thought
   \end{lstlisting}
 \end{TryThisBox}
 
@@ -355,16 +376,16 @@ hit the bottom of the pond, so we have to turn back east.
 \begin{TryThisBox}
   Change DuckBot's brain to this:
   \begin{lstlisting}
-    def brain(north, east, south, west, thought):
-      if east == 'x':
-        return 'N', thought
-      @@if north == 'x':
-        return 'W', thought
-      if west == 'x':
-        return 'S', thought
-      if south == 'x':
-        return 'E', thought@@
-      return 'E', thought
+def brain(north, south, east, west, thought):
+  if east == 'x':
+    return 'N', thought
+  @@if north == 'x':
+    return 'W', thought
+  if west == 'x':
+    return 'S', thought
+  if south == 'x':
+    return 'E', thought@@
+  return 'E', thought
   \end{lstlisting}
 \end{TryThisBox}
 
@@ -378,12 +399,12 @@ interface, which displays the current state of what DuckBot sees.
 
 In the brain view, you'll also notice that some lines are highlighted. The lines highlighted in
 light gray represent the code that was used by DuckBot to make its decision. The lines highlighted
-in green represent points where decisions were made (i.e., places that used \kw{if}). Finaly, the
+in green represent points where decisions were made (i.e., places that used \kw{if}). Finally, the
 line highlighted blue indicate where DuckBot made its decision.
 
 If we look at the interface, we'll see that lines 2 and 3 (see \prettyref{listing:duckbot-circle})
 are highlighted, indicating that these are what led to the decision DuckBot made. But that's not
-what we wanted. We wanted DuckBot to make the decision to turn West, which is on line 5. The \kw{if}
+what we wanted. We wanted DuckBot to make the decision to turn west, which is on line 5. The \kw{if}
 of line 4 was supposed to check the condition that there was an obstacle to the north. But this line
 is not highlighted, indicating it was not used. Why?
 
@@ -479,13 +500,9 @@ set of inputs and outputs as a four-row table. These are called \term{truth tabl
 The conditions that we've been using in our \code{brain} functions are an example of comparing
 values. Python has several rules and symbols to compare values. We've been using \code{==} which
 checks that two things are equal. There are other \term{operators} that check for other
-conditions. For a full summary see \prettyref{table:comparisons}.
+conditions. For a full summary see \prettyref{tab:comparisons}.
 
-\begin{replbox}
-north == 'x'
-\end{replbox}
-
-\begin{table}
+\begin{table}[b]
   \centering
   \begin{tabular}{lp{0.8\linewidth}}
     \hline
@@ -502,7 +519,7 @@ north == 'x'
   \caption{Some Python operators that can be used to inspect data that return booleans. Note that
     for strings, \code{x < y} means that \code{x} comes before \code{y} in standard alphabetical
     order.}
-  \label{table:comparisons}
+  \label{tab:comparisons}
 \end{table}
 
 These rules result in booleans. Let's try it.
@@ -518,6 +535,37 @@ True
 False
 \end{replbox}
 
+We can combine these using \kw{and} and \kw{or}
+
+\begin{replbox}
+>>> 4 < 5 and 5 <= 10
+True
+>>> 5 < 4 or 5 > 10
+False
+\end{replbox}
+
+Going back to our brain above, we can now use \kw{and} to ensure that we do not continue north
+simply because we are blocked to our east. Instead, we also check that north is free.
+
+\begin{TryThisBox}
+  Change DuckBot's brain to this:
+  \begin{lstlisting}
+def brain(north, south, east, west, thought):
+  if east == 'x' @@and north == '*':@@
+    return 'N', thought
+  if north == 'x' @@and west == '*':@@
+    return 'W', thought
+  if west == 'x' @@and south == '*':@@
+    return 'S', thought
+  if south == 'x' @@and east == '*':@@
+    return 'E', thought
+  return 'E', thought
+  \end{lstlisting}
+\end{TryThisBox}
+
+Let's try running this. That's much better -- DuckBot doesn't die. But it also looks like DuckBot is
+stuck going in circles. Those ducklings won't be found unless DuckBot searches every square of the
+pond. Can we figure out what's going on?
 
 \subsection{Infinite Loops}
 
@@ -526,41 +574,81 @@ working. \curious{DuckBot not breaking but also not being able to tell you that 
   an example of a kind of behavior that's broken but that Python cannot report as an error: there is
   no Python rule you are breaking. Python faithfully carries out exactly the rules you gave to it.}
 
+Can we understand why? Let's once again, consider the case when DuckBot hits the north-east
+corner. What do we want to happen? We currently turn left, towards the west, to prevent DuckBot from
+dying by continuing to go north. Then, when DuckBot is going west, the only thing we ensure is that
+DuckBot continues west until it can't go any further, at which point we turn left again. At some
+point, this leads DuckBot right back to the north-east square, and the cycle repeats.\hint{The cycle
+  repeats because there's no way for DuckBot to know if it's already visited that square
+  before. Therefore, DuckBot \emph{has} to continue doing the same thing over and over and over
+  again.}
 
+If we want to fix this, we need to consider what \emph{ought} to happen when DuckBot hits this
+corner. Obviously, we can't keep going west -- we tried that and it didn't work. What we really want
+is DuckBot to go west one square, and then turn back south (see
+\prettyref{fig:duckbot-desired-outcome}). That way it'll hit squares that are in the middle of the
+pond, not just on the perimeter.
+
+If you step through the game, you'll notice that, after DuckBot turns at the north-east corner and
+is going west, it no longer has any way to know it was at the north east corner. In order to know
+that it needs to turn immediately after going west one square after it hits the corner, we need to
+make DuckBot remember that it's planning on turning after it moves one block west. This is where
+DuckBot's \code{thought} comes in.
+
+Recall that each time the \code{brain} function is used, it gets what DuckBot sees and also the last
+thing DuckBot thought. In our previous brains, we just \kw{return}ed whatever it was that DuckBot
+was already thinking. Now, we need to use that \code{thought} in order to remember what
+happened. Let's try it.
+
+\begin{TryThisBox}
+  Change DuckBot's brain to this:
+  \begin{lstlisting}
+def brain(north, south, east, west, thought):
+  @@if thought == 'going_west':
+    return 'S', 'south'
+  if thought == 'south':
+    return 'S', thought@@
+
+  if east == 'x':
+    if north == 'x':
+      return 'N', @@'going_west'@@
+    if north == '*':
+      return 'N', thought
+
+  return 'E', thought
+  \end{lstlisting}
+\end{TryThisBox}
+
+What happens now? When DuckBot hits the north-east corner, it now turns west \emph{and} its
+\code{thought} changes to \code{'going\_west'}. Then, when DuckBot decides what to do after it goes
+west, the first \kw{if} runs, and DuckBot continues south and also changes its \code{thought} to
+\code{'south'}. With that thought in mind, DuckBot always hits the second \kw{if} and continues
+south, until it dies, because it didn't check if there was anything to its south.
+
+\curious{The solution to this problem is in \texttt{week3/solutions/simple.py}, but don't check it
+  until you've tried doing this yourself.}
+\begin{TryThisBox}
+  Can you try modifying DuckBot's brain so that it does not die going south?
+
+  \hintnote One way to do this is to add another state that turns DuckBot completely around when it
+  hits the southern wall.
+\end{TryThisBox}
+
+The important thing to understand is that the environment never changes. The pond edges and
+obstacles stay exactly where they are. DuckBot can only see its immediate surroundings.
+
+If DuckBot had no thought -- no memory at all -- then it would always react the same way whenever it
+saw the same walls and the same obstacles. In other words, it would be stuck in the loop we saw
+above.
+
+The only way to distinguish between going west immediately after hitting the north east corner and
+just continuing west indefinitely is its changing thought.\curious{In fact, there are problems
+  DuckBot -- and things like it -- could \emph{never} solve unless it is allowed to remember
+  something about the past. Just reacting to what it sees right now may not be enough.}
 
 \begin{TryThisBox}
   Try going through all the DuckBot levels. For hints, see the exercises at the end of the chapter.
 \end{TryThisBox}
-
-\section{Algorithms}
-
-An algorithm is characterized by its inputs and the exact sequence of steps you must follow to get
-some result. For example, a common algorithm we are familiar with involves adding two numbers. Then,
-the algorithm goes as follows:
-
-% TODO demonstrate
-
-\begin{enumerate}
-
-\item Place both numbers you want to add and align units, starting with the ones place.
-\item Proceed to add single digits starting with the ones place.
-\item If the sum of the single digits is greater than 9, place the digits from the tens place and beyond into the columns of the higher places.
-\item Proceed to the next place
-
-\end{enumerate}
-
-\curious{The first computers were literally implemented as a series of on-off switches. Engineers would manually connect large electronically-operated switches known as relays to create machines that could calculate automoatically. Pictured below is the Harvard Mark I which was one of the first electromechanical computers ever built.} Another way of thinking about an algorithm is a series of decisions. It may not seem like it right
-now, but everything we did above can be turned into a series of yes or no questions. The answers to
-these questions choose the next step that ought to be done. This becomes more clear if we re-state
-the addition procedure above over the binary numbers.
-
-% TODO demonstrate
-
-
-
-\section{Implementing an Algorithm}
-
-Once you've thought through what the algorithm ought to do. 
 
 \section{Numbers All the Way Down}
 
