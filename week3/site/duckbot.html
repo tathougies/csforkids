@@ -132,8 +132,10 @@
         padding: 0.5em;
         display: flex;
         flex-direction: row;
-        justify-content: space-around;
+        flex-wrap: wrap;
       }
+
+      .controls > button, .controls > div { margin: 0.3em 0.2em; }
 
       .canvas {
         flex: 2;
@@ -306,7 +308,7 @@
             <button class="btn btn-secondary dropdown-toggle" type="button" id="openbraindd" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Open Brain</button>
             <ul class="dropdown-menu" aria-labeledby="openbraindd">
               <li><a id="openbrainfromgh" class="dropdown-item" href="#">From GitHub...</a></li>
-              <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#fromurlmodal">From URL...</a></li>
+              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#fromurlmodal">From URL...</a></li>
               <li><a id="openbrain" class="dropdown-item" href="#">From File...</a></li>
             </ul>
           </div>
@@ -322,15 +324,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="fromurlmodal-title">Open URL</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>
           Enter the URL of the file you would like to load:
         </p>
-        <input class="form-control" type="text" placeholder="http://...">
+        <input class="form-control" type="text" placeholder="http://..." id="fromurl">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -396,6 +396,9 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.stepBtn = document.getElementById('step');
             this.speedRange = document.getElementById('speed');
 
+            this.fromurlmodal = document.getElementById('fromurlmodal');
+            this.fromurl = document.getElementById('fromurl');
+
             this.stateBox = document.getElementById("state");
             this.thoughtBox = document.getElementById("thought");
             this.northBox = document.getElementById("north");
@@ -412,6 +415,13 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             const mapFileInput = document.getElementById('mapfile');
             this.speedRange.addEventListener('change', function(event) {
               if ( self.cbs ) self.cbs.setSpeed(event.target.value);
+            });
+            this.fromurlmodal.addEventListener('shown.bs.modal', () => {
+              self.fromurl.value = '';
+              self.fromurl.focus();
+            });
+            this.loadBrainFromUrl.addEventListener('click', () => {
+              bootstrap.Modal.getOrCreateInstance(self.fromurlmodal).hide();
             });
             mapFileInput.addEventListener('change', function(event) {
               var file = event.target.files[0];
@@ -481,6 +491,17 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.console.innerHTML = "";
             this.console.appendChild(document.createTextNode(msg));
             this.console.setAttribute("class", cls);
+          }
+
+          consoleHasError() {
+            return this.console.classList.contains('console-error');
+          }
+
+          prependConsole(msg) {
+            if (this.console.firstChild)
+              this.console.insertBefore(document.createTextNode(msg), this.console.firstChild);
+            else
+              this.console.appendChild(document.createTextNode(msg));
           }
 
           setMapInfo(map) {
@@ -556,7 +577,10 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
                 break;
               case 'DuckState.DEAD':
                 stateText = "Dead ☠️";
-                this.setConsole("DuckBot has died. Press reset to try again.", "console-error");
+                if ( this.consoleHasError() )
+                  this.prependConsole("DuckBot has died. Press reset to try again.")
+                else
+                  this.setConsole("DuckBot has died. Press reset to try again.", "console-error");
                 this.startStopDuck.innerHTML = 'Duck Dead';
                 break;
               default:

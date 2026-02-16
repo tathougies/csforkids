@@ -41,7 +41,17 @@ COND_BRANCH_OPS = set(['POP_JUMP_FORWARD_IF_FALSE', 'POP_JUMP_FORWARD_IF_TRUE',
                        'POP_JUMP_IF_NOT_NONE', 'POP_JUMP_IF_NONE',
                        'JUMP_IF_TRUE', 'JUMP_IF_FALSE'])
 
-
+DISALLOWED_OPS = [
+    (('IMPORT_NAME', 'IMPORT_FROM',), 'Importing modules is not allowed'),
+    (('YIELD_VALUE', 'RETURN_GENERATOR',), 'Generators not allowed'),
+    (('FOR_ITER',), 'Looping not allowed'),
+    (('MAKE_CELL',), 'Higher-order functions not allowed'),
+    (('LOAD_BUILD_CLASS', 'LOAD_SUPER_ATTR',), 'Classes not allowed'),
+    (('POP_EXCEPT', 'PUSH_EXC_INFO', 'RERAISE', 'CHECK_EXC_MATCH', 'CHECK_EG_MATCH',
+      'RAISE_VARARGS', 'SETUP_FINALLY', 'SETUP_CLEANUP', 'SETUP_WITH'), 'Exceptions not allowed'),
+    (('GET_AWAITABLE', 'GET_AITER', 'GET_ANEXT', 'END_ASYNC_FOR'), 'Await/async not allowed')
+]
+DISALLOWED_OP_MESSAGES = {nm: msg for (nms, msg) in DISALLOWED_OPS for nm in nms}
 
 # GL stuff
 GL_VERTEX_SHADER_SRC = '''
@@ -240,6 +250,7 @@ class Brain:
         traceback.print_stack()
 
         byte_code = compile(self.source_code, brain_file, "exec")
+        self._validate_byte_code(byte_code)
         gbls = {}
         exec(byte_code, gbls)
 
@@ -274,6 +285,26 @@ class Brain:
                         exp_positional = exp_positional[1:]
 
             self.kw_args = [nm for nm in exp_positional if any(nm == n for n in sig.parameters.keys())]
+
+    def _validate_byte_code(self, bc):
+        cache = set()
+        def _go(bc):
+            if bc in cache:
+                return
+
+            cache.add(bc)
+            for i in dis.get_instructions(bc):
+                if i.opname in DISALLOWED_OP_MESSAGES:
+                    s = SyntaxError(DISALLOWED_OP_MESSAGES[i.opname])
+                    s.lineno = i.positions.lineno
+                    s.offset = 0
+                    s.end_lineno = i.positions.lineno + 1
+                    s.end_offset = 0
+                    raise s
+                elif i.opname == 'LOAD_CONST':
+                    if isinstance(i.argval, types.CodeType):
+                        _go(i.argval)
+        _go(bc)
 
     def _apply(self, duck_input):
         g = duck_input.make_globals()
