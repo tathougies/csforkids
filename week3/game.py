@@ -2834,4 +2834,4 @@ if __name__ == '__main__':
         print(f"Invalid backend {opts.backend}: expected gles, pygame")
 
 if 'THONNY_VERSION' in os.environ:
-    launch_tkgl(asset('sample_brain.py'), asset('/assets/tileset.json'), asset('assets/maps/level1.json'))
+    launch_tkgl(asset('sample_brain.py'), asset('assets/tileset.json'), asset('assets/maps/level1.json'))
