@@ -22,7 +22,6 @@ import platform
 if platform.system() == 'Linux':
     os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
-DUCK_SPRITE_FILENAME = 'week3/assets/duck.png'
 SCALE_FACTOR = 2
 
 SCROLL_INCREMENT = 32 # MUst scroll 32 pixels to scroll by 1
@@ -39,6 +38,11 @@ INITIAL_DUCK_VELOCITY = 10
 
 # How many animation ticks per second
 TIME_SPEED = 2
+
+def asset(file):
+    from pathlib import Path
+    return Path(__file__).parent / file
+DUCK_SPRITE_FILENAME = asset('assets/duck.png')
 
 # DO NOT MODIFY ANYTHING PAST HERE
 COND_BRANCH_OPS = set(['POP_JUMP_FORWARD_IF_FALSE', 'POP_JUMP_FORWARD_IF_TRUE',
@@ -2811,10 +2815,6 @@ def discover_maps(path):
                 pass
     maps.sort(key=lambda m: m.order)
     return maps
-
-def asset(file):
-    from pathlib import Path
-    return Path(__file__).parent / file
 
 # This checks to see if this is being run as a game
 if __name__ == '__main__':
