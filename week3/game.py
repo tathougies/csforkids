@@ -19,6 +19,9 @@ import pathlib
 import json
 import platform
 
+if platform.system() == 'Linux':
+    os.environ['PYOPENGL_PLATFORM'] = 'egl'
+
 DUCK_SPRITE_FILENAME = 'week3/assets/duck.png'
 SCALE_FACTOR = 2
 
@@ -1469,15 +1472,7 @@ class GlBackend(GameBackend):
 
     def start_lake_draw(self, lake_off, lake_dim):
         if not self.initialized:
-            from OpenGL.error import Error as GLError
-            try:
-                self._init_opengl()
-            except GLError:
-                print("_init_opengl fails")
-                import traceback
-                traceback.print_exc()
-                from .egl_canvas import EGLCanvas
-                self.tk_renderer._init_openglarea(EGLCanvas)
+            self._init_opengl()
             self.initialized = True
 
         self.gl.glEnable(self.gl.GL_BLEND)
@@ -2192,7 +2187,7 @@ class TkRenderer(BrainRenderer):
 
         owner = self
         if use_opengl:
-            if 'USE_EGL' in os.environ:
+            if os.environ.get('PYOPENGL_PLATFORM') == 'egl':
                 from .egl_canvas import EGLCanvas
                 self._init_openglarea(EGLCanvas)
             else:
