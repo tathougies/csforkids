@@ -867,16 +867,17 @@ To draw the diagram, use this code:
 >>> draw.draw(draw.circle(30, 1/2) +<ENTER>
 ... draw.circle(-30, 1/2), (*@\tikzmarknode{immediate note target}{}@*)immediate=True(*@\tikzmarknode{immediate note target end}{}@*))<ENTER>(*@
 \tikzforeground{
+  \CheckTikzPictureSide
   \coordinate (immediate note middle) at ($(immediate note target)!0.5!(immediate note target end)$);
-  \node[anchor=east] (immediate note hint) at ([xshift=-0.7cm,yshift=-0.2cm]current page text area.west|-immediate note middle) {
+  \node[anchor=east] (immediate note hint) at ([xshift={\tikztuftetowardsmargin * 0.7cm},yshift=-0.2cm]current page text area.\tikztuftemain|-immediate note middle) {
     \begin{tcolorbox}[code note]
       You can set \code{immediate=True} to just get the final output, without having to watch Turtle draw.
     \end{tcolorbox}
   };
 
-  \draw[->] (immediate note hint.east) to[out=0,in=-140,looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
+  \draw[->] (immediate note hint.\tikztuftemarg) to[out=0,in=\tikztufteangle{-40},looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
 }
-*@)\end{replbox}
+\end{replbox}
 
 With these shapes, we can make more complicated figures. There's just
 one thing left: filling our shapes with color.
@@ -911,11 +912,27 @@ drawings precisely! Take a look at your drawing, and break it up into \emph{rule
   Try using what you've learned thus far to draw a duck using \kw{def}/\kw{return} and
   Turtle. Name your function \code{duck}.
 
+  You can reference the file in \texttt{csforkids/week2/myduck.py} to get you started.
+
   As you're doing this, try to keep re-usable parts of your duck in separate functions, so you don't
   have to figure out the same code over and over again. For example, you might write a function to
   draw an eye, and then re-use that function to draw both eyes.
 \end{TryThisBox}
 
+\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
+  lights going on and off, but how do they represent \emph{sound}?
+
+  When our ears hear sound, they are responding to \emph{changes} in
+  air pressure.
+
+  Computers represent this -- you guessed it -- using numbers!
+
+  With graphics, we had to break up the rectangular screen into small
+  chunks called pixels. For sound, we instead break up \emph{time}
+  into really small sections (tens of thousands per second!) called
+  samples. Within each sample, we store a number which represents how strong the sound is at that time. The samples
+  are sequenced together rapidly using a componenty called a DAC or
+  \term{digital-to-analog converter} and sent to a speaker, which outputs a very short sound at that strength. This process happens tens of thousands of times in one second. Our ear perceives it as high quality sound. }
 \prettyref{fig:example-ducks} shows some examples of what you may have
 created. All of these are examples of a ``duck'' that you can make
 using the simple rules for drawing we learned above.
@@ -953,28 +970,14 @@ we can make more ducks.
 
 Nice! Look at all those ducks. But, there's one problem... all our ducks look the same. Can we make
 each one a bit more unique?
-\mTrackBox{Music \& Sound}{ We've seen how computers represent images as
-  lights going on and off, but how do they represent \emph{sound}?
 
-  When our ears hear sound, they are responding to \emph{changes} in
-  air pressure.
-
-  Computers represent this -- you guessed it -- using numbers!
-
-  With graphics, we had to break up the rectangular screen into small
-  chunks called pixels. For sound, we instead break up \emph{time}
-  into really small sections (tens of thousands per second!) called
-  samples. Within each sample, we store a number which represents how strong the sound is at that time. The samples
-  are sequenced together rapidly using a componenty called a DAC or
-  \term{digital-to-analog converter} and sent to a speaker, which outputs a very short sound at that strength. This process happens tens of thousands of times in one second. Our ear perceives it as high quality sound. }
-
-
-Let's add some \term{arguments} to our \code{duck} function. Modify
-your function to include some arguments.  \hint{The \code{lake\_of}
+\hint{The \code{lake\_of}
   function supports \code{body\_color}, \code{eye\_color}, and
   \code{size}, and will use whatever arguments your function has. The
   colors can be used however you want, and the size just says how
   ``big'' to draw the duck. Try it and see!}
+Let's add some \term{arguments} to our \code{duck} function. Modify
+your function to include some arguments.
 \begin{TryThisBox}
   \begin{lstlisting}
 def duck(@@body_color@@, @@eye_color@@):

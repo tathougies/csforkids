@@ -2425,6 +2425,12 @@ class TkRenderer(BrainRenderer):
 
     def _update_startpause(self, game):
         if game.duck_game_state != self.duck_state:
+            if self.duck_state is not None and \
+               self.duck_state.is_complete and not game.duck_game_state.is_complete:
+                if game.duck_game_state.is_alive:
+                    self._set_console("DuckBot is looking for the ducklings")
+                elif game.duck_game_state == DuckState.STOPPED:
+                    self._set_console("DuckBot is stopped. Click 'Start Duck' to start DuckBot")
             if not game.duck_game_state.is_complete and \
                not game.duck_game_state.is_alive:
                 self.startpause.configure(text="Start Duck")
@@ -2803,19 +2809,26 @@ def discover_maps(path):
     maps.sort(key=lambda m: m.order)
     return maps
 
+def asset(file):
+    from pathlib import Path
+    return Path(__file__).parent / file
+
 # This checks to see if this is being run as a game
 if __name__ == '__main__':
     from argparse import ArgumentParser
     args = ArgumentParser()
-    args.add_argument('--brain', default='week3/sample_brain.py')
-    args.add_argument('--level', default='week3/assets/maps/level1.json')
+    args.add_argument('--brain', default=asset('sample_brain.py'))
+    args.add_argument('--level', default=asset('assets/maps/level1.json'))
     args.add_argument('--backend', default='gles')
 
     opts = args.parse_args()
 
     if opts.backend == 'gles':
-        launch_tkgl(opts.brain, 'week3/assets/tileset.json', opts.level)
+        launch_tkgl(opts.brain, asset('assets/tileset.json'), opts.level)
     elif opts.backend == 'pygame':
-        launch_pygame_tk(opts.brain, 'week3/assets/tileset.json', opts.level)
+        launch_pygame_tk(opts.brain, asset('assets/tileset.json'), opts.level)
     else:
         print(f"Invalid backend {opts.backend}: expected gles, pygame")
+
+if 'THONNY_VERSION' in os.environ:
+    launch_tkgl(asset('sample_brain.py'), asset('/assets/tileset.json'), asset('assets/maps/level1.json'))

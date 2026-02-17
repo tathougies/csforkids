@@ -2,7 +2,7 @@
 
 \week[description={Last week we discussed information. This week we start to understand that combining information with decision making is the foundation on which we can build complex behaviors.}]{Making Decisions}
 
-\resource[silent,files={motherduck.html},description={Play the DuckBot game online},text={DuckBot}]{demos/duckbot.html}
+%\resource[silent,files={motherduck.html},description={Play the DuckBot game online},text={DuckBot}]{demos/duckbot.html}
 \resourcegen{name=data/duckbot.tar.gz, type={archive}, from={week3 game.py sample_brain.py assets/tileset.json assets/maps/level1.json assets/maps/level2.json assets/maps/level3.json assets/maps/level4.json assets/duck.png assets/terrain_atlas.png}}
 \resourcegen{name=demos/duckbot.html, from=week3/site/duckbot.html, type={jinja}}
 
@@ -34,6 +34,15 @@ Eratosthenes did the following calculation:
 \underbrace{787.5\;\text{kilometers}}_{\text{distance between the two cities}} \times \frac{360^{\circ}}{7.5^{\circ}} \approx 40,000\;\text{kilometers}
 \]
 
+What does this number represent?
+
+\didyouknow{Remarkably, this number that was calculated thousands of years ago, is very accurate!
+  You don't need to see much to be able to deduce important conclusions!}  Eratosthenes reasoned,
+using geometry, that the angle of the shadow was the same as the angle from Alexandria, to the
+center of the earth, and then back out again. He knew that there are 360 total degrees in any
+circle, and that 7.5 degrees of that was 787.5 kilometers. Thus, the number that Eratosthenes
+calculated is the circumference of the Earth.
+
 \begin{figure}
   \centering
 
@@ -61,17 +70,7 @@ Eratosthenes did the following calculation:
   \label{fig:eratosthenes}
 \end{figure}
 
-\didyouknow{
-Albert Einstein famously came up with his theory of special relativity by simply thinking about it!
-If you ever study physics in depth, you'll discover that the entirety of special relativity falls
-out of two simple facts:
-\begin{enumerate}
-\item The speed of light is the same for everyone.
-\item The relationship between the sides of the triangle: $c^2 = a^2 + b^2$.
-\end{enumerate}
-Einstein used these simple facts to show that light actually travels less distance in moving
-reference frames, leading to one of the most surprising facts about our universe: fast things become
-shorter.  }
+
 \begin{BigIdeaBox}
 As humans, we only see our part of the world and our part of the universe. The consistent
 application of precise rules lets us reason about things larger than what we can directly perceive.
@@ -80,6 +79,20 @@ Despite having no possible way to observe the entirety of the planet. Eratosthen
 of logic and simple observations to deduce a global truth.
 \end{BigIdeaBox}
 
+\didyouknow{Polynesian navigators used principles similar to Eratosthenes to spread throughout the
+  islands of Polynesia. Before mapmaking or even writing, they were able to sail thousands of miles
+  across open aceans using only the stars and their oral knowledge of weather patterns. So great was
+  their navigational prowess that when the earliest European explorers arrived in Polynesia,
+  Polynesian navigators such as \textbf{Tupaia} were able to produce intricate maps like this one
+  using only their memories of the stars they had observed on their many voyages.
+
+  There's even reason to believe that some Polynesian navigators sailed across the Pacific and
+  reached South America. You can learn a lot about big things by just looking at what's around you!
+
+  \begin{center}
+    \includegraphics[width=0.9\marginparwidth]{../week3/figures/polynesian-map.jpg}
+  \end{center}
+}
 \section{Week 2 Review}
 
 Last week, we discussed breaking down large drawings and objects into smaller elements. Doing so let
@@ -102,18 +115,7 @@ them on their own using long sets of rules that computer programmers assemble fo
 computer. These rules have to be very detailed so that the computer knows what to do in every
 possible situation it may encounter. Unlike with Turtle, there's no one around to change course if
 the cursor ends up in the wrong spot or in the wrong orientation. Lists of rules that computers
-follow on their own without human input is called an \term{algorithm}.  \didyouknow{The word
-  \emph{algorithm} comes from the name of the Persian polymath and mathematician
-  al-Khw\={a}rizm\={i} who introduced the idea of algorithms to the West via his book
-  \emph{kit\={a}b al-\d{h}is\={a}b al-hind\={i}} (``Book of Indian Computation''). This book was
-  translated into Latin by Robert Chester in 1145, and was the principal mathematics textbook used
-  in many universities for almost four centuries. Many of our modern methods of addition,
-  subtraction, division, and multiplication come from his translations!
-\vspace{1em}
-\begin{center}
-  \includegraphics[width=0.6\marginparwidth]{../week3/figures/al-kwharizmi.jpg}
-\end{center}}
-
+follow on their own without human input is called an \term{algorithm}.
 
 \section{Algorithms}
 
@@ -124,6 +126,16 @@ complicated intersection. Cars go based off of whether the lights are red or gre
 operate on their own according to pre-set instructions; there's no human involvement. The system
 requires every car to follow the rules. Otherwise, the cars literally crash.
 
+\curious{The word \emph{algorithm} comes from the name of the Persian polymath and mathematician
+  al-Khw\={a}rizm\={i} who introduced the idea of algorithms to the West via his book
+  \emph{kit\={a}b al-\d{h}is\={a}b al-hind\={i}} (``Book of Indian Computation''). This book was
+  translated into Latin by Robert Chester in 1145, and was the principal mathematics textbook used
+  in many universities for almost four centuries. Many of our modern methods of addition,
+  subtraction, division, and multiplication come from his translations!
+\vspace{1em}
+\begin{center}
+  \includegraphics[width=0.6\marginparwidth]{../week3/figures/al-kwharizmi.jpg}
+ \end{center}}
 Thermostats are another example of an algorithm you use and interact with. Thermostats operate on
 conceptually simple rules:
 
@@ -152,9 +164,17 @@ Mother Duck gets back.
 
 Your job is to give DuckBot a new brain so that it can find the ducklings!
 
-Oh and one more thing: if DuckBot runs into any obstacle, like a rock, a plant, or the ground,
-DuckBot dies and will never be able to make it to the ducklings. Your brain has to make sure he only
-ever swims in water.
+\didyouknow{You can play DuckBot online at \resource[qrcode, text={DuckBot}, description={Play the
+      DuckBot game online},
+    kind={Resources}]{https://tathougies.github.io/csforkids/week3/demos/duckbot.html}.}  Oh and one
+more thing: if DuckBot runs into any obstacle, like a rock, a plant, or the ground, DuckBot dies and
+will never be able to make it to the ducklings. Your brain has to make sure he only ever swims in
+water.
+
+You can run DuckBot using Thonny. In Thonny, open the file
+\texttt{csforkids/week3/game.py}.\hint{Don't be intimidated by the amount of code in this file. You
+  won't have to change any of it. It's just the code behind DuckBot!} Then, click the green ``Run''
+button.
 
 The DuckBot game window (see \prettyref{fig:duckbot}) has four parts:
 \begin{enumerate}
@@ -255,9 +275,9 @@ blocked square is signified by the letter \code{'x'}. A free square is signified
 letter \code{'*'}. This is illustrated in \prettyref{fig:duckbot-directions}.
 
 DuckBot's brain is totally fried and so is its memory. DuckBot can only remember the last thing you
-told it. This is called its \emph{thought}.\curious{DuckBot's thought is an example of
-  \term{state}.} DuckBot can see what's around it in the current square. Based off of this knowledge
-\emph{and} its previous thought, DuckBot has to decide the next direction and its next thought.
+told it. This is called its \emph{thought}. DuckBot can see what's around it in the current
+square. Based off of this knowledge \emph{and} its previous thought, DuckBot has to decide the next
+direction and its next thought.
 
 \begin{marginfigure}
   \centering
@@ -305,7 +325,7 @@ to go in. This can be:
 
 The second thing we return is DuckBot's next thought. The thought can be anything: a number or a
 string or even the \code{None} value.\hint{You'll probably want your thoughts to mostly be
-  strings. This will make your code easier to understand.} You get to decide!
+  words. This will make your code easier to understand.} You get to decide!
 
 \subsection{Playing the Game}
 
@@ -353,6 +373,12 @@ there is something to the east and \kw{return} another thing if not.
 
 \subsection{Using \kw{if}}
 
+Python comes with a special word that does exactly what we want. This is called \kw{if}, and it works like this:
+
+We write \kw{if} followed by a condition, and then a colon. If the condition is true, then the code
+beneath the \kw{if} runs. If the condition is false, then all that code is skipped. This is
+illustrated in \prettyref{fig:if-statement}.
+
 \begin{marginfigure}
   \centering
   \includegraphics[width=0.9\marginparwidth]{../week3/figures/grace-hopper.jpg}
@@ -365,21 +391,15 @@ there is something to the east and \kw{return} another thing if not.
   \label{fig:grace-hopper}
 \end{marginfigure}
 
-Python comes with a special word that does exactly what we want. This is called \kw{if}, and it works like this:
-
-We write \kw{if} followed by a condition, and then a colon. If the condition is true, then the code
-beneath the \kw{if} runs. If the condition is false, then all that code is skipped. This is
-illustrated in \prettyref{fig:if-statement}.
-
 \begin{figure}[b]
   \begin{minipage}{\linewidth}
     \Large \ttfamily
 
     \vspace{3em}
     \tikzforeground{
-      \coordinate (condition brace start) at ([yshift=5.2em, xshift=0.4em]condition start);
-      \coordinate (condition brace end) at ([yshift=5.2em]condition end);
-      \draw[thick, decoration={brace, raise=0.2em}, decorate] (condition brace start) -- (condition brace end);
+      \coordinate (condition brace start) at ([yshift=1.7em, xshift=0.4em]condition start);
+      \coordinate (condition brace end) at ([yshift=1.7em]condition end);
+      \draw[thick, decoration={brace, raise=0.2em}, decorate] (condition brace start) -- (condition brace end) node[midway, yshift=0.3em, above]{
         \begin{tcolorbox}[code note]
           If this expression is \kw{True}, the part below the \kw{if} will run.
         \end{tcolorbox}
@@ -394,11 +414,11 @@ illustrated in \prettyref{fig:if-statement}.
     }
     \begin{tcolorbox}[sharp corners]
       \tikzmarknode{if keyword}{\kw{if}} \tikzmarknode{condition start}{}north == '*'\tikzmarknode{condition end}{}:\\
-      \tikzmarknode{if spaces}{\hspace{2em}}\tikzmarknode{action}{...}\\
+      \tikzmarknode{if spaces}{}  \tikzmarknode{action}{...}\\
       \tikzmarknode{elif keyword}{\kw{elif}} \tikzmarknode{elif condition start}{}south == '*'\tikzmarknode{elif condition end}{}:\\
-      \hspace{2em}\tikzmarknode{elif action}{...}\\
+        \tikzmarknode{elif action}{...}\\
       \tikzmarknode{else keyword}{\kw{else}} \tikzmarknode{no else condition}{:}\\
-      \hspace{2em} \tikzmarknode{else action}{...}
+        \tikzmarknode{else action}{...}
     \end{tcolorbox}
   \end{minipage}
   \caption{The Python \kw{if} statement consists of several parts.}
@@ -408,15 +428,12 @@ illustrated in \prettyref{fig:if-statement}.
 To understand what it means to be ``beneath'' the \kw{if}, we have to understand how Python treats
 the \code{:}. As we learned last week, Python is sensitive to how things are spaced out. When we
 write \kw{def}, we have to put spaces to signify which code is part of our function. The same is
-true of \kw{if}. \curious{The error thrown is called \code{IndentationError}.}If we want some code
-to run when the condition is true, then all this code must be indented \emph{more} than the \kw{if}
-statement. Moreover, all the code has to line up. If you indent one line with six spaces, and the
-next line with ten, then Python will return an error.
+true of \kw{if}. If we want some code to run when the condition is true, then all this code must be
+indented \emph{more} than the \kw{if} statement. Moreover, all the code has to line up. If you
+indent one line with six spaces, and the next line with ten, then Python will return an error.
 
 Let's try using \kw{if} to make DuckBot do something if we have an obstacle to the east.
 
-\hint{Note that it has \emph{two} equal signs. The double equal
-  signs compares values. A single equal sign has a different meaning, which we'll explore later.}
 \begin{TryThisBox}
   Change DuckBot's brain to this:
   \begin{lstlisting}
@@ -426,6 +443,9 @@ def brain(north, south, east, west, thought):
   return 'E', thought
   \end{lstlisting}
 \end{TryThisBox}
+
+\hint{Note that we use \emph{two} equal signs after an \kw{if}. The double equal
+  signs compares values. A single equal sign has a different meaning, which we'll explore later.}
 
 Think about what's going to happen now. When you've decided what you think is going to happen to
 DuckBot, hit ``Reload Brain'' and start DuckBot.
@@ -444,7 +464,7 @@ hit the bottom of the pond, so we have to turn back east.
   is going to happen.}
 \begin{TryThisBox}
   Change DuckBot's brain to this:
-  \begin{lstlisting}[numbers=left,caption={A brain that checks for all obstacles},label={listing:duckbot-circle}]
+  \begin{lstlisting}[style=numbered, caption={A brain that checks for all obstacles},label={listing:duckbot-circle}]
 def brain(north, south, east, west, thought):
   if east == 'x':
     return 'N', thought
@@ -458,8 +478,8 @@ def brain(north, south, east, west, thought):
   \end{lstlisting}
 \end{TryThisBox}
 
-If you go ahead and try that, you'll find that poor DuckBot *still* hits the north shore. Clearly
-we've not quite figured out how to make this work.
+If you go ahead and try that, you'll find that poor DuckBot \emph{still} hits the north
+shore. Clearly we've not quite figured out how to make this work.
 
 \begin{marginfigure}
   \centering
@@ -593,7 +613,7 @@ conditions. For a full summary see \prettyref{tab:comparisons}.
 
 \begin{table}[b]
   \centering
-  \begin{tabular}{lp{0.8\linewidth}}
+  \begin{tabular}{lp{0.7\linewidth}}
     \hline
     \headercol{Operator} & \headercol{Explanation} \\\hline
     \code{x == y} & Checks if \code{x} and \code{y} are equal. \\
@@ -684,9 +704,14 @@ that it needs to turn immediately after going west one square after it hits the 
 make DuckBot remember that it's planning on turning after it moves one block west. This is where
 DuckBot's \code{thought} comes in.
 
+Recall that each time the \code{brain} function is used, it gets what DuckBot sees and also the last
+thing DuckBot thought. In our previous brains, we just \kw{return}ed whatever it was that DuckBot
+was already thinking. Now, we need to use that \code{thought} in order to remember what
+happened. Let's try it.
+
 \begin{marginfigure}
   \centering
-  \includegraphics[width=0.9\marginparwidth]{../week3/figures/duckbot-ne-desired.jpg}
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/duckbot-ne-desired.pdf}
   \caption{When DuckBot reaches the northeast corner, we want it to turn west for only \emph{one}
     square, and then turn back south, but the environment one square to the west of the north east
     corner looks the same as all other squares at the northern border. Therefore, DuckBot needs to
@@ -694,12 +719,6 @@ DuckBot's \code{thought} comes in.
     immediately to the west of it from all the other squares.}
   \label{fig:duckbot-desired-outcome}
 \end{marginfigure}
-
-Recall that each time the \code{brain} function is used, it gets what DuckBot sees and also the last
-thing DuckBot thought. In our previous brains, we just \kw{return}ed whatever it was that DuckBot
-was already thinking. Now, we need to use that \code{thought} in order to remember what
-happened. Let's try it.
-
 \begin{TryThisBox}
   \label{trythisbox:sample-brain}
   Change DuckBot's brain to this:
@@ -758,29 +777,47 @@ The shape of the node and the text within it tell us what the algorithm is doing
 point. Flowcharts are typically drawn starting at the top and ending at the bottom.
 
 Flowcharts are meant to capture the actual logic behind the algorithm, whereas the code captures how
-that algorithm is realized in a particular programming language. For example, when we draw out the
-flowchart for the algorithm above (see \prettyref{fig:flowchart}), we don't consider the
-\code{thought} as a separate conditional. This is because the code we developed operates on a
-step-by-step basis, but our flowchart is meant to capture the entire flow of the entire process from
-start to finish.
+that algorithm is realized in a particular programming language (Python) and in a particular
+environment (the pond). For example, when we draw out the flowchart for the algorithm above (see
+\prettyref{fig:flowchart}), we consider the idea of how the duck should move through the pond at a
+global level. We don't think about how DuckBot makes its local decision. Instead we care about how
+DuckBot decides how to move in order. Consider the node when the north is blocked and the east is
+blocked. DuckBot goes west, and then thinks a new thought -- \code{'going\_west'} in this
+case. Then, DuckBot goes south and thinks \code{'south'}. It stays in this state and continues south.
+
+What did we leave out? We left out the \kw{if}s that inspected \code{thought}. This is because
+\code{thought} is something that is particular to how DuckBot works on a square to square basis. The
+flow chart captures what DuckBot ought to do globally. \hint{If you continue to draw flowcharts of
+  how DuckBot should navigate all its level you will find that \code{thought} is fundamental to
+  sequencing operations one after the other. Without it, you would only be able to decide based on
+  the environment.} The \code{thought} is how we \term{implement} the flowchart as an algorithm for
+DuckBot.
 
 Using the flowchart, we can figure out how to extend the algorithm to handle the case where we are
 thinking \code{'south'} but south is blocked. What we want is to add another condition to the node
 corresponding to the thought \code{'south'} that checks if south is blocked. If so, we want DuckBot
 to turn around, and go north until it hits the north shore of the pond. Once it hits the north end,
 we want it to turn west and go one square, turn back south, and continue
-again. \prettyref{fig:flowchart-solution} corresponds to algorithm.
+again. \prettyref{fig:flowchart-solution} corresponds to this algorithm.
 
 \begin{figure}[p]
   \centering
-  \input{../week3/figures/flowchart1.tex}
+  \includegraphics[width=\textwidth]{../week3/figures/flowchart1.pdf}
   \caption{The flowchart corresponding to the DuckBot brain that makes one turn. See the Try This Box on page \pageref{trythisbox:sample-brain}}
   \label{fig:flowchart}
 \end{figure}
 
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth]{../week3/figures/flowchart2.pdf}
+  \caption{The flowchart corresponding to one way DuckBot can find the ducklings in the empty pond level.}
+  \label{fig:flowchart-solution}
+\end{figure}
+
 \begin{TryThisBox}
-  Try solving the empty pond again by directly translating from the flowchart. Remember that the
-  diamond shape nodes correspond to \kw{if}.
+  Try solving the empty pond again by directly translating from the flowchart in
+  \prettyref{fig:flowchart-solution}. Remember that the diamond shape nodes correspond to \kw{if}
+  and that sequences of multiple directions require you to create new \code{thought}s.
 \end{TryThisBox}
 
 The important thing to understand is that the environment never changes. The pond edges and
@@ -809,105 +846,111 @@ thought and many more rules. The simple empty pond can be solved using only six 
 or not, the maze can be solved using only eight rules. But what about the others? Well, we don't
 actually know.
 
-\mTrackBox{Security}{Cyber-security is highly dependent on
-  understanding how complex algorithms are. There are some algorithms
-  that can encrypt data with a key quickly. Those who have the key can
-  apply the algorithm in reverse to quickly find the original
-  text. Meanwhile, those without the key have to use an algorithm that
-  can be proven to take longer than the age of the
-  universe. Complexity theory is one of the most important branches of
-  computer science to answer questions like these, with real world
-  impact.}  These kinds of questions are an example of thinking about
-\term{complexity}. There are multiple ways to study complexity and
-computer programmers are interested in all of them. Thinking about how
-many rules DuckBot needs given a particular map is one kind of
-complexity. Another kind of complexity is thinking about how quickly
-DuckBot can cover any given map. For example, consider an empty pond three squares tall and three squares wide. How many squares will DuckBot need to visit 
+\mTrackBox{Security}{Cyber-security is highly dependent on understanding how complex algorithms
+  are. There are some algorithms that can encrypt data with a key quickly. Those who have the key
+  can apply the algorithm in reverse to quickly find the original text. Meanwhile, those without the
+  key have to use an algorithm that can be proven to take longer than the age of the
+  universe. Complexity theory is one of the most important branches of computer science to answer
+  questions like these, with real world impact.}  These kinds of questions are an example of
+thinking about \term{complexity}. There are multiple ways to study complexity and computer
+programmers are interested in all of them. Thinking about how many rules DuckBot needs given a
+particular map is one kind of complexity. Another kind of complexity is thinking about how quickly
+DuckBot can cover any given map.  For example, consider an empty pond three squares tall and three
+squares wide.  How many squares will DuckBot need to visit?
 
-Measuring the complexity of algorithms is one of the many fields of research in computer
-science. It may seem like just a fun logic puzzle, but actually, these research questions are the central concern of fields like cyber-security, programming languages, and
+Measuring the complexity of algorithms is one of the many fields of research in computer science. It
+may seem like just a fun logic puzzle, but actually, these research questions are the central
+concern of fields like cyber-security, programming languages, and more.
 
 
-\section{Numbers All the Way Down}
+\begin{DeepDiveBox}
+  \boxtitle{Programming Languages}
+  \label{deepdive:programming-languages}
 
-Last week, we discussed how computers store numbers using switches that are either on or
-off. \hint{See \prettyref{sec:binary-numbers} for a review.}
-
-Everything on a computer is stored as numbers. Even the words we saw last class are stored using
-numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
-call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as \code{str}.}
-
-Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
-\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
-international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
-  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
-computer systems would often use their own custom standard or a standard particular to individual
-countries and languages. Reading files created using one standard on a computer designed to work
-with another standard could result in garbage data. Another common way to write strings as numbers
-is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
-Interchange}. ASCII covers most characters used in English and other languages that use the Latin
-alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
-character.
-
-It may seem crazy that each letter has a number that goes along with it, but I can prove it to you. Try this in Python:
-
-\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
-\code{ord('hello')}!}
-\begin{replbox}
->>> ord('5')<ENTER>
-53
->>> ord('Z')<ENTER>
-90
->>> ord('>')<ENTER>
-62
->>> ord('\'')<ENTER>(*@ \tikzmarknode{python escapes node}{} @*)
-39
->>> ord('h')<ENTER>
-104
-\end{replbox}
-\makemargmark{python escapes node}{\notestyle\hintnote Python words are delimited by single quotation marks (\code{'}). But what if you want to talk about the word consisting of just the single quote character itself or a word containing a single quote character (like an Irish name with \enquote{O'})? In order to tell Python that you want a \code{'} treated as just the letter and not part of the Python rules, you use the \code{\textbackslash} character in front of it. This word \code{'\textbackslash''} is just the word consisting of a single single-quote letter.}
-%}
+  At the beginning of this course we discussed already how 
+\end{DeepDiveBox}
 
 
-You can also go from a number \emph{to} a word.
-
-\hint{Try all kinds of numbers here, and see what you get!}
-\begin{replbox}
->>> chr(76)<ENTER>
-'L'
->>> chr(53)<ENTER>
-'5'
->>> chr(54)<ENTER>
-'6'
->>> chr(233)<ENTER>
-'é'
->>> chr(1103)<ENTER>
-'я'
->>> chr(26159)<ENTER>
-'是'
->>> chr(22398)<ENTER>
-'学'(*@\tikzmarknode{chinese xie}{}@*)
->>> chr(128512)<ENTER>
-'(*@{\EmojiFont 😀}@*)'
-\end{replbox}
-\makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
-
-Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
-learned about last week to see the binary representation of these numbers.
-
-\begin{replbox}
->>> bin(ord('5'))<ENTER>
-'0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
->>> bin(ord('Z'))<ENTER>
-'0b1011010'
->>> bin(ord('\''))<ENTER>
-'0b100111'
-\end{replbox}
-\makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
-Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
-
-See it's just numbers all the way down!
-
-\begin{BigIdeaBox}
-  All information inside a modern computer is stored as numbers, even words!
-\end{BigIdeaBox}
+% \section{Numbers All the Way Down}
+% 
+% Last week, we discussed how computers store numbers using switches that are either on or
+% off. \hint{See \prettyref{sec:binary-numbers} for a review.}
+% 
+% Everything on a computer is stored as numbers. Even the words we saw last class are stored using
+% numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
+% call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as \code{str}.}
+% 
+% Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
+% \emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
+% international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
+%   characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
+% computer systems would often use their own custom standard or a standard particular to individual
+% countries and languages. Reading files created using one standard on a computer designed to work
+% with another standard could result in garbage data. Another common way to write strings as numbers
+% is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
+% Interchange}. ASCII covers most characters used in English and other languages that use the Latin
+% alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
+% character.
+% 
+% It may seem crazy that each letter has a number that goes along with it, but I can prove it to you. Try this in Python:
+% 
+% \hint{If you want to see a new kind of error called a \code{ValueError}, try\\
+% \code{ord('hello')}!}
+% \begin{replbox}
+% >>> ord('5')<ENTER>
+% 53
+% >>> ord('Z')<ENTER>
+% 90
+% >>> ord('>')<ENTER>
+% 62
+% >>> ord('\'')<ENTER>(*@ \tikzmarknode{python escapes node}{} @*)
+% 39
+% >>> ord('h')<ENTER>
+% 104
+% \end{replbox}
+% \makemargmark{python escapes node}{\notestyle\hintnote Python words are delimited by single quotation marks (\code{'}). But what if you want to talk about the word consisting of just the single quote character itself or a word containing a single quote character (like an Irish name with \enquote{O'})? In order to tell Python that you want a \code{'} treated as just the letter and not part of the Python rules, you use the \code{\textbackslash} character in front of it. This word \code{'\textbackslash''} is just the word consisting of a single single-quote letter.}
+% %}
+% 
+% 
+% You can also go from a number \emph{to} a word.
+% 
+% \hint{Try all kinds of numbers here, and see what you get!}
+% \begin{replbox}
+% >>> chr(76)<ENTER>
+% 'L'
+% >>> chr(53)<ENTER>
+% '5'
+% >>> chr(54)<ENTER>
+% '6'
+% >>> chr(233)<ENTER>
+% 'é'
+% >>> chr(1103)<ENTER>
+% 'я'
+% >>> chr(26159)<ENTER>
+% '是'
+% >>> chr(22398)<ENTER>
+% '学'(*@\tikzmarknode{chinese xie}{}@*)
+% >>> chr(128512)<ENTER>
+% '(*@{\EmojiFont 😀}@*)'
+% \end{replbox}
+% \makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
+% 
+% Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
+% learned about last week to see the binary representation of these numbers.
+% 
+% \begin{replbox}
+% >>> bin(ord('5'))<ENTER>
+% '0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
+% >>> bin(ord('Z'))<ENTER>
+% '0b1011010'
+% >>> bin(ord('\''))<ENTER>
+% '0b100111'
+% \end{replbox}
+% \makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
+% Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
+% 
+% See it's just numbers all the way down!
+% 
+% \begin{BigIdeaBox}
+%   All information inside a modern computer is stored as numbers, even words!
+% \end{BigIdeaBox}

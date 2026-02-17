@@ -16,7 +16,7 @@
   \draw[->] (check east.south) -- (default.north);
   \draw[->] (check north empty.south) to[out=-90,in=0] (default.east);
   \draw[->] (check north.south) -- (check north empty.north) node[midway, anchor=west] {\kw{False}};
-  \draw[->] (north free.east) to (check east.north);
+  \draw[->] (north free.east) to[out=0,in=90] (check east.north);
 
   \draw[->] (check north.east) -- (north blocked.west) node[midway, above] {\kw{True}};
   \draw[->] (check north empty.east) -- (north free.west) node[midway, above] {\kw{True}};

@@ -125,6 +125,8 @@
   \def\tikztuftemarg{east}
   \fi
 }
+\def\tikztufteangle#1{90 + (#1 - 90) * \tikztuftetowardsmargin}
+%(\tikztuftetowardsmargin * (-90) + 90) + (\tikztuftetowardsmargin * #1)}
 \makeatother
 \newcommand{\attribution}[1]{{\textcolor{lightgray}{\tiny #1}}}
 
@@ -525,6 +527,9 @@
 \definecolor{CodeNumber}{HTML}{8A4F7D}   % gentle plum
 \definecolor{CodeBuiltin}{HTML}{B45309}  % warm amber
 
+\definecolor{lnbg}{gray}{0.88}   % background behind line numbers (darker gray)
+\definecolor{lnfg}{gray}{0.25}   % line number text
+
 \newcommand{\kw}[1]{\texttt{\textbf{\textcolor{CodeKeyword}{#1}}}}
 
 \lstdefinestyle{kidcode}{
@@ -544,6 +549,7 @@
 }
 \lstset{
   style=kidcode,
+  title=\sffamily\footnotesize,
   language=Python,
   keywordstyle=\color{CodeKeyword}\bfseries,
   commentstyle=\color{CodeComment}\itshape,
@@ -552,6 +558,35 @@
   showstringspaces=false,
   moredelim=**[is][\itshape]{@@}{@@}
 }
+\lstdefinestyle{numbered}{
+  style=kidcode,
+  numbers=left,
+  numberstyle=\sffamily\footnotesize\color{lnfg},
+  stepnumber=1,
+  numbersep=3pt,          % no gap between number gutter and code background
+  xleftmargin=2.6em,        % we'll control gutter via framexleftmargin
+  rulecolor=\color{lnfg}, % color of the left line
+  framexleftmargin=2.6em, % width reserved for the number gutter (tweak)
+}
+
+\newcommand{\LstMetaFont}{\sffamily\footnotesize}
+% \makeatletter
+% \long\def\lst@makecaption#1#2{%
+%   \vskip\abovecaptionskip
+%   \sffamily
+%   \sbox\@tempboxa{%
+%     \LstMetaFont\color{CaptionLabelSlate}#1:\space
+%     \LstMetaFont #2%
+%   }%
+%   \ifdim\wd\@tempboxa>\hsize
+%     {\LstMetaFont\color{CaptionLabelSlate}#1:\space}{\LstMetaFont #2}\par
+%   \else
+%     \global\@minipagefalse
+%     \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+%   \fi
+%   \vskip\belowcaptionskip
+% }
+% \makeatother
 
 % ---------- “Tufte-style” margin helpers ----------
 % tufte-book already provides \marginnote and \marginfigure.
