@@ -41,6 +41,7 @@
 \newrefformat{fig}{Figure~\ref{#1}\prettypageref{#1}}
 \newrefformat{sec}{{\bfseries \nameref{#1}}\prettypageref{#1}}
 \newrefformat{deepdive}{the Deep Dive Box~\prettypageref{#1}}
+\newrefformat{listing}{Listing~\ref{#1}\prettypageref{#1}}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \makeatletter
@@ -50,8 +51,9 @@
 \usepackage{turingtumble}
 
 \usepackage{tikz}
+\usepackage{flowchart}
 \usepackage {tikzpagenodes}
-\usetikzlibrary{calc,external,decorations.pathreplacing,arrows.meta,positioning,fit,tikzmark,ducks}
+\usetikzlibrary{calc,external,decorations.pathreplacing,arrows,arrows.meta,positioning,fit,tikzmark,ducks,backgrounds}
 % \tikzexternalize[prefix=figure-cache/]
 
 \usepackage{graphicx} % for \rotatebox

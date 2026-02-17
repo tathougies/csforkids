@@ -3,7 +3,7 @@
 \week[description={Last week we discussed information. This week we start to understand that combining information with decision making is the foundation on which we can build complex behaviors.}]{Making Decisions}
 
 \resource[silent,files={motherduck.html},description={Play the DuckBot game online},text={DuckBot}]{demos/duckbot.html}
-\resourcegen{name=data/duckbot.tar.gz, type={archive}, from={week3 game.py sample_brain.py assets/tileset.json assets/maps/level1.json assets/maps/level2.json assets/maps/level3.json assets/duck.png assets/terrain_atlas.png}}
+\resourcegen{name=data/duckbot.tar.gz, type={archive}, from={week3 game.py sample_brain.py assets/tileset.json assets/maps/level1.json assets/maps/level2.json assets/maps/level3.json assets/maps/level4.json assets/duck.png assets/terrain_atlas.png}}
 \resourcegen{name=demos/duckbot.html, from=week3/site/duckbot.html, type={jinja}}
 
 The ancient Greek polymath Eratosthenes regularly traveled between the Egyptian cities of Syene and
@@ -124,6 +124,17 @@ complicated intersection. Cars go based off of whether the lights are red or gre
 operate on their own according to pre-set instructions; there's no human involvement. The system
 requires every car to follow the rules. Otherwise, the cars literally crash.
 
+Thermostats are another example of an algorithm you use and interact with. Thermostats operate on
+conceptually simple rules:
+
+\begin{enumerate}
+\item If the temperature is above the set maximum temperature, then start the AC unit.
+\item If the temperature is between the set minimum and maximum temperature, turn everything off.
+\item If the temperature is below the set minimum, then start the heater.
+\end{enumerate}
+
+These three simple rules result in a comfortable environment for everyone.
+
 Our Turtle drawings from last weeks are also examples of simple algorithms. These algorithms
 followed a sequence of rules in order to do something -- in our case, to draw a duck. But
 oftentimes, algorithms have to decide to do something based off data. These are the kinds of
@@ -134,8 +145,8 @@ warned... this is not like any game you've played before!
 
 \section{Introducing DuckBot!}
 
-Meet DuckBot! DuckBot has been put in change of a group of three very sneaky little ducklings while
-Mother Duck has gone away. But those sneaky little ducklings have fried DuckBot's brain and have run
+Meet DuckBot! DuckBot has been put in change of a group of three very silly little ducklings while
+Mother Duck has gone away. But those naughty little ducklings have fried DuckBot's brain and have run
 off. They are now hiding in some corner of the pond. DuckBot needs to find the ducklings before
 Mother Duck gets back.
 
@@ -156,10 +167,13 @@ The DuckBot game window (see \prettyref{fig:duckbot}) has four parts:
   each time it moves a square in the pond, in order to decide what to do next. You can edit the code
   here to make DuckBot do what you want.
 
-\item The bottom pane shows you what DuckBot sees. DuckBot can see obstacles in all four cardinal
-  directions.
+\item This status panel tells you the current status of DuckBot. Any
+  error messages caused by your Python code will appear here.
 
 \item The controls pane lets you control DuckBot. You can make DuckBot go or stop by clicking the ``Start Duck'' and ``Stop Duck'' buttons. You can reset the game by clicking the ``Reset Game'' button.\hint{You'll need to stop the duck before resetting the game or reloading DuckBot's brain} When you've made changes to your brain, you have to tell DuckBot to switch to the new brain by clicking the ``Reload Brain'' button.
+
+\item The bottom pane shows you what DuckBot sees. DuckBot can see obstacles in all four cardinal
+  directions. You can also change DuckBot's speed here or choose to have DuckBot make just one step.
 
 \end{enumerate}
 
@@ -169,6 +183,27 @@ The DuckBot game window (see \prettyref{fig:duckbot}) has four parts:
   \caption{The DuckBot interface has five main components: (1) the pond, (2) the brain source code, (3) the error window, (4) the controls, and (5) the state window}
   \label{fig:duckbot}
 \end{figure}
+
+\subsection{The Pond}
+
+The pond is where DuckBot and the ducklings live. It is divided into squares. Some squares are
+passable, and others have obstacles (\prettyref{fig:obstacles}). DuckBot cannot swim over the
+obstacles, and if your brain program tells it to swim into an obstacle DuckBot will die. You must
+avoid all obstacles.
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/obstacles.jpg}
+  \caption{Examples of obstacles are rocks, weeds, and piers. You can always know if a square is an
+    obstacle based on DuckBot's senses. Remember, the goal is for you to tell DuckBot what to do by
+    writing a program, not for you to navigate around the pond yourself.}
+  \label{fig:obstacles}
+\end{marginfigure}
+
+When you swim over a pond square that is filled with water, the square will become darker,
+indicating that DuckBot has already been there. These dark squares are only visible to you, the
+programmer. DuckBot cannot change its behavior based on whether it's visited a square or
+not. DuckBot can only sense whether the squares around it have any obstacles in the way.
 
 \subsection{Programming DuckBot}
 
@@ -197,12 +232,12 @@ DuckBot's brain is written as a function.
 \begin{minipage}{\textwidth}
   \tikzforeground{
     \CheckTikzPictureSide
-    \node[anchor=east] (brain function note) at ([yshift=0.5em, xshift={\tikztuftetowardsmargin * 1em}]current page text area.\tikztuftemain|-brain function name.north) {
+    \node[anchor=east] (brain function note) at ([yshift=5em, xshift={\tikztuftetowardsmargin * 1em}]current page text area.\tikztuftemain|-brain function name.north) {
       \begin{tcolorbox}[code note, width=4cm]
         Your function should be named \code{brain}.
       \end{tcolorbox}
     };
-    \draw[->] (brain function note.east) to[out=0,in=90,looseness=0.8] ([yshift=1em]brain function name.north);
+    \draw[->] (brain function note.south) to[out=-90,in=90,looseness=0.8] ([yshift=1em]brain function name.north);
   }
   \Large \ttfamily
   \vspace{0.5cm}
@@ -336,6 +371,40 @@ We write \kw{if} followed by a condition, and then a colon. If the condition is 
 beneath the \kw{if} runs. If the condition is false, then all that code is skipped. This is
 illustrated in \prettyref{fig:if-statement}.
 
+\begin{figure}[b]
+  \begin{minipage}{\linewidth}
+    \Large \ttfamily
+
+    \vspace{3em}
+    \tikzforeground{
+      \coordinate (condition brace start) at ([yshift=5.2em, xshift=0.4em]condition start);
+      \coordinate (condition brace end) at ([yshift=5.2em]condition end);
+      \draw[thick, decoration={brace, raise=0.2em}, decorate] (condition brace start) -- (condition brace end);
+        \begin{tcolorbox}[code note]
+          If this expression is \kw{True}, the part below the \kw{if} will run.
+        \end{tcolorbox}
+      };
+
+      \coordinate (keyword if east) at ([xshift=15em]if keyword);
+      \draw[thick, decoration={brace}, decorate] ([yshift=0.2em]keyword if east|-if keyword) -- ([yshift=0.2em]keyword if east|-else action) node[midway,anchor=west,xshift=0.5em,yshift=1em] {
+        \begin{tcolorbox}[code note,width=4.5cm]
+          These portions of \kw{if} are optional. Python applies conditions in the order they appear. If no portion of the \kw{if} applies because all the conditions are \kw{False}, then nothing happens.
+        \end{tcolorbox}
+      };
+    }
+    \begin{tcolorbox}[sharp corners]
+      \tikzmarknode{if keyword}{\kw{if}} \tikzmarknode{condition start}{}north == '*'\tikzmarknode{condition end}{}:\\
+      \tikzmarknode{if spaces}{\hspace{2em}}\tikzmarknode{action}{...}\\
+      \tikzmarknode{elif keyword}{\kw{elif}} \tikzmarknode{elif condition start}{}south == '*'\tikzmarknode{elif condition end}{}:\\
+      \hspace{2em}\tikzmarknode{elif action}{...}\\
+      \tikzmarknode{else keyword}{\kw{else}} \tikzmarknode{no else condition}{:}\\
+      \hspace{2em} \tikzmarknode{else action}{...}
+    \end{tcolorbox}
+  \end{minipage}
+  \caption{The Python \kw{if} statement consists of several parts.}
+  \label{fig:if-statement}
+\end{figure}
+
 To understand what it means to be ``beneath'' the \kw{if}, we have to understand how Python treats
 the \code{:}. As we learned last week, Python is sensitive to how things are spaced out. When we
 write \kw{def}, we have to put spaces to signify which code is part of our function. The same is
@@ -375,7 +444,7 @@ hit the bottom of the pond, so we have to turn back east.
   is going to happen.}
 \begin{TryThisBox}
   Change DuckBot's brain to this:
-  \begin{lstlisting}
+  \begin{lstlisting}[numbers=left,caption={A brain that checks for all obstacles},label={listing:duckbot-circle}]
 def brain(north, south, east, west, thought):
   if east == 'x':
     return 'N', thought
@@ -391,6 +460,16 @@ def brain(north, south, east, west, thought):
 
 If you go ahead and try that, you'll find that poor DuckBot *still* hits the north shore. Clearly
 we've not quite figured out how to make this work.
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/duckbot-ne.jpg}
+  \caption{The code in \prettyref{listing:duckbot-circle} may seem to work, but it is not careful
+    enough to check for obstacles in every direction. DuckBot dies when it hits the north-east
+    corner of the pond. You can see which obstacle DuckBot hit by looking at the darkened cattail
+    weed to the north of DuckBot. Our code needs to be more careful.}
+  \label{fig:duckbot-ne}
+\end{marginfigure}
 
 To understand what's going on, let's consider DuckBot at the northeast corner of the pond (see
 \prettyref{fig:duckbot-ne}). At this point, \code{north} and \code{east} are \code{'x'} and
@@ -408,17 +487,27 @@ what we wanted. We wanted DuckBot to make the decision to turn west, which is on
 of line 4 was supposed to check the condition that there was an obstacle to the north. But this line
 is not highlighted, indicating it was not used. Why?
 
-If you notice, the \kw{if} that checked the obstacle to the east was used, and then, Python saw that
-there was an obstacle to the east when DuckBot was in the northeast square. But, this \kw{if} has a
-\kw{return} under it. Because the condition in the \kw{if} was true, Python used the code underneath
-it, which told the function to immediately send back its decision to go north. This is not what we
-wanted. We have to make sure that there's also no obstacle to the north.
+\curious{When Python encounters a \kw{return}, it ends the current function immediately. Thus it's
+  important to properly consider the order of rules within a function.}  If you notice, the \kw{if}
+that checked the obstacle to the east was used, and then, Python saw that there was an obstacle to
+the east when DuckBot was in the northeast square. But, this \kw{if} has a \kw{return} under
+it. Because the condition in the \kw{if} was true, Python used the code underneath it, which told
+the function to immediately send back its decision to go north. This is not what we wanted. We have
+to make sure that there's also no obstacle to the north.
 
 \section{Booleans}
 
 In the above code examples, we skipped over how we wrote the \kw{if} conditions, but it's worth
 considering them in more detail right now. How does Python know whether a condition is true or not?
 This is important to understand when Python is going to run code.
+
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/george-boole.jpg}
+  \caption{Booleans are named afetr \textbf{George Boole}, an English mathematician and
+    philosopher. In 1854, Boole published a book \emph{The Laws of Thought} which formally
+    introduced the Boolean values and made explicit the \kw{and} and \kw{or} operations.}
+\end{marginfigure}
 
 Try this in your Python prompt:
 
@@ -586,7 +675,7 @@ point, this leads DuckBot right back to the north-east square, and the cycle rep
 If we want to fix this, we need to consider what \emph{ought} to happen when DuckBot hits this
 corner. Obviously, we can't keep going west -- we tried that and it didn't work. What we really want
 is DuckBot to go west one square, and then turn back south (see
-\prettyref{fig:duckbot-desired-outcome}). That way it'll hit squares that are in the middle of the
+\prettyref{fig:duckbot-desired-outcome}). That way it'll hit squares that are in the middle of thei
 pond, not just on the perimeter.
 
 If you step through the game, you'll notice that, after DuckBot turns at the north-east corner and
@@ -595,12 +684,24 @@ that it needs to turn immediately after going west one square after it hits the 
 make DuckBot remember that it's planning on turning after it moves one block west. This is where
 DuckBot's \code{thought} comes in.
 
+\begin{marginfigure}
+  \centering
+  \includegraphics[width=0.9\marginparwidth]{../week3/figures/duckbot-ne-desired.jpg}
+  \caption{When DuckBot reaches the northeast corner, we want it to turn west for only \emph{one}
+    square, and then turn back south, but the environment one square to the west of the north east
+    corner looks the same as all other squares at the northern border. Therefore, DuckBot needs to
+    modify its \emph{thought} at the north east square so that it can distinguish the square
+    immediately to the west of it from all the other squares.}
+  \label{fig:duckbot-desired-outcome}
+\end{marginfigure}
+
 Recall that each time the \code{brain} function is used, it gets what DuckBot sees and also the last
 thing DuckBot thought. In our previous brains, we just \kw{return}ed whatever it was that DuckBot
 was already thinking. Now, we need to use that \code{thought} in order to remember what
 happened. Let's try it.
 
 \begin{TryThisBox}
+  \label{trythisbox:sample-brain}
   Change DuckBot's brain to this:
   \begin{lstlisting}
 def brain(north, south, east, west, thought):
@@ -611,7 +712,7 @@ def brain(north, south, east, west, thought):
 
   if east == 'x':
     if north == 'x':
-      return 'N', @@'going_west'@@
+      return 'W', @@'going_west'@@
     if north == '*':
       return 'N', thought
 
@@ -630,8 +731,56 @@ south, until it dies, because it didn't check if there was anything to its south
 \begin{TryThisBox}
   Can you try modifying DuckBot's brain so that it does not die going south?
 
-  \hintnote One way to do this is to add another state that turns DuckBot completely around when it
-  hits the southern wall.
+  \hintnote It may make sense to read the next section and then use \prettyref{fig:flowchart-solution} to guide you.
+\end{TryThisBox}
+
+\section{Visualizing Algorithms}
+
+We can continue to reason like this and keep adding cases. For simple examples, this is easy, but as
+algorithms increase in complexity, sometimes it is easier to think about them visually. One way to
+do this is by using a \term{flowchart}.
+
+\didyouknow{The International Organization for Standardization (or \textbf{ISO}) standardized the
+  set of flowchart node shapes worldwide. ISO standard 5807 outlines all the shapes we'll use here.}
+A flowchart is a diagram that shows how an algorithm progresses by assigning each step of the
+algorithm to a shape called the \emph{node}. Nodes are connected with arrows showing how an
+algorithm goes from one step to the next.
+
+\begin{figure}
+  \centering
+  \input{../week3/figures/flowchart-shapes.tex}
+  \caption{Flowcharts use node shapes along with node labels to communicate what a node does. Here are some commonly encountered flowchart shapes.}
+  \label{fig:flowchart-shapes}
+\end{figure}
+
+
+The shape of the node and the text within it tell us what the algorithm is doing at that
+point. Flowcharts are typically drawn starting at the top and ending at the bottom.
+
+Flowcharts are meant to capture the actual logic behind the algorithm, whereas the code captures how
+that algorithm is realized in a particular programming language. For example, when we draw out the
+flowchart for the algorithm above (see \prettyref{fig:flowchart}), we don't consider the
+\code{thought} as a separate conditional. This is because the code we developed operates on a
+step-by-step basis, but our flowchart is meant to capture the entire flow of the entire process from
+start to finish.
+
+Using the flowchart, we can figure out how to extend the algorithm to handle the case where we are
+thinking \code{'south'} but south is blocked. What we want is to add another condition to the node
+corresponding to the thought \code{'south'} that checks if south is blocked. If so, we want DuckBot
+to turn around, and go north until it hits the north shore of the pond. Once it hits the north end,
+we want it to turn west and go one square, turn back south, and continue
+again. \prettyref{fig:flowchart-solution} corresponds to algorithm.
+
+\begin{figure}[p]
+  \centering
+  \input{../week3/figures/flowchart1.tex}
+  \caption{The flowchart corresponding to the DuckBot brain that makes one turn. See the Try This Box on page \pageref{trythisbox:sample-brain}}
+  \label{fig:flowchart}
+\end{figure}
+
+\begin{TryThisBox}
+  Try solving the empty pond again by directly translating from the flowchart. Remember that the
+  diamond shape nodes correspond to \kw{if}.
 \end{TryThisBox}
 
 The important thing to understand is that the environment never changes. The pond edges and
@@ -646,9 +795,38 @@ just continuing west indefinitely is its changing thought.\curious{In fact, ther
   DuckBot -- and things like it -- could \emph{never} solve unless it is allowed to remember
   something about the past. Just reacting to what it sees right now may not be enough.}
 
+\hint{Try developing a flowchart for the algorithm before implementing it.}
 \begin{TryThisBox}
-  Try going through all the DuckBot levels. For hints, see the exercises at the end of the chapter.
+  Try completing the maze level using what we learned in class.
+
+  \hintnote Keep your hand on the wall...
 \end{TryThisBox}
+
+\section{How Many Rules Did You Use?}
+
+As you go through the other levels of DuckBot, you may notice that some ponds require much more
+thought and many more rules. The simple empty pond can be solved using only six \kw{if}s. Believe it
+or not, the maze can be solved using only eight rules. But what about the others? Well, we don't
+actually know.
+
+\mTrackBox{Security}{Cyber-security is highly dependent on
+  understanding how complex algorithms are. There are some algorithms
+  that can encrypt data with a key quickly. Those who have the key can
+  apply the algorithm in reverse to quickly find the original
+  text. Meanwhile, those without the key have to use an algorithm that
+  can be proven to take longer than the age of the
+  universe. Complexity theory is one of the most important branches of
+  computer science to answer questions like these, with real world
+  impact.}  These kinds of questions are an example of thinking about
+\term{complexity}. There are multiple ways to study complexity and
+computer programmers are interested in all of them. Thinking about how
+many rules DuckBot needs given a particular map is one kind of
+complexity. Another kind of complexity is thinking about how quickly
+DuckBot can cover any given map. For example, consider an empty pond three squares tall and three squares wide. How many squares will DuckBot need to visit 
+
+Measuring the complexity of algorithms is one of the many fields of research in computer
+science. It may seem like just a fun logic puzzle, but actually, these research questions are the central concern of fields like cyber-security, programming languages, and
+
 
 \section{Numbers All the Way Down}
 

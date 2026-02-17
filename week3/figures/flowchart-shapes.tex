@@ -1,0 +1,33 @@
+\begin{tikzpicture}[>=latex']
+  \begin{scope}[minimum width=2cm, minimum height=0.5cm]
+    \node (terminal) at (0, 8) [draw, terminal] {START};
+    \node[anchor=north] at ([yshift=-0.5em]terminal) {
+      \begin{tcolorbox}[code note, width=2cm]
+        The pill box represents where an algorithm starts or ends.
+      \end{tcolorbox}
+    };
+
+    \node (predproc) at (4, 8) [draw, predproc] {Function};
+    \node[anchor=north] at ([yshift=-0.5em]predproc) {
+      \begin{tcolorbox}[code note, width=2cm]
+        This shows a function being called
+      \end{tcolorbox}
+    };
+
+    \node(decision) at (0, 4) [draw, decision] {\code{x == '*'}};
+    \node[anchor=north] at ([yshift=-0.5em]decision) {
+      \begin{tcolorbox}[code note, width=2cm]
+        Used when the next step changes as the result of a
+        boolean. Corresponds to an \kw{if} statement. Use labeled
+        arrows to indicate which path gets taken.
+      \end{tcolorbox}
+    };
+
+    \node (process) at (4, 4) [draw, process] {Step};
+    \node [anchor=north] at ([yshift=-0.5em]process) {
+      \begin{tcolorbox}[code note, width=2cm]
+        Used to indicate a generic step. Label the node with the exact processing step.
+      \end{tcolorbox}
+    };
+  \end{scope}
+\end{tikzpicture}

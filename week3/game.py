@@ -7,6 +7,7 @@ import inspect
 import os
 import asyncio
 import ctypes
+import ctypes.util
 import dis
 import functools
 import sys
@@ -16,6 +17,7 @@ import ast
 import math
 import pathlib
 import json
+import platform
 
 DUCK_SPRITE_FILENAME = 'week3/assets/duck.png'
 SCALE_FACTOR = 2
@@ -63,7 +65,6 @@ uniform vec4 lakeOffset;
 uniform vec2 sourceTileSize;
 
 varying vec2 textureOffset;
-
 varying float v_darken;
 
 void main() {
@@ -97,6 +98,8 @@ void main() {
 }
 '''
 GL_FRAGMENT_SHADER_SRC = '''
+precision mediump float;
+
 varying vec2 textureOffset;
 varying float v_darken;
 
@@ -246,8 +249,6 @@ class Brain:
             self.source_code = str(source)
         self.brain_file = brain_file
         self._validate_ast(self.source_code)
-        import traceback
-        traceback.print_stack()
 
         byte_code = compile(self.source_code, brain_file, "exec")
         self._validate_byte_code(byte_code)
@@ -1298,15 +1299,13 @@ class PygameBackend(GameBackend):
 class GlBackend(GameBackend):
     '''Backend that can render quickly to an opengl surface.'''
 
-    __slots__ = ('gl', 'game', 'tk_renderer', 'duck_sprite_file', 'scale',
+    __slots__ = ('game', 'tk_renderer', 'duck_sprite_file', 'scale',
                  'cur_texture', 'initialized', 'mesg_array', 'sprite_array',
                  'cur_layer_sprites', 'cur_layer_sprite_count',
                  'lake_texture', 'duck_texture', 'fragment_shader',
                  'shader_program', 'pos_uniform', 'lake_off_uniform', 'source_tile_size_uniform',
                  'darken_uniform')
     def __init__(self, game: Game, source_renderer: 'TkRenderer', duck_sprite_file=DUCK_SPRITE_FILENAME):
-        from OpenGL import GL
-        self.gl = GL
         self.game = game
         self.tk_renderer = source_renderer
         self.swap_buffers = None
@@ -1319,6 +1318,10 @@ class GlBackend(GameBackend):
         self.scale = SCALE_FACTOR
         self.cur_texture = None
         self.initialized = False
+
+    @property
+    def gl(self):
+        return self.tk_renderer.glarea.gl
 
     def duck_input_changed(self, *args):
         self.tk_renderer.update_state_from_game(self.game)
@@ -1409,8 +1412,8 @@ class GlBackend(GameBackend):
 
         gl.glUseProgram(self.shader_program)
         a_position = gl.glGetAttribLocation(self.shader_program, 'a_position')
-        gl.glVertexAttribPointer(a_position, 2, gl.GL_FLOAT, gl.GL_FALSE, 8, ctypes.c_void_p(0))
         gl.glEnableVertexAttribArray(a_position)
+        gl.glVertexAttribPointer(a_position, 2, gl.GL_FLOAT, gl.GL_FALSE, 8, ctypes.c_void_p(0))
         gl.glVertexAttribDivisor(a_position, 0)
 
         # Bind sampler to texture 0
@@ -1419,7 +1422,8 @@ class GlBackend(GameBackend):
 
     def _compile_shader(self, shader, src):
         gl = self.gl
-        gl.glShaderSource(shader, src)
+        b = src.encode("utf-8")
+        gl.glShaderSource(shader, [b], [len(b)])
         gl.glCompileShader(shader)
         status = gl.glGetShaderiv(shader, gl.GL_COMPILE_STATUS)
         if not status:
@@ -1444,8 +1448,10 @@ class GlBackend(GameBackend):
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_BASE_LEVEL, 0)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAX_LEVEL, 0)
+        if hasattr(gl, 'GL_TEXTURE_BASE_LEVEL'):
+            gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_BASE_LEVEL, 0)
+        if hasattr(gl, 'GL_TEXTURE_MAX_LEVEL'):
+            gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAX_LEVEL, 0)
 
     def screen_tile_size(self):
         return self.scale * self.game.tile_size
@@ -1463,7 +1469,15 @@ class GlBackend(GameBackend):
 
     def start_lake_draw(self, lake_off, lake_dim):
         if not self.initialized:
-            self._init_opengl()
+            from OpenGL.error import Error as GLError
+            try:
+                self._init_opengl()
+            except GLError:
+                print("_init_opengl fails")
+                import traceback
+                traceback.print_exc()
+                from .egl_canvas import EGLCanvas
+                self.tk_renderer._init_openglarea(EGLCanvas)
             self.initialized = True
 
         self.gl.glEnable(self.gl.GL_BLEND)
@@ -1574,12 +1588,12 @@ class GameRenderer:
         self.camera_position = self.game.current_map.get_screen_center(self.game.tile_size * SCALE_FACTOR)
         self.camera_bounds = ((0, 0), (self.game.current_map.cols, self.game.current_map.rows))
 
-    def set_camera_position(self, camx, camy):
+    def set_camera_position(self, camy, camx):
         ((leftx, topy), (rightx, bottomy)) = self.camera_bounds
         tile_size = self.backend.screen_tile_size()
         camx = min(max(camx, leftx * tile_size), rightx * tile_size)
         camy = min(max(camy, topy * tile_size), bottomy * tile_size)
-        self.camera_position = (camx, camy)
+        self.camera_position = (camy, camx)
 
     def set_camera_bounds(self, topleft, bottomright):
         x, y = self.camera_position
@@ -2066,16 +2080,46 @@ class AsyncSuspended:
         value = yield None # What it seems like 'await self' returns
         return value
 
+try:
+    from tkinter_gl import GLCanvas
+    from OpenGL import GL
+except:
+    GLCanvas = None
+
+if GLCanvas is not None:
+    class OpenGLCanvas(GLCanvas):
+        '''We need to adapt the GLCanvas class to override draw().
+
+        OpenGL drawing calls cannot be made outside of this function.
+        '''
+
+        @property
+        def gl(self):
+            return GL
+
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.cont = None
+            self.parent = self
+
+        def draw(self):
+            self.make_current()
+            if self.cont is not None:
+                self.cont.send(None)
+
 class TkRenderer(BrainRenderer):
     '''In-process renderer for brain source code with an optional opengl panel.'''
 
+    @property
+    def gl(self):
+        if self.glarea:
+            return self.glarea.gl
+        else:
+            return None
+
     def __init__(self, use_opengl=False):
         import tkinter
-        from tkinter_gl import GLCanvas
         from tkinter.scrolledtext import ScrolledText
-        from OpenGL import GL
-
-        self.gl = GL
         self.tk = tkinter
 
         self._events = []
@@ -2085,7 +2129,7 @@ class TkRenderer(BrainRenderer):
 
         # Configure grid
         if use_opengl:
-            glarea = 0
+            self.glarea_column = 0
             sourcearea = 1
             root.grid_columnconfigure(0, weight=1) # GL canvas area
             root.grid_columnconfigure((1,2), weight=0) # Source area
@@ -2147,31 +2191,15 @@ class TkRenderer(BrainRenderer):
         self.loadmap.grid(row=2, column=sourcearea+1, sticky="ew", padx=4)
 
         owner = self
-        class MyGlCanvas(GLCanvas):
-            '''We need to adapt the GLCanvas class to override draw().
-
-            OpenGL drawing calls cannot be made outside of this function.
-            '''
-
-            def __init__(self):
-                super().__init__(root)
-                self.cont = None
-                self.parent = self
-
-
-            def draw(self):
-                self.make_current()
-                if self.cont is not None:
-                    self.cont.send(None)
-
         if use_opengl:
-            self.glarea = MyGlCanvas()
-            self.glarea.grid(row=0, column=glarea, sticky="nsew", padx=8, pady=4)
-            self.glarea.make_current()
-            self.glarea.bind("<Configure>", self._glresized)
+            if 'USE_EGL' in os.environ:
+                from .egl_canvas import EGLCanvas
+                self._init_openglarea(EGLCanvas)
+            else:
+                self._init_openglarea(OpenGLCanvas)
 
             self.stateframe = tkinter.Frame(self.root);
-            self.stateframe.grid(row=1, column=glarea, sticky="nsew")
+            self.stateframe.grid(row=1, column=self.glarea_column, sticky="nsew")
 
             self.root.bind_all("<KeyPress>", functools.partial(self._onglkey, True))
             self.root.bind_all("<KeyRelease>", functools.partial(self._onglkey, False))
@@ -2227,6 +2255,21 @@ class TkRenderer(BrainRenderer):
                                           orient=tkinter.HORIZONTAL, command=self._on_speed_change)
         self.speed_slider.pack()
         tkinter.Label(speedframe, text="Duck Speed").pack()
+
+    def _init_openglarea(self, canvas_klass):
+        cont = None
+        if hasattr(self, 'glarea'):
+            if isinstance(self.glarea, canvas_klass):
+                raise RuntimeError('Cannot initialize a visual')
+            cont = self.glarea.cont
+            self.glarea.grid_forget()
+            self.glarea.destroy()
+
+        self.glarea = canvas_klass(self.root)
+        self.glarea.cont = cont
+        self.glarea.grid(row=0, column=self.glarea_column, sticky="nsew", padx=8, pady=4)
+        self.glarea.make_current()
+        self.glarea.bind("<Configure>", self._glresized)
 
     def _reload_brain(self):
         brainsrc = self.source_code.get("1.0", self.tk.END)

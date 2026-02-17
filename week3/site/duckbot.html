@@ -300,6 +300,7 @@
           <div class="btn-group">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="loadmap" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Load Map</button>
             <ul class="dropdown-menu" aria-labelledby="loadmap">
+              <li><h6 class="dropdown-header">Built-in Maps</h6></li>
               <li id="map-separator"><hr class="dropdown-divider"/></li>
               <li><a class="dropdown-item" href="#" id="loadmapfile">From File...</a></li>
             </ul>
@@ -307,7 +308,7 @@
           <div class="btn-group">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="openbraindd" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Open Brain</button>
             <ul class="dropdown-menu" aria-labeledby="openbraindd">
-              <li><a id="openbrainfromgh" class="dropdown-item" href="#">From GitHub...</a></li>
+              <!--<li><a id="openbrainfromgh" class="dropdown-item" href="#">From GitHub...</a></li>-->
               <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#fromurlmodal">From URL...</a></li>
               <li><a id="openbrain" class="dropdown-item" href="#">From File...</a></li>
             </ul>
@@ -389,7 +390,7 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
             this.loadMapFile = document.getElementById('loadmapfile');
             this.loadBrain = document.getElementById('openbrain');
             this.loadBrainFromUrl = document.getElementById('openbrainfromurl');
-            this.loadBrainFromGithub = document.getElementById('openbrainfromgh');
+            //this.loadBrainFromGithub = document.getElementById('openbrainfromgh');
             this.reloadBrain = document.getElementById('reloadbrain');
             this.levelName = document.getElementById('level-name');
             this.console = document.getElementById('console');
@@ -421,6 +422,28 @@ os.environ['SDL_EMSCRIPTEN_KEYBOARD_ELEMENT'] = '#canvas'`);
               self.fromurl.focus();
             });
             this.loadBrainFromUrl.addEventListener('click', () => {
+              const page = self.fromurl.value;
+              self.setConsole('Loading ' + page, 'console-dim');
+
+              fetch(page, {method: 'GET', accept: 'text/plain'})
+                .then((rsp) => {
+                  if ( rsp.ok ) return rsp.text();
+                  else {
+                    self.setConsole("Could not fetch " + page, 'console-dim');
+                  }
+                })
+                .then((txt) => {
+                  if ( txt !== undefined ) {
+                    self.setConsole("Loaded brain from " + page, 'console-dim');
+                    console.log("GOT text", txt)
+                    if ( self.cbs ) self.cbs.setBrain(txt);
+                  }
+                })
+                .catch((e) => {
+                  self.setConsole("Could not fetch " + page + ": " + e.toString(), 'console-dim');
+                  console.error(e);
+                });
+
               bootstrap.Modal.getOrCreateInstance(self.fromurlmodal).hide();
             });
             mapFileInput.addEventListener('change', function(event) {

@@ -1,0 +1,28 @@
+\begin{tikzpicture}[font={\sffamily}]
+  \node (start) at (0, 0) [draw,terminal] {START};
+  \node (check east) at ([yshift=-2cm]start.south) [draw, decision] {\code{east == 'x'}};
+  \node (default) at ([yshift=-6cm]check east.south) [draw, process] {Go East};
+
+  \node (check north) at ([yshift=-2cm,xshift=2cm]check east.south east) [draw, decision] {\code{north == 'x'}};
+  \node (check north empty) at ([yshift=-2cm]check north.south) [draw, decision] {\code{north == '*'}};
+
+  \node (north blocked) at ([xshift=2cm]check north.east) [draw, process] {Go West};
+  \node (north free) at ([xshift=2cm]check north empty.east) [draw, process] {Go North};
+
+  \draw[->] (check east.east) to[out=0,in=90] (check north.north);
+  \draw[->] (default.south) to[out=-90,in=180] (check east.west);
+
+  \draw[->] (start.south) -- (check east.north);
+  \draw[->] (check east.south) -- (default.north);
+  \draw[->] (check north empty.south) to[out=-90,in=0] (default.east);
+  \draw[->] (check north.south) -- (check north empty.north) node[midway, anchor=west] {\kw{False}};
+  \draw[->] (north free.east) to (check east.north);
+
+  \draw[->] (check north.east) -- (north blocked.west) node[midway, above] {\kw{True}};
+  \draw[->] (check north empty.east) -- (north free.west) node[midway, above] {\kw{True}};
+
+  \begin{pgfonlayer}{background}
+    \node[draw, fit=(start)(check east)(default)(check north)(check north empty)(north blocked)(north free), inner sep=0.5em] (thought zero) {};
+  \end{pgfonlayer}
+\end{tikzpicture}
+

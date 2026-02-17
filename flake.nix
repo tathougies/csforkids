@@ -60,6 +60,8 @@
             tikzlings
             tikzducks
             newfloat
+            flowchart
+            makeshape
             hyperref;
         };
 
