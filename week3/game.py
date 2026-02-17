@@ -2188,7 +2188,10 @@ class TkRenderer(BrainRenderer):
         owner = self
         if use_opengl:
             if os.environ.get('PYOPENGL_PLATFORM') == 'egl':
-                from .egl_canvas import EGLCanvas
+                if 'THONNY_VERSION' in os.environ:
+                    from egl_canvas import EGLCanvas
+                else:
+                    from .egl_canvas import EGLCanvas
                 self._init_openglarea(EGLCanvas)
             else:
                 self._init_openglarea(OpenGLCanvas)
