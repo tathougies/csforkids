@@ -869,16 +869,25 @@ To draw the diagram, use this code:
 \tikzforeground{
   \CheckTikzPictureSide
   \coordinate (immediate note middle) at ($(immediate note target)!0.5!(immediate note target end)$);
-  \node[anchor=east] (immediate note hint) at ([xshift={\tikztuftetowardsmargin * 0.7cm},yshift=-0.2cm]current page text area.\tikztuftemain|-immediate note middle) {
+  \node[anchor=\tikztuftemarg] (immediate note hint) at ([xshift={\tikztuftetowardsmargin * 0.7cm},yshift=0.2cm]current page text area.\tikztuftemain|-immediate note middle) {
     \begin{tcolorbox}[code note]
       You can set \code{immediate=True} to just get the final output, without having to watch Turtle draw.
     \end{tcolorbox}
   };
 
-  \draw[->] (immediate note hint.\tikztuftemarg) to[out=0,in=\tikztufteangle{-40},looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
+  \draw[->] (immediate note hint.\tikztuftemarg) to[out=\tikztufteangle{180},in=\tikztufteangle{-40},looseness=0.8] ($(immediate note target)!0.8!(immediate note target end)$);
 }
 \end{replbox}
 
+\didyouknow{One of the earliest kinds of computers was known as the
+  \textbf{Jacquard Loom}. It revolutionized the manufacture of complex
+  patterns in cloth. Weavers would punch cards giving the machine
+  directions to raise or lower threads to create complex patterns.
+
+  \begin{center}
+    \includegraphics[width=0.9\linewidth]{../week2/figures/Jacquard.loom.cards.jpg}
+  \end{center}
+}
 With these shapes, we can make more complicated figures. There's just
 one thing left: filling our shapes with color.
 
@@ -899,15 +908,7 @@ filled diagrams. Let's try it.
 Remember how we started class by drawing a duck and attempting to describe it to our friend? At that
 point we lacked a proper language to talk about drawings. But now we have a way to talk about
 drawings precisely! Take a look at your drawing, and break it up into \emph{rules}: lines, circles, etc.
-\didyouknow{One of the earliest kinds of computers was known as the
-  \textbf{Jacquard Loom}. It revolutionized the manufacture of complex
-  patterns in cloth. Weavers would punch cards giving the machine
-  directions to raise or lower threads to create complex patterns.
 
-  \begin{center}
-    \includegraphics[width=0.9\linewidth]{../week2/figures/Jacquard.loom.cards.jpg}
-  \end{center}
-}
 \begin{TryThisBox}
   Try using what you've learned thus far to draw a duck using \kw{def}/\kw{return} and
   Turtle. Name your function \code{duck}.
