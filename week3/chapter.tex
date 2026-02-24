@@ -44,17 +44,19 @@ circle, and that 7.5 degrees of that was 787.5 kilometers. Thus, the number that
 calculated is the circumference of the Earth.
 
 \begin{figure}
-  \centering
-
-  \begin{tikzpicture}[scale=0.5,font={\sffamily}]
-    \node at (0, 10) {Sun};
-    \draw (0, 10) circle (1);
+  \hspace*{-4cm}
+  \begin{tikzpicture}[scale=1,xshift=-5cm,font={\sffamily}]
+    \node at (0, 8) {Sun};
+    \draw (0, 8) circle (1);
     \draw (-2, 0) -- (10, 0) node[midway, anchor=north, yshift=-0.1em] {Ground};
 
-    \draw (0,0) -- (0, 4);
+    \draw (0,4) -- (0, 0) node[below]{\footnotesize Syene};
 
     \coordinate (alexandria bottom) at (6, 0);
     \coordinate (alexandria stick) at (6, 4);
+
+    \node (degree mark) at ([yshift=1em, xshift=1em]alexandria stick) {$7.5^{\circ}$};
+    \draw[->] (degree mark.south) to[right] ([yshift=-0.5em, xshift=0.2em]alexandria stick);
 
     \path[name path=ray] (alexandria stick) -- ++(-82.5:100);
     \path[name path=x axis] (-10, 0) -- (10, 0);
@@ -62,11 +64,22 @@ calculated is the circumference of the Earth.
       (alexandria bottom) -- (alexandria stick) -- (B);
     \draw (alexandria bottom) -- (alexandria stick);
     \draw[dashed] (alexandria stick) -- (B);
-    \draw[ultra thick] (B) -- (alexandria bottom);
+    \draw[ultra thick] (B) -- (alexandria bottom) node[below]{\footnotesize Alexandria};
+
+    \node (shadow note) at ([yshift=1em, xshift=2em]B) {\footnotesize Shadow};
+    \coordinate (shadow) at  ($(B)!0.5!(alexandria bottom)$);
+    \draw[->] (shadow note.west) to[right] ([yshift=0.1em]shadow);
+
+    \node[anchor=south east] (no shadow) at (-1, 1) {\footnotesize\begin{tcolorbox}[code note, width=3cm] No shadow because the Sun is directly above the stick\end{tcolorbox}};
+    \draw[->] (no shadow.south) to[left] (-0.1,0.1);
+
+    \draw[thick, decoration={brace, raise=0.2em}, decorate] (0.2,0.1) -- (5.8, 0.1) node[midway,yshift=1.5em] {787.5 kilometers};
 
   \end{tikzpicture}
 
-  \caption{Eratosthenes noticed that on the summer solstice the shadows cast by the Sun at noon appeared different in two cities. In Syene, there was no shadow, which meant the Sun was directly overhead. In Alexandria, there was a shadow.}
+  \caption{Eratosthenes's experimental setup. Eratosthenes noticed that on the summer solstice the
+    shadows cast by the Sun at noon appeared different in two cities. In Syene, there was no shadow,
+    which meant the Sun was directly overhead. In Alexandria, there was a shadow.}
   \label{fig:eratosthenes}
 \end{figure}
 
@@ -211,6 +224,11 @@ passable, and others have obstacles (\prettyref{fig:obstacles}). DuckBot cannot 
 obstacles, and if your brain program tells it to swim into an obstacle DuckBot will die. You must
 avoid all obstacles.
 
+When you swim over a pond square that is filled with water, the square will become darker,
+indicating that DuckBot has already been there. These dark squares are only visible to you, the
+programmer. DuckBot cannot change its behavior based on whether it's visited a square or
+not. DuckBot can only sense whether the squares around it have any obstacles in the way.
+
 \begin{marginfigure}
   \centering
   \includegraphics[width=0.9\marginparwidth]{../week3/figures/obstacles.jpg}
@@ -219,11 +237,6 @@ avoid all obstacles.
     writing a program, not for you to navigate around the pond yourself.}
   \label{fig:obstacles}
 \end{marginfigure}
-
-When you swim over a pond square that is filled with water, the square will become darker,
-indicating that DuckBot has already been there. These dark squares are only visible to you, the
-programmer. DuckBot cannot change its behavior based on whether it's visited a square or
-not. DuckBot can only sense whether the squares around it have any obstacles in the way.
 
 \subsection{Programming DuckBot}
 
@@ -294,13 +307,13 @@ last week, to send data out of a function we use \kw{return}.
 \begin{minipage}{\textwidth}
   \Large \ttfamily
   \tikzforeground{
-    \node[anchor=\tikztuftemarg](return comma note) at ([xshift={\tikztuftetowardsmargin * 0.5cm},yshift=2cm]current page text area.\tikztuftemain|-return comma.north) {
+    \node[anchor=\tikztuftemarg](return comma note) at ([xshift={\tikztuftetowardsmargin * 0.5cm},yshift=1cm]current page text area.\tikztuftemain|-return comma.north) {
       \begin{tcolorbox}[code note, width=4cm]
         The \code{,} (comma) tells \kw{return} that we are going to send back more than one piece of data.
       \end{tcolorbox}
     };
 
-    \draw[->] (return comma note.\tikztuftemarg) to[out={acos(\tikztuftetowardsmargin)}, in=90] ([yshift=0.5em,xshift=0.5em]return comma.north);
+    \draw[->] (return comma note.\tikztuftemarg) to[out={\tikztufteangle{-180}}, in=90] ([yshift=1.0em,xshift=0.5em]return comma.north);
   }
   \vspace{0.5cm}
   \begin{tcolorbox}[sharp corners]
@@ -331,8 +344,8 @@ string or even the \code{None} value.\hint{You'll probably want your thoughts to
 
 When you open DuckBot, load a new level or press the ``Reset Game'' button, the pond is cleared and
 DuckBot and the ducklings end up in random parts of the pond.\curious{Actually, the ducklings end up
-  in the pond you're least likely to end up in. That's why it's so important DuckBot hits the whole
-  pond!}
+  in the pond square you're least likely to end up in. That's why it's so important DuckBot hits the
+  whole pond!}
 
 \section{An Example DuckBot Level}
 
@@ -432,14 +445,26 @@ true of \kw{if}. If we want some code to run when the condition is true, then al
 indented \emph{more} than the \kw{if} statement. Moreover, all the code has to line up. If you
 indent one line with six spaces, and the next line with ten, then Python will return an error.
 
-Let's try using \kw{if} to make DuckBot do something if we have an obstacle to the east.
+Let's try using \kw{if} to make DuckBot do something if we have an obstacle to the east. We will use
+\kw{if} to check the data in \code{east}. After \kw{if}, we supply a rule that Python can use to
+check if \code{east} has \code{'x'} or \code{'*'}.
 
 \begin{TryThisBox}
   Change DuckBot's brain to this:
+  \tikzforeground{
+    \CheckTikzPictureSide
+    \node[anchor=south west] (spaces duckbot note) at ([yshift=10em]spaces duckbot) {
+      \begin{tcolorbox}[code note, width=5cm]
+        This has \emph{four spaces} to place the \kw{return} beneath the \kw{if}. The other two
+        lines, under the \kw{def}~\texttt{brain}, are indented only \emph{two spaces}.
+      \end{tcolorbox}
+    };
+    \draw[->] (spaces duckbot note.west) to[out=180,in=180,looseness=0.8] ([yshift=1em]spaces duckbot.north);
+  }
   \begin{lstlisting}
 def brain(north, south, east, west, thought):
   @@if east == 'x':
-    return 'N', thought@@
+  (*@\tikzmarknode{spaces duckbot}{}@*)  return 'N', thought@@
   return 'E', thought
   \end{lstlisting}
 \end{TryThisBox}
@@ -450,33 +475,41 @@ def brain(north, south, east, west, thought):
 Think about what's going to happen now. When you've decided what you think is going to happen to
 DuckBot, hit ``Reload Brain'' and start DuckBot.
 
-Uh-oh! DuckBot once again hit an obstacle, but this time it at least turned towards the north, once
-it hit an obstacle to the east.
+Uh-oh! This time DuckBot turned north when it hit an obstacle, but we never checked if there was an obstacle to the north, so it ran into the north wall.
 
-At this point, maybe it's a good idea to check if there's an obstacle to the north. But which
-direction to turn then? North was left of east. We could go west, which is left of north.
+Maybe it's a good idea to check if there's an obstacle to the north. But which direction to turn
+then? North was left of east. We could go west, which is left of north.
 
 Of course, if we did that, DuckBot would just go all the way to the west side of the pond, and hit
 the wall there. We'll have to handle the west case as well. And then, if we turn south, DuckBot will
 hit the bottom of the pond, so we have to turn back east.
 
-\hint{This is one of those changes where it's really important that you try to \emph{predict} what
-  is going to happen.}
+This is an important part of algorithm design: you must handle \emph{all} cases. If you leave
+certain situations out of your algorithm, then DuckBot will probably crash into one of the walls.
+
+We can use \kw{elif} to write several conditions that are checked in order. \kw{elif} is written
+like \kw{if}. You give it a condition. If the condition is true, then the code beneath it is
+run. Finally, to supply code to run if none of the conditions are true, you can use \kw{else}. The
+\kw{if} / \kw{elif}/ \kw{else} words need to be \emph{aligned} spacewise.
+
 \begin{TryThisBox}
-  Change DuckBot's brain to this:
+  \tikzmarknode{change duckbots brain}{Change} DuckBot's brain to this:
   \begin{lstlisting}[style=numbered, caption={A brain that checks for all obstacles},label={listing:duckbot-circle}]
 def brain(north, south, east, west, thought):
   if east == 'x':
     return 'N', thought
-  @@if north == 'x':
+  @@elif north == 'x':
     return 'W', thought
-  if west == 'x':
+  elif west == 'x':
     return 'S', thought
-  if south == 'x':
+  elif south == 'x':
+    return 'E', thought
+  else:
     return 'E', thought@@
-  return 'E', thought
   \end{lstlisting}
 \end{TryThisBox}
+\makemargmark{change duckbots brain}{\notestyle\hintnote This is one of those changes where it's really important that you try to \emph{predict} what
+  is going to happen.}
 
 If you go ahead and try that, you'll find that poor DuckBot \emph{still} hits the north
 shore. Clearly we've not quite figured out how to make this work.
@@ -611,7 +644,7 @@ values. Python has several rules and symbols to compare values. We've been using
 checks that two things are equal. There are other \term{operators} that check for other
 conditions. For a full summary see \prettyref{tab:comparisons}.
 
-\begin{table}[b]
+\begin{table}
   \centering
   \begin{tabular}{lp{0.7\linewidth}}
     \hline
@@ -849,7 +882,7 @@ actually know.
 \mTrackBox{Security}{Cyber-security is highly dependent on understanding how complex algorithms
   are. There are some algorithms that can encrypt data with a key quickly. Those who have the key
   can apply the algorithm in reverse to quickly find the original text. Meanwhile, those without the
-  key have to use an algorithm that can be proven to take longer than the age of the
+  key have to use algorithms that can be proven to take longer than the age of the
   universe. Complexity theory is one of the most important branches of computer science to answer
   questions like these, with real world impact.}  These kinds of questions are an example of
 thinking about \term{complexity}. There are multiple ways to study complexity and computer
@@ -862,13 +895,27 @@ Measuring the complexity of algorithms is one of the many fields of research in 
 may seem like just a fun logic puzzle, but actually, these research questions are the central
 concern of fields like cyber-security, programming languages, and more.
 
+\section{Conclusion: Thinking with Algorithms}
 
-\begin{DeepDiveBox}
-  \boxtitle{Programming Languages}
-  \label{deepdive:programming-languages}
+Algorithms require us to specify the exact sequence of steps that need to be followed based on the
+data that we have been given. Even seemingly simple problems can be difficult to solve
+algorithmically. Computers follow algorithms exactly as written, and this can lead to surprising
+behavior that wouldn't make sense to us. \curious{The pond may seem simple, but the algorithms you
+  wrote would be able to cover ponds of any size, even ones larger than you can comprehend. In fact,
+  some of your algorithms can provably cover \emph{infinite} ponds!} Like Eratosthenes, DuckBot only
+saw its immediate environment, but it was still able to navigate its world. The beauty of thinking
+algorithmically is that you can understand large things while only having to think about a little at
+a time.
 
-  At the beginning of this course we discussed already how 
-\end{DeepDiveBox}
+\Exercises
+
+\begin{exercises}
+\item Go through all the DuckBot levels!
+
+\item Given what you know about DuckBot, do you think DuckBot can cover any pond layout? Are there
+  some layouts that DuckBot would not be able to cover? What changes could you make to the game play
+  to allow DuckBot to cover any such map?
+\end{exercises}
 
 
 % \section{Numbers All the Way Down}

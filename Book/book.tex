@@ -10,7 +10,6 @@
 %\usepackage{zref-abspage}
 %\usepackage{eso-pic}
 \usepackage{capt-of}
-\usepackage{xeCJK}
 \usepackage{csquotes}
 \usepackage{newfloat}
 \usepackage{nameref}
@@ -32,7 +31,7 @@
 \patchcmd{\@caption}{: \ignorespaces}{\; \ignorespaces}{}{}
 \makeatother
 \makeatletter
-\AtBeginDocument{\typeout{MAKECAPTION=\meaning\@makecaption}}
+
 \makeatother
 \def\giturl{https://github.com/tathougies/csforkids}
 
@@ -149,8 +148,6 @@
   }%
 }
 % ---------- Fonts (project-local) ----------
-\usepackage{fontspec}
-\defaultfontfeatures{Ligatures=TeX}
 
 % Put fonts in:
 % fonts/Charter/Charter-Regular.ttf, etc.

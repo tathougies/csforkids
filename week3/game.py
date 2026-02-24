@@ -2330,7 +2330,8 @@ class TkRenderer(BrainRenderer):
         selected = filedialog.asksaveasfilename(title="Select a .py file",
                                               filetypes=[("Duckbot brain", "*.py")])
         if selected is not None and selected != "":
-            shutil.copyfile(selected, f'{selected}~')
+            if os.path.exists(selected):
+                shutil.copyfile(selected, f'{selected}~')
             with open(selected, "wt") as f:
                 f.write(self.source_code.get("1.0", self.tk.END))
 
@@ -2817,7 +2818,11 @@ def discover_maps(path):
     return maps
 
 # This checks to see if this is being run as a game
-if __name__ == '__main__':
+
+if 'THONNY_VERSION' in os.environ:
+    launch_tkgl(asset('sample_brain.py'), asset('assets/tileset.json'), asset('assets/maps/level1.json'))
+
+elif __name__ == '__main__':
     from argparse import ArgumentParser
     args = ArgumentParser()
     args.add_argument('--brain', default=asset('sample_brain.py'))
@@ -2832,6 +2837,3 @@ if __name__ == '__main__':
         launch_pygame_tk(opts.brain, asset('assets/tileset.json'), opts.level)
     else:
         print(f"Invalid backend {opts.backend}: expected gles, pygame")
-
-if 'THONNY_VERSION' in os.environ:
-    launch_tkgl(asset('sample_brain.py'), asset('assets/tileset.json'), asset('assets/maps/level1.json'))
