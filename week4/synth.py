@@ -9,7 +9,7 @@ import numba
 import sounddevice
 import numpy as np
 import threading
-from .viewer import view
+from viewer import view
 
 DROPOFF_CUTOFF = 0.0000001
 DROPOFF_TIME = 50.0 / 1000.0 # 50 ms

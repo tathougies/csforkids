@@ -1,6 +1,6 @@
 # Make your own instruments here
 
-from .synth import *
+from synth import *
 
 # MODIFY THIS ONE!
 @instrument
