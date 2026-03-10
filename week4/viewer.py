@@ -6,8 +6,12 @@ def normal_logpdf(x, mean, std):
     return -0.5 * np.log(2 * np.pi * std ** 2) - 0.5*((x - mean)/std)**2
 
 class Waveform(object):
-    def __init__(self, w, samplerate=44100):
-        self.wave = np.asarray(w)
+    def __init__(self, w, args=(), samplerate=44100):
+        if callable(w):
+            t = np.linspace(0, 10, 44100 * 10)
+            self.wave = w(*(args + (t,)))
+        else:
+            self.wave = np.asarray(w)
         self.samplerate = samplerate
 
     def autocorrelate(self, freq_min=20, freq_max=20000):
@@ -56,8 +60,8 @@ class Waveform(object):
         print("Best lag is " , best_lag, " freq: ", self.samplerate/best_lag, " max_scare: ", max_score)
         return best_lag
 
-def view(*waveforms, samplerate=44100):
-    waveforms = [Waveform(w, samplerate=samplerate) for w in waveforms]
+def view(waveforms, *args, samplerate=44100):
+    waveforms = [Waveform(w, args=args, samplerate=samplerate) for w in waveforms]
     max_offset = min(w.wave.shape[0] for w in waveforms)
     start_lag = max(w.autocorrelate() for w in waveforms)
     offset = 0
@@ -108,6 +112,7 @@ def view(*waveforms, samplerate=44100):
     def quit():
         exit(0)
 
+    draw()
     screen.listen()
     screen.onkey(quit, "q")
     screen.onkey(left, "Left")

@@ -9,10 +9,19 @@ import numba
 import sounddevice
 import numpy as np
 import threading
+from .viewer import view
 
 DROPOFF_CUTOFF = 0.0000001
 DROPOFF_TIME = 50.0 / 1000.0 # 50 ms
 DROPOFF_COEFF = math.log(DROPOFF_CUTOFF, math.e)
+
+USER_INSTRUMENTS = {}
+
+def instrument(fn):
+    global USER_INSTRUMENTS
+    compiled = numba.njit(cache=True)(fn)
+    USER_INSTRUMENTS[fn.__name__] = compiled
+    return compiled
 
 @numba.njit(cache=True)
 def convert_pitch_to_hz(pitch):
@@ -35,25 +44,65 @@ def convert_pitch_to_hz(pitch):
     else: #if isinstance(pitch, (int, float, np.ndarray)):
         return pitch
 
+def convert_pitch_to_hz_nojit(pitch):
+    base_frequencies = {
+        "C": 16.35, "C#": 17.32, "D": 18.35, "D#": 19.45, "E": 20.60,
+        "F": 21.83, "F#": 23.12, "G": 24.50, "G#": 25.96, "A": 27.50,
+        "A#": 29.14, "B": 30.87
+    }
+
+    def calculate_frequency(tone, octave):
+        return base_frequencies[tone.upper()] * (2 ** octave)
+
+    if isinstance(pitch, str):
+        tone = pitch[:-1]
+        octave = int(pitch[-1])
+        frequency = calculate_frequency(tone, octave)
+        if frequency is None:
+            raise ValueError(f"Unknown pitch: {pitch}")
+        return frequency
+    else: #if isinstance(pitch, (int, float, np.ndarray)):
+        return pitch
+
+@numba.njit(cache=True)
 def soft_clip(x):
     return np.tanh(x)
 
+@numba.njit(cache=True)
 def hard_clip(x):
     return np.minimum(np.maximum(x, -0.8), 0.8)
 
+@numba.njit(cache=True)
 def drive(x, factor=3):
     return soft_clip(factor * x)
+
+@numba.njit(cache=True)
+def rectify(x):
+    return np.abs(x)
 
 @numba.njit(cache=True)
 def tone(frequency, t):
     return np.sin(2 * np.pi * frequency * t).astype(np.float32)
 
+def note(frequency):
+    f = convert_pitch_to_hz_nojit(frequency)
+    return lambda t: tone(f, t)
+
+@numba.njit(cache=True)
 def rectified(frequency, t):
     return rectify(drive(tone(frequency, t)))
 
 @numba.njit(cache=True)
+def vibrato_phase(r, t):
+    return r * (1 - np.cos(2 * np.pi * r * t))
+
+@numba.njit(cache=True)
+def tone_from_phase(p):
+    return np.sin(2 * np.pi * p)
+
+@numba.njit(cache=True)
 def tone_with_vibrato(frequency, t, r=6.0, depth=0.5):
-    return np.sin(2 * np.pi * (frequency * t + (depth / r) * (1 - np.cos(2 * np.pi * r * t)))).astype(np.float32)
+    return np.sin(2 * np.pi * (frequency * t + depth * (1 - np.cos(2 * np.pi * r * t)))).astype(np.float32)
 
 def vibrato(pitch, t):
     v = (1.0/np.maximum(t,1e-9)) * (1 + 0.001 * tone(6, t + pitch))
@@ -71,6 +120,22 @@ def voice_attack_env(t, attack=0.02):
     t0 = t - t.min()
     env = np.clip(t0 / max(attack, 1e-6), 0.0, 1.0)
     return env.astype(np.float32)
+
+@numba.njit(cache=True)
+def pluck(t):
+    return np.exp(-t)
+
+@numba.njit(cache=True)
+def fade_out(t):
+    return np.clip(1 - t, 0.0, 1.0)
+
+@numba.njit(cache=True)
+def adsr(a, d, t, s=0.7):
+    envelope = np.where(t < a, t / a,
+                        np.where(t < a + d,
+                                 1.0 - ((t - a) / d) * (1 - s),
+                                 s))
+    return envelope
 
 def vowel_formants(vowel="a"):
     return {
@@ -178,6 +243,10 @@ def biquad_bandpass(sr, f0, Q):
 
 def church_organ(pitch, t):
     return organ(pitch, t, registration='strings8')
+
+def pipe_organ(pitch, t):
+    return organ(pitch, t, registration='principal8')
+
 
 def organ(pitch, t, registration='principal8'):
     # --- Registration (mixtures / stops) ---
@@ -319,7 +388,7 @@ def piano(f0, t, velocity=1.0):
         for s in range(0, shimmer):
             # Inharmonic frequency
             d_shimmer = SHIMMER_SIZE * 2 * uniform01(base_seed, s) - (SHIMMER_SIZE/2)
-            fn = n * (f0 +d_shimmer) * np.sqrt(1 + B * n * n)
+            fn = n * (f0 + d_shimmer) * np.sqrt(1 + B * n * n)
 
             # Amplitude roll-off (rough piano spectral tilt)
             amp = (1.0 / n) * np.exp(-0.15 * n)
@@ -407,7 +476,7 @@ def violin(pitch, t):
 
 def detuned(f, t):
     return (
-        np.exp(-t * 0.3) * (tone(12, t)*0.5+0.9) * tone(f * 0.999, t) +
+        np.exp(-t * 0.3) * (tone(12, t) * 0.5+0.9) * tone(f * 0.999, t) +
         np.exp(-t * 1.1) * (tone(3, t) *0.8 + 0.9) * tone(f * 1.003, t + 3) +
         (1 - np.exp(-t * 1.1)) * tone_with_vibrato(f * 1.001, t + 2)+
         piano_attack_env(t) * 0.2 * tone(f * 1.999, t - 2) +
@@ -486,8 +555,28 @@ def midi_note_to_hz(note: int, a4: float = 440.0) -> float:
     '''Translate a MIDI pitch into hertz'''
     return a4 * (2 ** ((note - 69) / 12.0))
 
+@numba.njit(cache=True)
 def dropoff(t_since_release):
     return np.exp((t_since_release/DROPOFF_TIME) * DROPOFF_COEFF)
+
+@numba.njit(cache=True)
+def cycletime(note):
+    '''Return how long each wave of the note is'''
+    return 1.0/note
+
+def play(*wavdata, duration=2):
+    d = None
+    for w in wavdata:
+        if callable(w):
+            t = np.linspace(0, duration, 44100 * duration)
+            w = w(t)
+
+        if d is None:
+            d = w
+        else:
+            d += w
+    d /= float(len(wavdata))
+    sounddevice.play(d, 44100)
 
 def play_midi(filename, instrument, samplerate=44100, volume=0.8):
     # Load midi, and read first track
@@ -543,7 +632,7 @@ def play_midi(filename, instrument, samplerate=44100, volume=0.8):
                     msg = next(msgs)
                 except StopIteration:
                     done.set()
-                    raise sounddevice.CallbackStop
+                    raise sounddevice.CallbackAbort
 
             dt = tick2second(msg.time, m.ticks_per_beat, tempo)
             t_cur += dt
@@ -554,7 +643,6 @@ def play_midi(filename, instrument, samplerate=44100, volume=0.8):
                     amp = math.pow(msg.velocity / 127.0, 1.5)
                     new_notes.append((Note(msg, t_cur, Phase.PRESS, amp), t_cur, t_all > t_cur))
                 elif msg.type == 'control_change' and msg.control == 64:
-                    print("CONTROL")
                     if msg.value < 64: # Sustain off, release all notes
                         released_notes.extend((n, t_cur, t_all < t_cur) for n in notes)
                         notes = []
@@ -583,7 +671,11 @@ def play_midi(filename, instrument, samplerate=44100, volume=0.8):
                 for n, _, t_note in itertools.chain(new_notes, released_notes)) + \
             sum(instrument(midi_note_to_hz(n.message.note), t_all - n.time) * dropoff(t_all - treleased) * (t_all > treleased) * n.amp \
                 for n, treleased in releasing_notes)
-        outdata *= volume
+
+        if callable(volume):
+            outdata *= volume()
+        elif volume is not None:
+            outdata *= volume
 
         # Move notes over
         for n, _, _ in new_notes:
@@ -591,9 +683,142 @@ def play_midi(filename, instrument, samplerate=44100, volume=0.8):
         releasing_notes = [(n, treleased) for n, treleased in releasing_notes if dropoff(t_final - treleased) > DROPOFF_CUTOFF]
 
     with sounddevice.OutputStream(samplerate=samplerate, callback=sound_cb, channels=1):
-        
         done.wait()
 #        stream.stop()
+
+def ui():
+    global USER_INSTRUMENTS
+    import tkinter as tk
+    from pathlib import Path
+    import signal
+    import multiprocessing
+
+    # Fetch list of MIDI files
+    midi_files = list(Path(__file__).parent.glob("**/*.mid"))
+
+    # Create main window
+    root = tk.Tk()
+    root.title("MIDI File Selector")
+
+    # Create left frame for listbox
+    left_frame = tk.Frame(root)
+    left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    # Create and populate listbox with MIDI files
+    midi_list = tk.Listbox(left_frame, exportselection=False)
+    for midi_file in midi_files:
+        midi_list.insert(tk.END, midi_file.name)
+    midi_list.pack(fill=tk.BOTH, expand=True)
+
+    # Create right frame for info pane and voices
+    right_frame = tk.Frame(root)
+    right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+    # Create info pane at the top
+    info_pane = tk.Frame(right_frame)
+    info_pane.pack(fill=tk.X, pady=10)
+
+    # Label to display selected file path
+    file_label = tk.Label(info_pane, text="File: ")
+    file_label.pack(fill=tk.X, padx=10)
+
+    voice_label = tk.Label(info_pane, text="Voice: ")
+    voice_label.pack(fill=tk.X, padx=10)
+
+    # Create a Volume control slider
+    volume = multiprocessing.Value('d', 1.0)
+
+    def set_volume(val):
+        volume.value = float(val)
+
+    volume_control = tk.Scale(info_pane, from_=0, to=2, orient=tk.HORIZONTAL,
+                              resolution=0.01, command=set_volume,
+                              label="Volume Control", length=300)
+    volume_control.set(1)
+    volume_control.pack(fill=tk.X)
+
+    instrument_names = list(USER_INSTRUMENTS.keys());
+
+    # Function to update file path label
+    def update_file_label(event):
+        selected_index = midi_list.curselection()
+        if selected_index:
+            file_path = midi_files[selected_index[0]]
+            file_label['text'] = f"File: {file_path}"
+
+
+    def update_voice_label(event):
+        selected_index = voices_list.curselection()
+        if selected_index:
+            voice_name = instrument_names[selected_index[0]]
+            voice_label['text'] = f"Voice: {voice_name}"
+
+    # Bind midi_list selection to update_file_label function
+    midi_list.bind('<<ListboxSelect>>', update_file_label)
+
+    # Create voices list for USER_INSTRUMENTS at the bottom
+    voices_list = tk.Listbox(right_frame, exportselection=False)
+    voices_list.pack(fill=tk.BOTH, pady=10, expand=True)
+
+    for voice in instrument_names:
+        voices_list.insert(tk.END, voice)
+
+    voices_list.bind("<<ListboxSelect>>", update_voice_label)
+
+    # Play button
+    play_button = None
+    play_state = 'STOPPED'
+    play_process = None
+
+    def process_ended_handler(signum, frame):
+        nonlocal play_state, play_button, play_process
+
+        if play_process is not None:
+            if not play_process.is_alive():
+                play_state = 'STOPPED'
+                play_button.config(text='Play')
+                play_process = None
+
+    signal.signal(signal.SIGCHLD, process_ended_handler)
+
+    def play_file():
+        nonlocal play_button, play_state, play_process
+        if play_process is not None:
+            if not play_process.is_alive():
+                play_process = None
+            else:
+                if play_state == 'STOPPING':
+                    play_process.terminate()
+                elif play_state == 'PLAYING':
+                    play_process.terminate()
+                    play_button.config(text='Stopping')
+                    play_state = 'STOPPING'
+
+        if play_process is None:
+            selected_file_index = midi_list.curselection()
+            selected_voice_index = voices_list.curselection()
+            if selected_file_index and selected_voice_index:
+                file_path = midi_files[selected_file_index[0]]
+                voice = USER_INSTRUMENTS[instrument_names[selected_voice_index[0]]]
+
+                play_process = multiprocessing.Process(target=play_midi, args=(file_path, voice), kwargs={'volume': lambda: volume.value })
+                play_process.start()
+
+                play_button.config(text='Stop')
+                play_state = 'PLAYING'
+
+    play_button = tk.Button(info_pane, text="Play", command=play_file)
+    play_button.pack(fill=tk.X, padx=10)
+
+    def on_close():
+        print("TERMINATE")
+        if play_process is not None and play_process.is_alive():
+            play_process.terminate()
+        root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", on_close)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     import sys
@@ -611,4 +836,3 @@ if __name__ == "__main__":
     import time
     time.sleep(120)
 
-    
