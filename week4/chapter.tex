@@ -152,7 +152,7 @@ manipulate tones by changing volume or adjusting frequency.
   \texttt{week4/voices.py}
   \tikzforeground{
     \CheckTikzPictureSide
-    \node[anchor=south west] (instrument decoration note) at ([yshift=0.5em, xshift=12em]instrument decoration){
+    \node[anchor=south west] (instrument decoration note) at ([yshift=-1em, xshift=14em]instrument decoration){
       \begin{tcolorbox}[code note, width=6cm]
         The line \code{@instrument} is called a \emph{decoration}, and helps the system realize that
         this function is an instrument. Without it, the instrument would not appear in our user
@@ -160,7 +160,7 @@ manipulate tones by changing volume or adjusting frequency.
       \end{tcolorbox}
     };
 
-    \draw[->] (instrument decoration note.west) to[out=180,in=180,looseness=0.8] (instrument decoration);
+    \draw[->] (instrument decoration note.west) to[out=180,in=120,looseness=0.8] ([yshift=1em]instrument decoration.north);
     }
 \begin{lstlisting}
 (*@\tikzmarknode{instrument decoration}{}@*)@instrument
@@ -346,7 +346,8 @@ Now, try playing the \code{vibrato} tone.
     \code{fade\_out(t)} & Produces a \emph{linear} fade-out effect starting at full volume at time 0 and ending in silence at time 1. \\
     \bottomrule
   \end{tabular}
-  \caption{\vspace*{1em}
+  \vspace{1em}
+  \caption{
     More functions you can use to manipulate
     instrument voices. Pay attention to the arguments to the
     functions. Tones produce sounds. Envelopes dynamically change
@@ -545,7 +546,7 @@ possibilities using the functions in the \code{synth} module and no right choice
 \begin{figure}[b]
 \fixfigure
 \label{fig:instrument-hierarchy}
-\caption{All our instrument voices can be represented as diagrams with arrows indicating how data flow through our functions, such as this one representing \code{snippet4}.}
+\caption{All our instrument voices can be represented as diagrams with arrows indicating how data flow through our functions, such as this one representing \code{simple5}.}
 \centering
 \scalebox{0.6}{
 \input{../week4/figures/tone-hierarchy.tex}}
