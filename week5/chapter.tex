@@ -1,0 +1,490 @@
+\week{Data everywhere}
+
+As we saw in the last few weeks, computers use numbers to be able to think about data. \curious{Even
+  more fundamentally than numbers, computers use \emph{on/off switches} to store
+  information. Remember our first lesson, where we learned how to flip bits to represent numbers?}
+It may seem crazy, but programs like Python are just really fancy calculators.
+
+Everything on a computer is stored as numbers. Even the words we saw last class are stored using
+numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
+call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate
+  \term{string} as \code{str}.}
+
+Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
+\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
+international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
+  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
+computer systems would often use their own custom standard or a standard particular to individual
+countries and languages. Reading files created using one standard on a computer designed to work
+with another standard could result in garbage data. Another common way to write strings as numbers
+is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
+Interchange}. ASCII covers most characters used in English and other languages that use the Latin
+alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
+character.
+
+ It may seem crazy that each letter has a number that goes along with it, but I can prove it to
+ you. Try this in Python:
+
+\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
+  \code{ord('hello')}!}
+\tikzbackground{
+}
+\begin{replbox}
+>>> ord('5')<ENTER>
+53
+>>> ord('Z')<ENTER>
+90
+>>> ord('>')<ENTER>
+62
+>>> ord('h')<ENTER>
+104
+\end{replbox}
+
+You can also go from a number \emph{to} a word.
+
+\hint{Try all kinds of numbers here, and see what you get!}
+\begin{replbox}
+>>> chr(76)<ENTER>
+'L'
+>>> chr(53)<ENTER>
+'5'
+>>> chr(54)<ENTER>
+'6'
+>>> chr(233)<ENTER>
+'é'
+>>> chr(1103)<ENTER>
+'я'
+>>> chr(26159)<ENTER>
+'是'
+>>> chr(22398)<ENTER>
+'学'(*@\tikzmarknode{chinese xie}{}@*)
+>>> chr(128512)<ENTER>
+(*@\emph{see what you get...}@*)
+\end{replbox}
+\makemargmark{chinese xie}{\hintnote \enquote{学}(\emph{xi\`e}) means to learn in Mandarin. That's what we're doing right now, and you just learned something new!}
+
+Lest we forget that it's still all just ones and zeros, you can use the \code{bin} rule that we
+learned about last week to see the binary representation of these numbers.
+
+\begin{replbox}
+>>> bin(ord('5'))<ENTER>
+'0b100111'(*@\tikzmarknode{single quotes around binary numbers}{}@*)
+>>> bin(ord('Z'))<ENTER>
+'0b1011010'
+>>> bin(ord('\''))<ENTER>
+'0b100111'
+\end{replbox}
+\makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
+Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
+
+See it's just numbers all the way down!
+
+\begin{BigIdeaBox}
+  All information inside a modern computer is stored as numbers, even words!
+\end{BigIdeaBox}
+
+\section{Review}
+
+On the first day of class, we did a bit of discussion on manipulating numbers with Python. As a
+review, here are some things you can do with Python numbers.
+
+\begin{replbox}
+>>> 33 + 10 - 1<ENTER>
+42
+>>> 1 + 1 / 2<ENTER>
+1.5
+>>> 1 + 3 * 2<ENTER>(*@\tikzmarknode{order of ops}{}@*)
+7
+\end{replbox}
+\makemargmark{order of ops}{\notestyle\hintnote{Remember that Python automatically assumes the standard order of operations, which means multiplication is done before addition. Use parentheses to make one calculation happen first.}}
+
+Of course, we have also seen that Python can handle words and strings.
+
+\begin{replbox}
+>>> "hello"<ENTER>
+'hello'
+>>> 'world'<ENTER>
+'world'
+>>> 'hello ' + 'world'<ENTER>
+'hello world'
+>>> 'ho ' * 3<ENTER>
+'ho ho ho'
+\end{replbox}
+
+There are also some \emph{special} values that we've encountered a few times. One of these is the special \kw{None} value, which represents something missing.
+
+\hint{If you get nothing back, when you hit \enterkey, that's because \kw{None} literally returns nothing.}
+\begin{replbox}
+>>> None<ENTER>
+\end{replbox}
+
+\section{Complex Data}
+
+Of course, computers can store more than just numbers and strings. Very often, we have to keep track
+of more than one piece of data. One way to keep track of multiple things is called a \term{list}.
+
+As the name suggests, \term{lists} keep track of many numbers or strings. You can write a list using
+\code{[} and \code{]}.
+
+\begin{replbox}
+>>> [1,2,3]<ENTER>
+[1, 2, 3]
+>>> ['my name is', ' travis']<ENTER>
+['my name is ', 'travis']
+\end{replbox}
+
+Lists can contain both strings and numbers.
+
+\begin{replbox}
+>>> [1,2,'hello']<ENTER>
+[1, 2, 'hello']
+\end{replbox}
+
+We can look up a particular value in the list by using \code{[} and \code{]} again!
+
+\tikzforeground{
+  \CheckTikzPictureSide
+  \node[anchor=west] (index note) at ([yshift=-1em, xshift=10em]index) {
+    \begin{tcolorbox}[code note, width=4cm]
+      This number is called an \term{index} and tells us which item in the list we would like to lookup. Even though it's also in square brackets, it is not a list.
+    \end{tcolorbox}
+  };
+  \draw[->] (index note.west) to[out=180,in=-90,looseness=0.8] ([xshift=0.8em]index.south);
+}
+\begin{replbox}
+>>> [1,2,'hello'][(*@\tikzmarknode{index}{}@*)2]<ENTER>
+'hello'
+>>> [1,2,'hello'][1]<ENTER>
+2
+>>> [1,2,'hello'][0]<ENTER>
+1
+\end{replbox}
+
+All the items in a list are numbered with a special number called an \term{index}. The first item in
+the list is at index \code{0}.\curious{Computer scientists like to count starting at zero. There are
+  many technical reasons for this. One reason is that computers naturally like the number zero. If
+  we started at one, we'd have to sometimes add or subtract one to figure out the right index. Every
+  math operation on a computer takes time, and programmers like to save time.} The subsequent item
+is at \code{1}, the next at \code{2}, and so forth.
+
+If you try to access an element with an index that is larger than any item in the list, you'll get
+an error.
+
+\curious{Unlike many programming languages, Python also allows you to use \emph{negative}
+  indices. Index \code{-1} refers to the last element of the list, \code{-2} to the element before
+  the last element, etc. This can get confusing, so we like to stick with non-negative numbers. But,
+  it's a fun party trick.}
+\begin{replbox}
+>>> ['word1', 'word2', 'word3'][4]<ENTER>
+IndexError: list index out of range
+\end{replbox}
+
+\section{Naming Data}
+
+Writing out our lists everytime we want to talk about them can be really complicated. It's much
+easier to give large lists a name, and then use them later on. We can name things using \code{=}.
+
+\hint{Remember that the double equals sign \code{==} checks if two things are equal, but \code{=}
+  assigns a name to a piece of data.}
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> a[3]
+'joseph'
+\end{replbox}
+
+In the example above the name \code{a} was assigned to represent the list with six names. After we
+assign the name, then we can use \code{a} instead of typing out the entire list.
+
+\subsection{Changing Data}
+
+One of the nice things about naming things is that we can change them. You can change a particular
+item in a list like this:
+
+\didyouknow{The famous computer programmer Phil Karlton is famous for declaring that naming things
+  is one of the most difficult things about computer science.}
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> a[3]<ENTER>
+'joseph'
+>>> a[3] = 'tom'<ENTER>
+>>> a<ENTER>
+['bob', 'alice', 'mary', 'tom', 'benjamin', 'tony']
+\end{replbox}
+
+You can also \emph{add} elements to a list using \code{append}.
+
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> a.append('sam')<ENTER>
+>>> a
+['bob', 'alice', 'mary', 'tom', 'benjamin', 'tony', 'sam']
+\end{replbox}
+
+And finally, you can remove things from lists using \kw{del}.
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> del a[0]<ENTER>
+>>> a
+['alice', 'mary', 'tom', 'benjamin', 'tony']
+\end{replbox}
+
+\subsection{A Curious Case}
+
+Try the following:
+
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> a<ENTER>
+['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']
+>>> b = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> b<ENTER>
+['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']
+>>> a[3] = b
+>>> a
+['bob', 'alice', 'mary', ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony'], 'benjamin', 'tony']
+\end{replbox}
+
+In Python, lists can contain lists! Wow!
+
+Remember how we said that naming things meant we could use the name instead of typing out the list
+again? Let's see if we can do that here to avoid having to create a new list for \code{b}. If
+\code{a} is just a name, then we should be able to use \code{a} instead of \code{b}.
+
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> a<ENTER>
+['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']
+>>> a[3] = a
+>>> a
+['bob', 'alice', 'mary', [...], 'benjamin', 'tony']
+>>> a[3]
+['bob', 'alice', 'mary', [...], 'benjamin', 'tony']
+>>> a[3][3]
+['bob', 'alice', 'mary', [...], 'benjamin', 'tony']
+\end{replbox}
+
+It seems as if \code{a} is somehow different from \code{b}. You may now be questioning whether you
+were lied to about names being interchangeable with the data they represent.
+
+This again goes back to the lesson from week 2 where we created drawings of ducks on the
+computer. Being able to draw a duck from a description is not the same as a real duck. Computers
+model things, and this is exactly the same case.
+
+In reality, computer names cannot store anything. As we said at the beginning of this chapter,
+everything on a computer is a number. Python variables really only store numbers. That means, if we
+want to put a list into them, we first have to represent the list using a number.
+
+But there's a problem. Depending on what kind of computer you are using, Python can only store
+numbers with 32 or 64 binary digits. On a 32-bit computer, names are limited to storing numbers
+between 0 and 4 billion. There are \emph{much} more than four billion possible lists!
+
+In order to store a list as a number, we have to \emph{allocate} a new number that will be used to
+represent the list. Python can only store so many lists (or other complex objects) while it is
+running, and this depends on the exact computer being used. In real computer programs, we almost
+never run against these limits, and so we just pretend that we can store as many lists as we want.
+
+We can see what number Python has chosen to associate with this list using \code{id}.
+
+\begin{replbox}
+>>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> id(a)<ENTER>
+139920520053504
+>>> b = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
+>>> id(b)<ENTER>
+139920522242624
+\end{replbox}
+
+Notice that whenever you create a new list using \code{[} and \code{]}, the \code{id} for the name
+changes. This is because Python has arbitrarily decided to use this number for \emph{that}
+particular list. \didyouknow{You could theoretically go from an \code{id} to the Python list
+  directly. This is considered dangerous though, because you don't know which numbers Python has
+  allocated for what sort of thing. If Python let you ask it to interpret any number as a list, you
+  might end up asking it to do the impossible! Some languages, like C or C++ allow you to do this,
+  but they are considered \emph{unsafe} languages, because you could crash your computer. But don't
+  worry, you cannot crash your computer with Python! It's a very safe language!} If you were to
+restart Python or Thonny, these numbers might change. But it doesn't matter for us, because as long
+as we're working within Python, Python automatically translates these numbers for us.
+
+Now perhaps, we can understand what happened above. When we assigned \code{a[3] = a}, we were really
+storing the \code{id} of \code{a} into the fourth element of \code{a}. When we later went to access
+\code{a[3]}, Python looked at the number, determined it was actually representing a list, and went
+to look up that list, which happened to be \code{a}. When Python notices its going in a loop, it
+sometimes writes \code{[...]} instead of the full list.
+
+When we instead assigned \code{a[3] = b}, then Python allocated a \emph{new} number for
+\code{b}. Then, when asked to print \code{a}, when it came to \code{a[3]}, it again saw it was a
+list, but this time it was the list represented by \code{b}. \code{b[3]} was never changed, because
+\code{b} does not have the same \code{id} as \code{a}. \prettyref{fig:pointers} demonstrates exactly
+what is happening with \code{a} and \code{b}.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{../week5/figures/pointers.pdf}
+  \caption{Python lists are referenced by unique numbers called \code{id}s. Instead of storing a
+    list in another list, Python stores the number that references the target list. Suppose you
+    assign both \code{a} and \code{b} to the same list of names. This creates two copies of these
+    names, with different \code{id}s, as shown in subfigure (a). When you assign a list to an item
+    like in \code{a[3] = b}, the \code{id} of \code{b} is put into the list instead, as shown in
+    subfigure (b). However, when you assign \code{a[3] = a}, the \code{id} of \code{a} is put within
+    the list referred to by \code{a}, resulting in the strange ``loopy'' behavior we saw above
+    (subfigure (c)).}
+  \label{fig:pointers}
+\end{figure}
+
+\section{Dictionaries}
+
+Lists let us store any number of things, but we can only refer to them by their position in the
+list. Sometimes, we need to keep track of a lot of things but we'd like to use strings instead. For
+this, we can use \term{dictionaries}.
+
+For example, we can store the ages of our friends like this:
+
+\tikzforeground{
+  \node[anchor=west] (key note) at ([yshift=-1em, xshift=8em]key) {
+    \begin{tcolorbox}[code note, width=8cm]
+      The names of things in a dictionary are called \term{keys}, which are similar to list \term{indices}.
+    \end{tcolorbox}
+  };
+  \draw[->] (key note.west) to[out=180,in=-90] ([xshift=2em, yshift=0.8em]key.south);
+}
+\begin{replbox}
+>>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
+>>> ages[(*@\tikzmarknode{key}{}@*)'bob']<ENTER>
+8
+\end{replbox}
+
+Similar to lists, we can update existing keys:
+
+\didyouknow{Under the hood, dictionaries are stored as special kinds of lists, which are themselves
+  stored as numbers. It's numbers all the way down!}
+\begin{replbox}
+>>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
+>>> ages['bob']<ENTER>
+8
+>>> ages['bob'] = 9<ENTER>
+>>> ages
+{'bob': 9, 'sam': 6, 'amy': 9}<ENTER>
+\end{replbox}
+
+You can also delete keys using \kw{del}.
+
+\begin{replbox}
+>>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
+>>> del ages['bob']
+>>> ages
+{'sam': 6, 'amy': 9}<ENTER>
+\end{replbox}
+
+Unlike lists, there's no way you can assign to a wrong key in a dictionary. If you update a key that
+does not exist, Python makes a new one.
+
+\begin{replbox}
+>>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
+>>> ages['tom'] = 3
+>>> ages
+{'tom': 3, 'bob': 9, 'sam': 6, 'amy': 9}<ENTER>
+\end{replbox}
+
+However, if you access a \term{key} that does not exist, you will get a \kw{KeyError}
+
+\begin{replbox}
+>>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
+>>> ages['beth']
+KeyError: 'beth'
+\end{replbox}
+
+\section{Interactive Fiction}
+
+Once we can make and change data, we need to \emph{use} it.
+
+Let's write some stories.
+
+\hint{You can hit the Run button in Thonny to start the story!}
+In Thonny, open up \texttt{week5/fiction.py}. This file contains a template for an interactive
+fiction story. Copy this file and save it as a new file in the \texttt{week5} directory. Name it
+something like \texttt{mystory.py}.
+
+If you look inside this file, you will find scenes of an interactive text story, like this one.
+
+\tikzforeground{
+  \node[anchor=south west] (named args note) at ([xshift=15em,yshift=3em]named args) {
+    \begin{tcolorbox}[code note, width=4cm]
+      This is another way to pass arguments called \emph{named} arguments. By using named arguments, we don't need to worry about the order in which we write the arguments.
+    \end{tcolorbox}
+  };
+  \draw[->] (named args note.south) to[out=-35,in=-45, looseness=0.8] ([xshift=2em,yshift=0.8em]named args.south);
+}
+\begin{replbox}
+def intro_scene(state):
+    say("As you look around, you see a winding path ahead and a few intriguing objects resting on the forest floor, inviting you to choose.")
+    items = {
+        "lantern": pick_lantern,
+        "map": pick_map
+    }
+    directions = {
+        "north": intro_north,
+        "south": intro_south
+    }
+    return interact(items=items,\
+        (*@\tikzmarknode{named args}{}@*)directions=directions, state=state)
+\end{replbox}
+
+Let's walk through it. The \code{say} function tells the story to the reader. Anything you write in
+here is said to the reader.
+
+Then, we create two dictionaries. The first represents \emph{items} that can be picked up and the
+second represents directions the reader can move in this scene. The values of this dictionary are
+the names of other functions representing scenes in the story.
+
+Finally, at the end of the scene, we call the \code{interact} function.
+
+When this scene is presented to the reader, the reader will first be told the story from the \code{say}
+functions. Then, the reader will be asked to enter an instruction like \code{take <item name>} or
+\code{go <direction>}. If these directions exist, then the named scene will be the next scene
+called.
+
+\subsection{State}
+
+\hint{\code{state} is an argument that you have to pass to each scene. The first value of
+  \code{state} can be found in the name \code{INITIAL\_STATE} at the bottom of the file. You can add
+  anything you want into your state.}
+As the reader progresses through the story, they can collect items. This changes the \term{state} of
+the reader. State means things that change as the story goes on. For our stories, we will keep our
+state in a dictionary named \code{state}. T
+
+For example, here is the scene \code{pick\_map}.
+
+\begin{replbox}
+def pick_map(state):
+    state['items'].append('map')
+    say("You pick up the map, its crinkled edges hinting at untold adventures and secrets waiting to be uncovered.")
+    directions = {
+        "north": intro_north,
+        "south": intro_south
+    }
+    return interact(directions=directions, state=state)
+\end{replbox}
+
+The first thing this scene does is it uses \code{append} to add the \code{'map'} into the list
+inside \code{state['items']}. Now, whenever the reader uses the \code{backpack} command, he or she can see that they have a \code{map}.
+
+\begin{TryThisBox}
+  Check out the other scenes in this file and try writing your own story! Get as creative as you want
+\end{TryThisBox}
+
+\section{Conclusion}
+
+Data is more than just numbers and strings. Lists and dictionaries allow us talk about more than one
+thing. They can contain not only numbers and strings, but other lists and dictionaries. In fact,
+lists and dictionaries can both contain themselves!
+
+All data in a computer is stored as a number, even strings. Standards written by international
+bodies mean that individual letters and characters have a set mapping between them and the numbers
+that represent them. Lists and dictionaries, however, do not.
+
+Python represents lists and dictionaries using numbers called \code{id}s that it keeps track of
+internally. Instead of actually putting one list in another, Python stores a number
+\emph{referencing} one list inside the other. This can lead to some confusing situations, but it's
+still an example of computers following rules exactly.
+
+Using lists and dictionaries, we can build a model world that we can explore as an interactive
+story.
