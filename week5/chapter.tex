@@ -1,31 +1,35 @@
 \week{Data everywhere}
 
-As we saw in the last few weeks, computers use numbers to be able to think about data. \curious{Even
-  more fundamentally than numbers, computers use \emph{on/off switches} to store
-  information. Remember our first lesson, where we learned how to flip bits to represent numbers?}
-It may seem crazy, but programs like Python are just really fancy calculators.
+As we have seen in the last few weeks, computers follow rules. But what do they actually think
+about?  The surprising answer: everything -- words, pictures, even sounds -- is just
+numbers. Computers use numbers to represent and reason about data. \curious{And those numbers?
+  They’re built from the same tiny on/off switches we used before. So even words are secretly made
+  of bits.}  In a sense, programs like Python are really just very fancy calculators.
 
 Everything on a computer is stored as numbers. Even the words we saw last class are stored using
-numbers. Every letter in a word (or a \term{string} as Python calls it) is assigned a number. We
-call these numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate
-  \term{string} as \code{str}.}
+numbers. Every letter in a word (what Python calls a string) is assigned a number. We call these
+numbers the \term{encoding} of the string.\hint{Python will sometimes abbreviate \term{string} as
+  \code{str}.}
 
 Most modern computers today use the \term{Unicode} standard for encoding strings. Unicode is a
-\emph{huge} dictionary mapping every character possibly known to humans to a number assigned by an
+\emph{huge} dictionary mapping every character humans have written to a number assigned by an
 international committee.\didyouknow{As of the latest Unicode standard, there are over 297,334
-  characters! That's a lot of letters!} Before Unicode standardized the mapping of characters,
-computer systems would often use their own custom standard or a standard particular to individual
-countries and languages. Reading files created using one standard on a computer designed to work
-with another standard could result in garbage data. Another common way to write strings as numbers
-is called \term{ASCII}, which stands for the \emph{American Standard Code for Information
-Interchange}. ASCII covers most characters used in English and other languages that use the Latin
-alphabet. It's also compatible with Unicode -- Unicode maps every Latin letter to the same ASCII
-character.
+  characters -- including ancient scripts, math symbols, and even musical notation. That's a lot of
+  letters!\\
+  You can check out all 290,000 characters on
+  \resource[qrcode, text={the Unicode website}, description={Browse all the Unicode characters},
+    kind={Resources}]{https://home.unicode.org/}} Before Unicode standardized the mapping of characters, computer systems would often use
+their own custom standard or a standard particular to individual countries and languages. Reading
+files created using one standard on a computer designed to work with another standard could result
+in garbage data. Another common way to write strings as numbers is called \term{ASCII}, which stands
+for the \emph{American Standard Code for Information Interchange}. ASCII covers most characters used
+in English and related languages. It's also compatible with Unicode -- Unicode includes ASCII as a
+subset, so the same numbers are used for basic English letters.
 
- It may seem crazy that each letter has a number that goes along with it, but I can prove it to
- you. Try this in Python:
+It sounds strange at first: letters becoming numbers. But once you see it, you can’t unsee it. Try
+this in Python:
 
-\hint{If you want to see a new kind of error called a \code{ValueError}, try\\
+\hint{If you want to see a new kind of error called a \kw{ValueError}, try\\
   \code{ord('hello')}!}
 \tikzbackground{
 }
@@ -75,12 +79,15 @@ learned about last week to see the binary representation of these numbers.
 '0b100111'
 \end{replbox}
 \makemargmark{single quotes around binary numbers}{\notestyle\huhnote{I thought the single quotes meant words. Why do we keep seeing them when we ask for binary numbers?}\\
-Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation. This lets you see it here.}
+Because Python is friendly, it always shows numbers as decimal, even though they are stored as binary on the computer. The \code{bin} rule actually creates a word, or string, that represents the binary representation.}
 
+\didyouknow{If two computers disagree about encoding, the same numbers can turn into completely different text. This is why files sometimes look like nonsense when opened incorrectly.}
 See it's just numbers all the way down!
 
 \begin{BigIdeaBox}
-  All information inside a modern computer is stored as numbers, even words!
+  Computers don't understand ``text'', ``images'', or ``music''.
+  They only understand numbers.
+  Everything else is a way of organizing numbers so that we can understand them.
 \end{BigIdeaBox}
 
 \section{Review}
@@ -120,8 +127,18 @@ There are also some \emph{special} values that we've encountered a few times. On
 
 \section{Complex Data}
 
-Of course, computers can store more than just numbers and strings. Very often, we have to keep track
-of more than one piece of data. One way to keep track of multiple things is called a \term{list}.
+
+\begin{marginfigure}
+  \includegraphics[width=0.9\marginparwidth]{../week5/figures/hieroglyphs-ancient.jpg}
+  \caption{When we said every character has a number assigned by Unicode, we meant it! Even ancient
+    hieroglyphs like this, which have not been used for thousands of years, are assigned numbers in
+    Unicode!
+  }
+  \label{fig:hieroglyphs}
+\end{marginfigure}
+So far, we have mostly worked with one thing at a time: one number, one word, one answer. But real
+programs often need to keep track of many things at once. A shopping list, a high score table, the
+names of players in a game -- these are all \term{lists}.
 
 As the name suggests, \term{lists} keep track of many numbers or strings. You can write a list using
 \code{[} and \code{]}.
@@ -142,6 +159,9 @@ Lists can contain both strings and numbers.
 
 We can look up a particular value in the list by using \code{[} and \code{]} again!
 
+\curious{Computer scientists usually start counting at zero. One
+  reason is that computers naturally measure positions as ``how far from the beginning,'' and the
+  first thing is zero steps away.}
 \tikzforeground{
   \CheckTikzPictureSide
   \node[anchor=west] (index note) at ([yshift=-1em, xshift=10em]index) {
@@ -161,19 +181,16 @@ We can look up a particular value in the list by using \code{[} and \code{]} aga
 \end{replbox}
 
 All the items in a list are numbered with a special number called an \term{index}. The first item in
-the list is at index \code{0}.\curious{Computer scientists like to count starting at zero. There are
-  many technical reasons for this. One reason is that computers naturally like the number zero. If
-  we started at one, we'd have to sometimes add or subtract one to figure out the right index. Every
-  math operation on a computer takes time, and programmers like to save time.} The subsequent item
-is at \code{1}, the next at \code{2}, and so forth.
-
-If you try to access an element with an index that is larger than any item in the list, you'll get
-an error.
+the list is at index \code{0}. The subsequent item is at \code{1}, the next at \code{2}, and so
+forth.
 
 \curious{Unlike many programming languages, Python also allows you to use \emph{negative}
   indices. Index \code{-1} refers to the last element of the list, \code{-2} to the element before
   the last element, etc. This can get confusing, so we like to stick with non-negative numbers. But,
   it's a fun party trick.}
+If you try to access an element with an index that is larger than any item in the list, you'll get
+an error.
+
 \begin{replbox}
 >>> ['word1', 'word2', 'word3'][4]<ENTER>
 IndexError: list index out of range
@@ -181,7 +198,19 @@ IndexError: list index out of range
 
 \section{Naming Data}
 
-Writing out our lists everytime we want to talk about them can be really complicated. It's much
+\begin{marginfigure}
+  \includegraphics[width=0.9\marginparwidth]{../week5/figures/thirteenth_floor.jpg}
+  \caption{It may seem odd that programmers like to start counting at zero, but humans choose how we
+    want to count all the time. For example, many buildings skip the thirteenth floor because of
+    \emph{triskaidekaphobia} -- or fear of the number thirteen. As long as we all agree on how to
+    count, it doesn't matter exactly which way we choose. For example, in this elevator panel, you'd
+    never be able to find the thirteenth floor. Python would call this an \kw{IndexError}!
+    \attribution{Yoshimasa Niwa from Tokyo, Japan, CC BY 2.0
+      <https://creativecommons.org/licenses/by/2.0>, via Wikimedia Commons}}
+  \label{fig:thirteenth-floor}
+\end{marginfigure}
+
+Writing out our lists every time we want to talk about them can be really complicated. It's much
 easier to give large lists a name, and then use them later on. We can name things using \code{=}.
 
 \hint{Remember that the double equals sign \code{==} checks if two things are equal, but \code{=}
@@ -217,7 +246,7 @@ You can also \emph{add} elements to a list using \code{append}.
 >>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
 >>> a.append('sam')<ENTER>
 >>> a
-['bob', 'alice', 'mary', 'tom', 'benjamin', 'tony', 'sam']
+['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony', 'sam']
 \end{replbox}
 
 And finally, you can remove things from lists using \kw{del}.
@@ -225,11 +254,16 @@ And finally, you can remove things from lists using \kw{del}.
 >>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
 >>> del a[0]<ENTER>
 >>> a
-['alice', 'mary', 'tom', 'benjamin', 'tony']
+['alice', 'mary', 'joseph', 'benjamin', 'tony']
 \end{replbox}
+
+\begin{BigIdeaBox}
+  A list lets the computer treat many values as one larger value. This is one of the first ways we build complex data out of simple pieces.
+\end{BigIdeaBox}
 
 \subsection{A Curious Case}
 
+\curious{Whenever order matters, a list is often a good model. A recipe, a to-do list, and the moves in a dance can all be stored as lists.}
 Try the following:
 
 \begin{replbox}
@@ -246,9 +280,10 @@ Try the following:
 
 In Python, lists can contain lists! Wow!
 
-Remember how we said that naming things meant we could use the name instead of typing out the list
-again? Let's see if we can do that here to avoid having to create a new list for \code{b}. If
-\code{a} is just a name, then we should be able to use \code{a} instead of \code{b}.
+Now for something strange. At first this may look impossible -- but it reveals something important
+about how Python represents complex data. Remember how we said we can use the name instead of
+writing out the list. In the above example, \code{a} and \code{b} were the same list. That means we
+should be able to use \code{a} in place of \code{b}.
 
 \begin{replbox}
 >>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
@@ -263,6 +298,17 @@ again? Let's see if we can do that here to avoid having to create a new list for
 ['bob', 'alice', 'mary', [...], 'benjamin', 'tony']
 \end{replbox}
 
+\begin{marginfigure}
+  \includegraphics[width=0.9\marginparwidth]{../week5/figures/Ascending_and_Descending.jpg}
+  \caption{The Dutch artist \emph{MC Escher} often painted seemingly paradoxical scenes such as this
+    one, known as \emph{Ascending and Descending}. Trying to examine a list that contains itself is
+    similar to the people walking around this impossible staircase. The American computer scientist
+    and philosopher \emph{Douglas Hofstadter} has a famous book \emph{G\"odel, Escher, Bach}, in
+    which he makes the claim that these sorts of \emph{strange loops} are a fundamental aspect of
+    being able to think. What do you think?}
+  \label{fig:escher}
+\end{marginfigure}
+
 It seems as if \code{a} is somehow different from \code{b}. You may now be questioning whether you
 were lied to about names being interchangeable with the data they represent.
 
@@ -271,19 +317,17 @@ computer. Being able to draw a duck from a description is not the same as a real
 model things, and this is exactly the same case.
 
 In reality, computer names cannot store anything. As we said at the beginning of this chapter,
-everything on a computer is a number. Python variables really only store numbers. That means, if we
-want to put a list into them, we first have to represent the list using a number.
+everything on a computer is a number. Inside Python, Python variables really only store
+numbers. That means, if we want to put a list into them, we first have to represent the list using a
+number.
 
 But there's a problem. Depending on what kind of computer you are using, Python can only store
 numbers with 32 or 64 binary digits. On a 32-bit computer, names are limited to storing numbers
 between 0 and 4 billion. There are \emph{much} more than four billion possible lists!
 
-In order to store a list as a number, we have to \emph{allocate} a new number that will be used to
-represent the list. Python can only store so many lists (or other complex objects) while it is
-running, and this depends on the exact computer being used. In real computer programs, we almost
-never run against these limits, and so we just pretend that we can store as many lists as we want.
-
-We can see what number Python has chosen to associate with this list using \code{id}.
+A Python variable does not magically hold an entire giant list inside a tiny box. Instead, Python
+gives the list an internal number and uses that number to keep track of where the real list is. We
+can see what number Python has chosen to associate with this list using \code{id}.
 
 \begin{replbox}
 >>> a = ['bob', 'alice', 'mary', 'joseph', 'benjamin', 'tony']<ENTER>
@@ -317,6 +361,12 @@ list, but this time it was the list represented by \code{b}. \code{b[3]} was nev
 \code{b} does not have the same \code{id} as \code{a}. \prettyref{fig:pointers} demonstrates exactly
 what is happening with \code{a} and \code{b}.
 
+\begin{BigIdeaBox}
+  A variable name is not the data itself. It is a way for Python to keep track of the data. This is
+  why two names can sometimes refer to the same underlying object. It all depends on which number
+  Python has assigned to it.
+\end{BigIdeaBox}
+
 \begin{figure}
   \includegraphics[width=\textwidth]{../week5/figures/pointers.pdf}
   \caption{Python lists are referenced by unique numbers called \code{id}s. Instead of storing a
@@ -332,16 +382,17 @@ what is happening with \code{a} and \code{b}.
 
 \section{Dictionaries}
 
-Lists let us store any number of things, but we can only refer to them by their position in the
-list. Sometimes, we need to keep track of a lot of things but we'd like to use strings instead. For
-this, we can use \term{dictionaries}.
+\curious{Or really, zeroth, first, second, and third...!}  Lists are great when we want to look
+things up by position: first, second, third. But sometimes position is not what we care about. If we
+want to know Bob’s age, it is much nicer to ask for \code{'bob'} than to remember that Bob happened
+to be item number 3 in some list. Dictionaries let us do exactly that
 
 For example, we can store the ages of our friends like this:
 
 \tikzforeground{
   \node[anchor=west] (key note) at ([yshift=-1em, xshift=8em]key) {
     \begin{tcolorbox}[code note, width=8cm]
-      The names of things in a dictionary are called \term{keys}, which are similar to list \term{indices}.
+      The labels in a dictionary are called \term{keys}. They play a role similar to list indices, except that keys do not have to be numbers.
     \end{tcolorbox}
   };
   \draw[->] (key note.west) to[out=180,in=-90] ([xshift=2em, yshift=0.8em]key.south);
@@ -374,17 +425,17 @@ You can also delete keys using \kw{del}.
 {'sam': 6, 'amy': 9}<ENTER>
 \end{replbox}
 
-Unlike lists, there's no way you can assign to a wrong key in a dictionary. If you update a key that
-does not exist, Python makes a new one.
+Unlike lists, assigning to a new key is not an error. Python simply creates that key for you.
 
+\curious{A list answers the question ``what is in slot number 3?'' A dictionary answers the question ``what value goes with this name?''}
 \begin{replbox}
 >>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
 >>> ages['tom'] = 3
 >>> ages
-{'tom': 3, 'bob': 9, 'sam': 6, 'amy': 9}<ENTER>
+{'tom': 3, 'bob': 8, 'sam': 6, 'amy': 9}<ENTER>
 \end{replbox}
 
-However, if you access a \term{key} that does not exist, you will get a \kw{KeyError}
+But looking up a missing key is different. In that case, Python raises a \kw{KeyError}, because it cannot find the label you asked for.
 
 \begin{replbox}
 >>> ages = { 'bob': 8, 'sam': 6, 'amy': 9 }<ENTER>
@@ -473,18 +524,120 @@ inside \code{state['items']}. Now, whenever the reader uses the \code{backpack} 
 
 \section{Conclusion}
 
-Data is more than just numbers and strings. Lists and dictionaries allow us talk about more than one
-thing. They can contain not only numbers and strings, but other lists and dictionaries. In fact,
-lists and dictionaries can both contain themselves!
+Data is more than just numbers and strings. \term{Lists} help us organize data by
+order. \term{Dictionaries} help us organize data by meaning. Together, they let us build rich little
+worlds out of simple parts.  They can contain not only numbers and strings, but also other lists and
+dictionaries. In fact, lists and dictionaries can both contain themselves!
 
 All data in a computer is stored as a number, even strings. Standards written by international
 bodies mean that individual letters and characters have a set mapping between them and the numbers
 that represent them. Lists and dictionaries, however, do not.
 
 Python represents lists and dictionaries using numbers called \code{id}s that it keeps track of
-internally. Instead of actually putting one list in another, Python stores a number
-\emph{referencing} one list inside the other. This can lead to some confusing situations, but it's
-still an example of computers following rules exactly.
+internally. Instead of literally stuffing one list inside another, Python stores a number that
+\emph{points} to the other list. This can lead to some confusing situations, but it's still an
+example of computers following rules exactly.
 
 Using lists and dictionaries, we can build a model world that we can explore as an interactive
 story.
+
+\Exercises
+
+\begin{exercises}
+
+\item \textcolor{TermSage}{\bfseries\sffamily Building a List.}
+Create a list of your five favorite foods. Then:
+\begin{enumerate}
+  \item Print the whole list
+  \item Print just the first item
+  \item Print just the last item
+\end{enumerate}
+
+\item \textcolor{TermSage}{\bfseries\sffamily Changing a List.}
+Start with the list:
+\begin{lstlisting}
+a = ['red', 'green', 'blue']
+\end{lstlisting}
+\begin{enumerate}
+  \item Change \code{'green'} to \code{'yellow'}
+  \item Add a new color to the end
+  \item Remove the first item
+\end{enumerate}
+What does the list look like after each step?
+
+\item \textcolor{TermSage}{\bfseries\sffamily Lists of Lists.}
+Make a list of lists, like this:
+\begin{lstlisting}
+grid = [[1, 2, 3], [4, 5, 6]]
+\end{lstlisting}
+\begin{enumerate}
+  \item What is \code{grid[0]}?
+  \item What is \code{grid[1][2]}?
+\end{enumerate}
+Try to explain in words how Python is finding the answer.
+
+\item \textcolor{TermSage}{\bfseries\sffamily Names and Ages.}
+Create a dictionary that stores the ages of three people.
+For example:
+\begin{lstlisting}
+ages = {'bob': 8, 'amy': 9}
+\end{lstlisting}
+\begin{enumerate}
+  \item Add a new person
+  \item Change someone's age
+  \item Print one person's age using their name
+\end{enumerate}
+
+\item \textcolor{TermSage}{\bfseries\sffamily Lists vs Dictionaries.}
+Suppose you want to store the scores of players in a game.
+\begin{enumerate}
+  \item How would you store them using a list?
+  \item How would you store them using a dictionary?
+  \item Which one seems easier to use, and why?
+\end{enumerate}
+
+\item \textcolor{TermSage}{\bfseries\sffamily A Simple Inventory.}
+Create a dictionary that represents a backpack:
+\begin{lstlisting}
+backpack = {'rope': 1, 'apple': 3}
+\end{lstlisting}
+Now try doing the following:
+\begin{enumerate}
+  \item Add a new item.
+  \item Remove an item (using \kw{del}).
+  \item Change the quantity of an item.
+\end{enumerate}
+
+\item \textcolor{TermSage}{\bfseries\sffamily Curious: What Is Really Stored?}
+Create a list and assign it to two different names:
+\begin{lstlisting}
+a = [1, 2, 3]
+b = a
+\end{lstlisting}
+Now change \code{a[0] = 3.}.
+\begin{enumerate}
+  \item What happens to \code{b}?
+  \item Why do you think this happens?
+\end{enumerate}
+
+\item \textcolor{TermSage}{\bfseries\sffamily A List That Contains Itself (Challenge).}\hint{We did this one in class.}
+Try to create a list that contains itself, like we did in class. For example:
+\begin{lstlisting}
+a = []
+# somehow make 'a' contain itself
+\end{lstlisting}
+\begin{enumerate}
+  \item Can you do it?
+  \item What happens when you print it?
+\end{enumerate}
+This one is strange---don’t worry if it feels confusing!
+
+\item \textcolor{TermSage}{\bfseries\sffamily Design Your Own Structure.}
+Think of a small world (a game, a room, or a story).
+\begin{enumerate}
+  \item What information would you store in a list?
+  \item What information would you store in a dictionary?
+\end{enumerate}
+Explain your choices.
+
+\end{exercises}
