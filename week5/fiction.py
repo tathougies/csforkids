@@ -2,7 +2,7 @@
 #
 # Use this template to create your own interactive fiction stories.
 
-from . import *
+from story import *
 
 # PUT YOUR STORY HERE
 def intro(state):
