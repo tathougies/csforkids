@@ -1,0 +1,96 @@
+\week{Functions All the Way Down}
+
+In the previous weeks we saw how to use functions to build rule-based systems. First, we started
+with simple expressions, and then we talked about different ways to compose functions. This week,
+we'll talk about functions that can use themselves. By doing this, we will be able to represent
+potentially \emph{infinite} things in a finite computer program.
+
+But first, a thought experiment? Have you ever placed two mirrors together? What happens? Where do
+the images in the mirror end? Where do they come from? Were they always there or do they appear one
+at a time? If you roll a ball from one mirror to another, does its reflected image in the other
+mirror ever reach the end?
+
+Another thing to notice is that no matter how you place the mirrors, you can never look at them
+straight on. Instead you must always look at them from the side. This is because your head is not
+transparent. But notice that if you change the viewing angle, the reflected infinite hall in the
+mirror doesn't just rotate, it seems to twist in a curve. Also notice that you can get far enough
+away that it ends.
+
+Okay well what do mirrors have to do with computers? We'll get to that. But now let's think of
+another image that you might be more familiar with: a tree.
+
+\prettyref{fig:tree} shows an image of a tree without leaves and then a zoomed in version of the same
+image. Here's an open question: what do you notice in the tree that you notice in the mirror?
+
+Do you see how when we zoom in, the tree still looks sort of the same as the entire tree? The tree
+trunk itself is just a giant branch, and it branches at the top. Those branches themselves branch at
+the tips. Eventually, the branches get so thin, they stop branching, and we get a nice tree. When
+something looks the same at multiple levels, we call it a \term{fractal}.
+\curious{Have you ever wondered why some things look ``man-made'' while other things look ``natural''? Fractals have a lot to do with this. Fractals are everywhere in nature. We saw the example of trees branching behavior, but even such things as mollusc shells, mountain ranges, coast lines, and flowers can be described using fractals! Since physical laws seem to operate the same at all levels, some people even say the universe is a fractal!}
+
+\section{An Infinite Garden}
+
+In this week's lession we're going to draw 3-dimensional trees of various kinds and then use them to
+create an infinite garden that you can explore forever. This is like being in-between the two
+mirrors at the start of class, except this time you will truly be able to see anythig. Even better,
+you will be able to continue on forever and back again.
+
+We'll be doing two things in this chapter. First we will write functions that describe plants in our
+garden. These are the plants that will show up in our simulation. Then, we will write a function
+that generates a finite description of our infinite garden. When combined with the rendering code
+supplied in the course code, we will get our final simulation.
+
+\section{Drawing Trees}
+
+\begin{marginfigure}
+\label{fig:pando-tree}
+\caption{The largest tree in the world is known as \emph{Pando}, a single Shaking Aspen tree with multiple stems that grows on a hillside in Utah. Pando looks similar at many levels because trees exhibit \emph{fractal} growth}
+\includegraphics[width=0.9\linewidth]{../week5/figures/FallPando02.jpg}
+\end{marginfigure}
+
+The first thing we do is we will be drawing trees. We will draw trees by providing a description of
+the tree to a function that will \term{render}, or draw, the tree. Thus far, we've seen several
+kinds of data. In the first week, we saw numbers and strings (words). In the second and third weeks,
+we saw how images and sound were stored as lists of numbers. However, in all these circumstances,
+our data were of a fixed structure. Numbers and strings are known as \term{scalar} because they are
+a single individual value. Images and sounds are two- or one-dimensional \term{arrays} of
+numbers. But trees cannot be described by a single value or a fixed size of value, because trees can
+get very large (see \prettyref{fig:pando-tree}).
+r
+Let's think about how a tree is structured. A tree starts with a trunk. The trunk goes up some ways
+and can then branch into multiple branches. Each branch is itself like a mini tree in that it is
+constructed of branches in the same way. Some branches do not branch as often as others. Others
+branch again and again. In order to store data that describe this sort of tree, we'll need something
+more than the data we studied before.
+
+\subsection{An Introduction to Python Lists}
+
+Python comes built-in with a data structure that is well-suited to what we are trying to do:
+the \term{list}. Lists in Python can store any amount of data. For example, we can make lists
+containing numbers:
+
+\hint{Notice that lists can contain \emph{any number} of items, including no items! The empty list can be written as \code{[]}.}
+\begin{replbox}
+>>> [1,2,3]<ENTER>
+>>> [1,3,5,7]<ENTER>
+\end{replbox}
+
+Or lists containing words:
+\begin{replbox}
+>>> ['hello', 'my', 'name', 'is', 'peter']<ENTER>
+>>> ['tea', 'coffee', 'fruit']<ENTER>
+\end{replbox}
+
+Lists can even contain both numbers and words:
+\begin{replbox}
+>>> ['there', 'are', 5, 'apples']<ENTER>
+>>> [1, 2, 'three', 4]<ENTER>
+\end{replbox}
+
+Lists can even contain themselves! And this is what will make them perfect for our use case.
+
+\begin{replbox}
+>>> ['branch', ['branch', 'leaf', 'leaf'], 'leaf']<ENTER>
+>>> ['branch', ['branch', ['branch', 'leaf', ['branch', 'leaf', ['branch', 'leaf', 'leaf']]], 'leaf'], ['branch', 'leaf', 'leaf']]<ENTER>
+\end{replbox}
+
