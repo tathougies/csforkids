@@ -21,7 +21,7 @@ def next_step(state):
     return stairs(state)
 
 INITIAL_STATE = {
-    'energy': 5
+    'energy': 5,
     'max_steps': 10,
     'step': 0
 }
