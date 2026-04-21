@@ -69,7 +69,7 @@ def halfway_up(state):
     if next_index == current and current < top:
         next_index = current + 1
 
-    state['steps_left'] -= 1
+
     state['current_index'] = next_index
     state['steps_left'] = state['steps_left'] - 1
 
@@ -84,7 +84,6 @@ def halfway_down(state):
     if next_index == current and current > bottom:
         next_index = current - 1
 
-    state['steps_left'] -= 1
     state['current_index'] = next_index
     state['steps_left'] = state['steps_left'] - 1
 
